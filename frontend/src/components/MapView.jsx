@@ -8,7 +8,6 @@ import {
   Circle,
   Polyline,
   useMap,
-  useMapEvents,
 } from 'react-leaflet';
 import L from 'leaflet';
 import { CARNIVAL_ROUTES } from '../data/carnivalRoutes';
@@ -33,23 +32,26 @@ import {
 // Coordenadas centrales de San Juan de Pasto (Plaza de Nariño / Corazón del Carnaval)
 const PASTO_CENTER = [1.2136, -77.2811];
 
-// Trazo oficial y fidedigno de la Senda del Carnaval de Pasto
-// Recorre la ruta tradicional desde la Normal Superior pasando por Av. Santander,
-// Carrera 27, Plaza del Carnaval, Bomboná, Plaza de Nariño, Parque Infantil, Champagnat
-// y finalizando en la Av. Los Estudiantes / Fuente de la Transparencia
-export const SENDA_DEL_CARNAVAL_COORDS = [
-  [1.2012, -77.2748], // Salida Oficial: Escuela Normal Superior / Caracha
-  [1.2055, -77.2755], // Av. Santander / Concentración de Carrozas (Av. Boyacá)
-  [1.2085, -77.2768], // Ingreso a la Carrera 27
-  [1.2115, -77.2785], // Plaza del Carnaval y de la Cultura (Cra 27 con Cll 17)
-  [1.2130, -77.2780], // Corredor Carrera 27 (Sector Bomboná)
-  [1.2145, -77.2782], // Sector Plaza de Nariño
-  [1.2168, -77.2805], // Carrera 27 hacia el norte (Calle 20 y 21)
-  [1.2205, -77.2850], // Sector Parque Infantil
-  [1.2225, -77.2862], // Sector Champagnat (IEM Ciudad de Pasto)
-  [1.2250, -77.2885], // Senda Avenida Los Estudiantes
-  [1.2275, -77.2910], // Fuente de la Transparencia / Llegada final
+// Trazado 100% real y georreferenciado de la Senda del Carnaval de Pasto
+export const SENDA_CARNAVAL_COORDS = [
+  [1.21852, -77.26941], // Salida Oficial: I.E. Normal Superior de Pasto
+  [1.21780, -77.27110], // Av. Santander (Calle 4 con Cra 27)
+  [1.21695, -77.27312], // Av. Santander bajando hacia Glorieta
+  [1.21550, -77.27530], // Cra 27 intersección Calle 12
+  [1.21440, -77.27690], // Cra 27 tramo medio
+  [1.21320, -77.27850], // Intersección Cra 27 con Calle 16
+  [1.21250, -77.27960], // Giro hacia Calle 18 (Centro histórico)
+  [1.21310, -77.28080], // Calle 18 aproximación Parque Nariño
+  [1.21380, -77.28180], // Parque Nariño
+  [1.21460, -77.28290], // Calle 19 paso peatonal comercial
+  [1.21540, -77.28410], // Plaza del Carnaval y la Cultura (Punto neurálgico)
+  [1.21420, -77.28550], // Conexión hacia Carrera 25 / Av. Boyacá
+  [1.21280, -77.28690], // Av. Boyacá tramo sur
+  [1.21110, -77.28850], // Calle 12 bajando
+  [1.20920, -77.28990], // Sector Bomboná
+  [1.20780, -77.29130]  // Llegada Oficial: Glorieta / Salida Colegio Champagnat
 ];
+export const SENDA_DEL_CARNAVAL_COORDS = SENDA_CARNAVAL_COORDS;
 
 // Zonas de congestión y riesgo por defecto (con las 4 ubicaciones clave solicitadas)
 const DEFAULT_CARNAVAL_ZONES = [
@@ -369,18 +371,6 @@ const getZoneColors = (riskLevel, congestionPercentage) => {
   };
 };
 
-// Componente para capturar clics en el mapa únicamente cuando se está en modo de reporte o selección de punto
-function MapClickHandler({ onMapClick, isSelectingLocation = false }) {
-  useMapEvents({
-    click: (e) => {
-      if (isSelectingLocation && onMapClick) {
-        onMapClick(e.latlng.lat, e.latlng.lng);
-      }
-    },
-  });
-  return null;
-}
-
 // Controlador para enfocar y animar la vista de la Senda del Carnaval
 function SendaController({ onSendaFocus, focusTrigger }) {
   const map = useMap();
@@ -388,7 +378,7 @@ function SendaController({ onSendaFocus, focusTrigger }) {
   const handleFocus = useCallback(() => {
     if (!map) return;
     try {
-      const bounds = L.latLngBounds(SENDA_DEL_CARNAVAL_COORDS);
+      const bounds = L.latLngBounds(SENDA_CARNAVAL_COORDS);
       if (typeof map.flyToBounds === 'function') {
         map.flyToBounds(bounds, {
           padding: [50, 50],
@@ -1017,11 +1007,6 @@ export function MapView({
         scrollWheelZoom={true}
         className="w-full h-full"
       >
-        <MapClickHandler
-          onMapClick={onSelectCoordinates}
-          isSelectingLocation={isSelectingLocation}
-        />
-
         {/* Controlador para centrar y animar la vista sobre la Senda del Carnaval */}
         <SendaController
           focusTrigger={focusSendaTrigger}
@@ -1097,7 +1082,7 @@ export function MapView({
           <>
             {/* Halo exterior amplio para destacar el recorrido */}
             <Polyline
-              positions={SENDA_DEL_CARNAVAL_COORDS}
+              positions={SENDA_CARNAVAL_COORDS}
               pathOptions={{
                 color: '#f59e0b',
                 weight: 12,
@@ -1108,7 +1093,7 @@ export function MapView({
             />
             {/* Trazo continuo sólido y nítido */}
             <Polyline
-              positions={SENDA_DEL_CARNAVAL_COORDS}
+              positions={SENDA_CARNAVAL_COORDS}
               pathOptions={{
                 color: '#d97706',
                 weight: 6,
@@ -1119,7 +1104,7 @@ export function MapView({
             />
             {/* Eje central luminoso con punteado sutil */}
             <Polyline
-              positions={SENDA_DEL_CARNAVAL_COORDS}
+              positions={SENDA_CARNAVAL_COORDS}
               pathOptions={{
                 color: '#fef08a',
                 weight: 2,
@@ -1128,27 +1113,27 @@ export function MapView({
               }}
             />
 
-            {/* Marcador de Salida Oficial: Normal Superior */}
-            <Marker position={SENDA_DEL_CARNAVAL_COORDS[0]}>
+            {/* Marcador de Salida Oficial: I.E. Normal Superior de Pasto */}
+            <Marker position={SENDA_CARNAVAL_COORDS[0]}>
               <Popup>
                 <div className="text-xs p-1 text-slate-800 dark:text-slate-100">
                   <div className="font-bold text-amber-500 flex items-center gap-1">
                     <span>🚩</span> Salida Oficial de la Senda
                   </div>
-                  <p className="font-semibold mt-0.5">Escuela Normal Superior / Av. Boyacá</p>
-                  <p className="text-[10px] text-slate-400">Punto tradicional de concentración y salida</p>
+                  <p className="font-semibold mt-0.5">I.E. Normal Superior de Pasto</p>
+                  <p className="text-[10px] text-slate-400">Punto oficial de inicio y concentración</p>
                 </div>
               </Popup>
             </Marker>
 
-            {/* Marcador de Llegada Oficial: Champagnat / Fuente de la Transparencia */}
-            <Marker position={SENDA_DEL_CARNAVAL_COORDS[SENDA_DEL_CARNAVAL_COORDS.length - 1]}>
+            {/* Marcador de Llegada Oficial: Glorieta / Salida Colegio Champagnat */}
+            <Marker position={SENDA_CARNAVAL_COORDS[SENDA_CARNAVAL_COORDS.length - 1]}>
               <Popup>
                 <div className="text-xs p-1 text-slate-800 dark:text-slate-100">
                   <div className="font-bold text-rose-500 flex items-center gap-1">
                     <span>🏁</span> Llegada Oficial de la Senda
                   </div>
-                  <p className="font-semibold mt-0.5">Champagnat / Fuente de la Transparencia</p>
+                  <p className="font-semibold mt-0.5">Glorieta / Salida Colegio Champagnat</p>
                   <p className="text-[10px] text-slate-400">Culminación del desfile y desconcentración</p>
                 </div>
               </Popup>

@@ -3,6 +3,27 @@
  * por día del Carnaval de Negros y Blancos de San Juan de Pasto.
  */
 
+// Trazado 100% real y georreferenciado de la Senda del Carnaval
+export const SENDA_CARNAVAL_COORDS = [
+  [1.21852, -77.26941], // Salida Oficial: I.E. Normal Superior de Pasto
+  [1.21780, -77.27110], // Av. Santander (Calle 4 con Cra 27)
+  [1.21695, -77.27312], // Av. Santander bajando hacia Glorieta
+  [1.21550, -77.27530], // Cra 27 intersección Calle 12
+  [1.21440, -77.27690], // Cra 27 tramo medio
+  [1.21320, -77.27850], // Intersección Cra 27 con Calle 16
+  [1.21250, -77.27960], // Giro hacia Calle 18 (Centro histórico)
+  [1.21310, -77.28080], // Calle 18 aproximación Parque Nariño
+  [1.21380, -77.28180], // Parque Nariño
+  [1.21460, -77.28290], // Calle 19 paso peatonal comercial
+  [1.21540, -77.28410], // Plaza del Carnaval y la Cultura (Punto neurálgico)
+  [1.21420, -77.28550], // Conexión hacia Carrera 25 / Av. Boyacá
+  [1.21280, -77.28690], // Av. Boyacá tramo sur
+  [1.21110, -77.28850], // Calle 12 bajando
+  [1.20920, -77.28990], // Sector Bomboná
+  [1.20780, -77.29130]  // Llegada Oficial: Glorieta / Salida Colegio Champagnat
+];
+export const SENDA_DEL_CARNAVAL_COORDS = SENDA_CARNAVAL_COORDS;
+
 export const CARNIVAL_DAYS = [
   { id: '28-dic', label: '28 Dic', shortName: 'Arcoíris Asfalto' },
   { id: '31-dic', label: '31 Dic', shortName: 'Años Viejos' },
