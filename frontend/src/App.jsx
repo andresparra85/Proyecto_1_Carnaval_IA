@@ -4,7 +4,7 @@ import MapView from './components/MapView';
 import ReportModal from './components/ReportModal';
 import CitizenReportsModal from './components/CitizenReportsModal';
 import EventsCalendarModal from './components/EventsCalendarModal';
-import ChatIA from './components/ChatIA';
+import ChatBot from './components/ChatBot';
 import InstallPwaPrompt from './components/InstallPwaPrompt';
 import LoginView from './components/LoginView';
 import Toast from './components/Toast';
@@ -19,7 +19,6 @@ export function App() {
   const [zones, setZones] = useState([]);
   const [isServerHealthy, setIsServerHealthy] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [chatOpen, setChatOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [reportsModalOpen, setReportsModalOpen] = useState(false);
   const [activeView, setActiveView] = useState('senda');
@@ -211,11 +210,7 @@ export function App() {
         <InstallPwaPrompt />
 
         {/* Componente del Asistente GuaneñaBot (Chatbot UI Flotante en esquina inferior derecha) */}
-        <ChatIA
-          isOpen={chatOpen}
-          onToggle={setChatOpen}
-          onClose={() => setChatOpen(false)}
-        />
+        <ChatBot />
       </main>
 
       {/* Modal para Registro de Reportes */}

@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Sparkles, RotateCcw } from 'lucide-react';
-import axios from 'axios';
-import { api } from '../services/api';
 
 const QUICK_PROMPTS = [
   '¿Cómo es el recorrido de la Senda?',
@@ -9,42 +7,8 @@ const QUICK_PROMPTS = [
   '¿Dónde comer frito pastuso y cuy?',
 ];
 
-// Respuestas de contingencia enriquecidas para garantizar fluidez durante sustentación
-const LOCAL_FALLBACK_ANSWERS = {
-  senda:
-    'El recorrido oficial de la Senda del Carnaval de Pasto tiene una longitud de casi 7 km: Inicia en la Concentración de Carrozas en la Av. Boyacá / Normal Superior, avanza por la Carrera 27 pasando por la Plaza del Carnaval y de la Cultura y la Plaza de Nariño, continúa hacia el Parque Infantil y culmina en la Fuente de la Transparencia (Avenida Los Estudiantes).',
-  eventos:
-    '¡Los días cumbre de nuestro Patrimonio!\n• 5 de Enero (Día de Negros): Conmemoración histórica de la libertad e igualdad, juego fraterno de la "pintica" (cosmético negro) y conciertos en vivo en las tarimas de la Plaza del Carnaval y Plaza de Nariño.\n• 6 de Enero (Día de Blancos / Desfile Magno): El evento máximo del Carnaval. Majestuoso desfile de Carrozas Monumentales de hasta 12 metros de altura, murgas de viento y fuelles, comparsas, disfraces individuales y colectivos coreográficos a lo largo de la Senda.',
-  comida:
-    '¡La gastronomía tradicional de Pasto es inigualable!\n• Frito Pastuso (trozos de cerdo dorado crujiente con crispetas, papa pastusa al vapor y ají de maní): Encuéntralo en los mesones tradicionales del Centro Histórico, Bomboná y la Calle 18.\n• Cuy Asado a la brasa: El destino imperdible es el Corregimiento de Catambuco y Obonuco (sede del Festival del Cuy el 7 de enero), con asaderos típicos reconocidos por su sabor andino.',
-};
-
-export function ChatIA({ isOpen: controlledOpen, onToggle, onClose: controlledClose }) {
-  // Manejo explícito del estado isOpen requerido
+export function ChatIA() {
   const [isOpen, setIsOpen] = useState(false);
-
-  // Sincronización bidireccional si se proveen props controladas
-  useEffect(() => {
-    if (controlledOpen !== undefined) {
-      setIsOpen(controlledOpen);
-    }
-  }, [controlledOpen]);
-
-  const handleToggle = () => {
-    console.log("Abriendo GuaneñaBot...");
-    setIsOpen((prev) => {
-      const next = !prev;
-      if (onToggle) onToggle(next);
-      return next;
-    });
-  };
-
-  const handleClose = () => {
-    setIsOpen(false);
-    if (controlledClose) controlledClose();
-    if (onToggle) onToggle(false);
-  };
-
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -67,28 +31,14 @@ export function ChatIA({ isOpen: controlledOpen, onToggle, onClose: controlledCl
     }
   }, [messages, isOpen, loading]);
 
-  const getSmartFallback = (query) => {
-    const q = query.toLowerCase();
-    if (q.includes('senda') || q.includes('recorrido') || q.includes('ruta')) {
-      return LOCAL_FALLBACK_ANSWERS.senda;
-    }
-    if (q.includes('5 y 6') || q.includes('enero') || q.includes('eventos') || q.includes('desfile')) {
-      return LOCAL_FALLBACK_ANSWERS.eventos;
-    }
-    if (q.includes('cuy') || q.includes('frito') || q.includes('comer') || q.includes('plato')) {
-      return LOCAL_FALLBACK_ANSWERS.comida;
-    }
-    return '¡Qué viva Pasto, carajo! El Carnaval de Negros y Blancos es Patrimonio Cultural Inmaterial de la Humanidad. Te invito a consultar la Senda del Carnaval y nuestro Calendario de Eventos para no perderte ningún desfile.';
-  };
-
   const handleSendMessage = async (textToSend) => {
-    const text = (textToSend || inputMessage).trim();
-    if (!text || loading) return;
+    const userText = (textToSend || inputMessage).trim();
+    if (!userText || loading) return;
 
     const userMsg = {
       id: Date.now(),
       sender: 'user',
-      text,
+      text: userText,
       timestamp: new Date(),
     };
 
@@ -97,49 +47,39 @@ export function ChatIA({ isOpen: controlledOpen, onToggle, onClose: controlledCl
     setLoading(true);
 
     try {
-      const envUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      const cleanBase = envUrl.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
-      const primaryChatUrl = `${cleanBase}/api/chat`;
+      const response = await fetch('http://localhost:8000/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: userText }),
+      });
 
-      let replyText = '';
-
-      try {
-        const res = await axios.post(
-          primaryChatUrl,
-          { message: text },
-          { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
-        );
-        replyText = res.data?.response || res.data?.reply;
-      } catch (_err) {
-        try {
-          const fallbackRes = await api.sendChatMessage({ message: text });
-          replyText = fallbackRes?.response || fallbackRes?.reply;
-        } catch {
-          replyText = getSmartFallback(text);
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      if (!replyText) {
-        replyText = getSmartFallback(text);
-      }
+      const data = await response.json();
+      const botResponse = data.response || data.reply || data.message || 'Sin respuesta';
 
       const botMsg = {
         id: Date.now() + 1,
         sender: 'bot',
-        text: replyText,
+        text: botResponse,
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, botMsg]);
-    } catch (err) {
-      console.warn('Uso de respuesta local GuaneñaBot:', err);
-      const fallbackMsg = {
+    } catch (error) {
+      console.error('Error al conectar con GuaneñaBot:', error);
+      const errorMsg = {
         id: Date.now() + 1,
         sender: 'bot',
-        text: getSmartFallback(text),
+        text: 'No se pudo conectar con GuaneñaBot. Verifica que el backend esté encendido.',
+        isError: true,
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, fallbackMsg]);
+      setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setLoading(false);
     }
@@ -162,7 +102,7 @@ export function ChatIA({ isOpen: controlledOpen, onToggle, onClose: controlledCl
       <button
         id="open-chat-fab"
         type="button"
-        onClick={handleToggle}
+        onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-6 right-6 z-[9999] pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-white font-bold text-xs sm:text-sm border border-white/20 shadow-xl shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 cursor-pointer group select-none"
         aria-label="Abrir o cerrar chat con GuaneñaBot"
         title="GuaneñaBot - Asistente IA del Carnaval de Pasto"
@@ -246,7 +186,9 @@ export function ChatIA({ isOpen: controlledOpen, onToggle, onClose: controlledCl
                       className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-[13px] leading-relaxed shadow-sm ${
                         isUser
                           ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-br-sm'
-                          : 'bg-slate-800/90 text-slate-100 border border-white/10 rounded-bl-sm'
+                          : msg.isError
+                            ? 'bg-rose-950/80 text-rose-200 border border-rose-500/50 rounded-bl-sm'
+                            : 'bg-slate-800/90 text-slate-100 border border-white/10 rounded-bl-sm'
                       }`}
                     >
                       <div className="whitespace-pre-line">{msg.text}</div>
@@ -335,4 +277,5 @@ export function ChatIA({ isOpen: controlledOpen, onToggle, onClose: controlledCl
   );
 }
 
+export { ChatIA as GuaneñaBot, ChatIA as GuanenaBot, ChatIA as ChatBot };
 export default ChatIA;
