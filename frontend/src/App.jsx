@@ -29,6 +29,15 @@ export function App() {
   const [navRoute, setNavRoute] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
+  // Estado para la capa y foco de la Senda del Carnaval
+  const [showSenda, setShowSenda] = useState(true);
+  const [focusSendaTrigger, setFocusSendaTrigger] = useState(0);
+
+  const handleFocusSenda = useCallback(() => {
+    setShowSenda(true);
+    setFocusSendaTrigger((prev) => prev + 1);
+  }, []);
+
   // Estado para Toast de notificaciones
   const [toast, setToast] = useState({ message: '', type: 'success' });
 
@@ -85,10 +94,10 @@ export function App() {
     }
   }, [isAuthenticated, loadDashboardData]);
 
-  // Manejar selección de coordenadas al hacer clic en el mapa
+  // Manejar selección de coordenadas al hacer clic en el mapa (solo en modo de reporte)
   const handleSelectCoordinates = (lat, lng) => {
     setSelectedLocation({ lat, lng });
-    setReportModalOpen(true);
+    // NO abrir modal de reporte al hacer clic libre en el mapa
   };
 
   // Callback al crearse un nuevo reporte
@@ -130,6 +139,7 @@ export function App() {
           setActiveView('senda');
           setCalendarOpen(false);
           setReportsModalOpen(false);
+          setShowSenda((prev) => !prev);
         }}
         onOpenCalendar={() => {
           setCalendarOpen(true);
@@ -154,6 +164,7 @@ export function App() {
           reports={reports}
           zones={zones}
           onSelectCoordinates={handleSelectCoordinates}
+          isSelectingLocation={reportModalOpen}
           selectedLocation={selectedLocation}
           currentCarnivalDay={currentCarnivalDay}
           selectedDay={currentCarnivalDay}
@@ -161,6 +172,9 @@ export function App() {
           onUserLocationChange={setUserGps}
           navRoute={navRoute}
           setNavRoute={setNavRoute}
+          showSenda={showSenda}
+          onToggleSenda={() => setShowSenda((prev) => !prev)}
+          focusSendaTrigger={focusSendaTrigger}
         />
 
         {/* Panel Superior Flotante: Métricas en Vivo */}
@@ -210,7 +224,7 @@ export function App() {
         <InstallPwaPrompt />
 
         {/* Componente del Asistente GuaneñaBot (Chatbot UI Flotante en esquina inferior derecha) */}
-        <ChatBot />
+        <ChatBot onFocusSenda={handleFocusSenda} />
       </main>
 
       {/* Modal para Registro de Reportes */}

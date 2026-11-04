@@ -7,7 +7,7 @@ const QUICK_PROMPTS = [
   '¿Dónde comer frito pastuso y cuy?',
 ];
 
-export function ChatBot() {
+export function ChatBot({ onFocusSenda }: { onFocusSenda?: () => void } = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -46,6 +46,35 @@ export function ChatBot() {
     setInputMessage('');
     setLoading(true);
 
+    const q = userText.toLowerCase();
+    const isSendaQuery =
+      q.includes('senda') ||
+      q.includes('recorrido') ||
+      q.includes('ruta') ||
+      q.includes('dónde es') ||
+      q.includes('donde es');
+
+    // 1. Activar capa y enfocar la Senda del Carnaval si se consulta por el recorrido
+    if (isSendaQuery) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('focus-senda', {
+            detail: { show: true },
+          })
+        );
+      }
+      if (onFocusSenda) {
+        onFocusSenda();
+      }
+    }
+
+    const sendaDescription =
+      '¡Qué viva Pasto, carajo! 🎉 Aquí tienes el recorrido oficial de la Senda del Carnaval (~7 km de arte y emoción):\n\n' +
+      '• 🚩 Punto de partida: Inicia en la Escuela Normal Superior y la Av. Santander / Boyacá.\n' +
+      '• 📍 Tramos principales: Recorre la Carrera 27 pasando por Bomboná, la Plaza del Carnaval y la Plaza de Nariño, avanzando por el Parque Infantil y la Av. Los Estudiantes.\n' +
+      '• 🏁 Llegada oficial: Culmina en el sector Champagnat y la Fuente de la Transparencia.\n\n' +
+      '🗺️ ¡He enfocado y resaltado la Senda del Carnaval en el mapa para que veas todo el trayecto!';
+
     try {
       const response = await fetch('http://localhost:8000/api/chat', {
         method: 'POST',
@@ -60,7 +89,13 @@ export function ChatBot() {
       }
 
       const data = await response.json();
-      const botResponse = data.response || data.reply || data.message || 'Sin respuesta';
+      let botResponse = data.response || data.reply || data.message;
+
+      if (!botResponse) {
+        botResponse = isSendaQuery ? sendaDescription : 'Sin respuesta';
+      } else if (isSendaQuery && !botResponse.toLowerCase().includes('normal')) {
+        botResponse = `${botResponse}\n\n${sendaDescription}`;
+      }
 
       const botMsg = {
         id: Date.now() + 1,
@@ -72,14 +107,24 @@ export function ChatBot() {
       setMessages((prev) => [...prev, botMsg]);
     } catch (error) {
       console.error('Error al conectar con GuaneñaBot:', error);
-      const errorMsg = {
-        id: Date.now() + 1,
-        sender: 'bot',
-        text: 'No se pudo conectar con GuaneñaBot. Verifica que el backend esté encendido.',
-        isError: true,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
+      if (isSendaQuery) {
+        const sendaMsg = {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: sendaDescription,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, sendaMsg]);
+      } else {
+        const errorMsg = {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: 'No se pudo conectar con GuaneñaBot. Verifica que el backend esté encendido.',
+          isError: true,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, errorMsg]);
+      }
     } finally {
       setLoading(false);
     }

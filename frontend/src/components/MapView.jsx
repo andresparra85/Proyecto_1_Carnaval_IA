@@ -34,17 +34,19 @@ import {
 const PASTO_CENTER = [1.2136, -77.2811];
 
 // Trazo oficial y fidedigno de la Senda del Carnaval de Pasto
-// Recorre desde la concentración en Av. Boyacá pasando por la Plaza del Carnaval,
-// Carrera 27, Plaza de Nariño, Parque Infantil y finalizando en Av. Los Estudiantes / Fuente de la Transparencia
-const SENDA_DEL_CARNAVAL_COORDS = [
-  [1.2055, -77.2755], // Concentración de Carrozas (Av. Boyacá)
-  [1.2085, -77.2768], // Ingreso a la Senda
+// Recorre la ruta tradicional desde la Normal Superior pasando por Av. Santander,
+// Carrera 27, Plaza del Carnaval, Bomboná, Plaza de Nariño, Parque Infantil, Champagnat
+// y finalizando en la Av. Los Estudiantes / Fuente de la Transparencia
+export const SENDA_DEL_CARNAVAL_COORDS = [
+  [1.2012, -77.2748], // Salida Oficial: Escuela Normal Superior / Caracha
+  [1.2055, -77.2755], // Av. Santander / Concentración de Carrozas (Av. Boyacá)
+  [1.2085, -77.2768], // Ingreso a la Carrera 27
   [1.2115, -77.2785], // Plaza del Carnaval y de la Cultura (Cra 27 con Cll 17)
   [1.2130, -77.2780], // Corredor Carrera 27 (Sector Bomboná)
   [1.2145, -77.2782], // Sector Plaza de Nariño
   [1.2168, -77.2805], // Carrera 27 hacia el norte (Calle 20 y 21)
   [1.2205, -77.2850], // Sector Parque Infantil
-  [1.2230, -77.2868], // Salida del Parque Infantil hacia Av. Los Estudiantes
+  [1.2225, -77.2862], // Sector Champagnat (IEM Ciudad de Pasto)
   [1.2250, -77.2885], // Senda Avenida Los Estudiantes
   [1.2275, -77.2910], // Fuente de la Transparencia / Llegada final
 ];
@@ -367,13 +369,55 @@ const getZoneColors = (riskLevel, congestionPercentage) => {
   };
 };
 
-// Componente para capturar clics en el mapa
-function MapClickHandler({ onMapClick }) {
+// Componente para capturar clics en el mapa únicamente cuando se está en modo de reporte o selección de punto
+function MapClickHandler({ onMapClick, isSelectingLocation = false }) {
   useMapEvents({
     click: (e) => {
-      onMapClick(e.latlng.lat, e.latlng.lng);
+      if (isSelectingLocation && onMapClick) {
+        onMapClick(e.latlng.lat, e.latlng.lng);
+      }
     },
   });
+  return null;
+}
+
+// Controlador para enfocar y animar la vista de la Senda del Carnaval
+function SendaController({ onSendaFocus, focusTrigger }) {
+  const map = useMap();
+
+  const handleFocus = useCallback(() => {
+    if (!map) return;
+    try {
+      const bounds = L.latLngBounds(SENDA_DEL_CARNAVAL_COORDS);
+      if (typeof map.flyToBounds === 'function') {
+        map.flyToBounds(bounds, {
+          padding: [50, 50],
+          maxZoom: 16,
+          duration: 1.5,
+        });
+      } else if (typeof map.fitBounds === 'function') {
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+    } catch (err) {
+      console.warn('Error al enfocar la Senda:', err);
+    }
+  }, [map]);
+
+  useEffect(() => {
+    if (focusTrigger > 0) {
+      handleFocus();
+    }
+  }, [focusTrigger, handleFocus]);
+
+  useEffect(() => {
+    const handleEvent = () => {
+      if (onSendaFocus) onSendaFocus();
+      handleFocus();
+    };
+    window.addEventListener('focus-senda', handleEvent);
+    return () => window.removeEventListener('focus-senda', handleEvent);
+  }, [handleFocus, onSendaFocus]);
+
   return null;
 }
 
@@ -556,6 +600,7 @@ export function MapView({
   reports = [],
   zones = [],
   onSelectCoordinates,
+  isSelectingLocation = false,
   selectedLocation,
   selectedDay: propSelectedDay,
   currentCarnivalDay: propCurrentCarnivalDay,
@@ -563,7 +608,21 @@ export function MapView({
   onUserLocationChange,
   navRoute = null,
   setNavRoute,
+  showSenda: propShowSenda,
+  onToggleSenda: propOnToggleSenda,
+  focusSendaTrigger = 0,
 }) {
+  // Estado local para activar o desactivar la capa de la Senda del Carnaval
+  const [internalShowSenda, setInternalShowSenda] = useState(true);
+  const showSenda = propShowSenda !== undefined ? propShowSenda : internalShowSenda;
+  const toggleSenda = () => {
+    if (propOnToggleSenda) {
+      propOnToggleSenda();
+    } else {
+      setInternalShowSenda((prev) => !prev);
+    }
+  };
+
   // Estado local para almacenar la ruta calculada por OSRM
   const [routePath, setRoutePath] = useState(null);
   const [isRouting, setIsRouting] = useState(false);
@@ -794,6 +853,26 @@ export function MapView({
 
         {/* Chips de Categorías (Filtros del Mapa) tipo Píldora (Pill Badges) */}
         <div className="pointer-events-auto flex items-center gap-2 max-w-full overflow-x-auto no-scrollbar py-0.5">
+          {/* Botón directo de activación / desactivación de la Senda del Carnaval */}
+          <button
+            type="button"
+            onClick={toggleSenda}
+            className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-sm ${
+              showSenda
+                ? 'bg-amber-500 hover:bg-amber-400 text-white shadow-md ring-2 ring-amber-400/50'
+                : 'bg-white/90 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+            }`}
+            title={showSenda ? 'Ocultar Senda del Carnaval' : 'Mostrar Senda del Carnaval'}
+          >
+            <span className="text-sm">🎭</span>
+            <span>Senda del Carnaval</span>
+            <span
+              className={`w-2 h-2 rounded-full transition-all ${
+                showSenda ? 'bg-white shadow-sm' : 'bg-slate-400'
+              }`}
+            />
+          </button>
+
           {filterOptions.map((f) => {
             const isActive = activeFilter === f.id;
             return (
@@ -938,7 +1017,18 @@ export function MapView({
         scrollWheelZoom={true}
         className="w-full h-full"
       >
-        <MapClickHandler onMapClick={onSelectCoordinates} />
+        <MapClickHandler
+          onMapClick={onSelectCoordinates}
+          isSelectingLocation={isSelectingLocation}
+        />
+
+        {/* Controlador para centrar y animar la vista sobre la Senda del Carnaval */}
+        <SendaController
+          focusTrigger={focusSendaTrigger}
+          onSendaFocus={() => {
+            if (!showSenda) toggleSenda();
+          }}
+        />
 
         {/* Inicializador de geolocalización automática al cargar */}
         <MapAutoGeolocation onAutoLocate={(map) => handleLocateUser(map, true)} />
@@ -1002,16 +1092,69 @@ export function MapView({
           </>
         )}
 
-        {/* Trazo Fijo Fino de Referencia de la Senda Principal */}
-        <Polyline
-          positions={SENDA_DEL_CARNAVAL_COORDS}
-          pathOptions={{
-            color: '#6366f1',
-            weight: 2,
-            opacity: 0.2,
-            dashArray: '4, 6',
-          }}
-        />
+        {/* Capa Oficial Visible y Destacada de la Senda del Carnaval */}
+        {showSenda && (
+          <>
+            {/* Halo exterior amplio para destacar el recorrido */}
+            <Polyline
+              positions={SENDA_DEL_CARNAVAL_COORDS}
+              pathOptions={{
+                color: '#f59e0b',
+                weight: 12,
+                opacity: 0.35,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+            />
+            {/* Trazo continuo sólido y nítido */}
+            <Polyline
+              positions={SENDA_DEL_CARNAVAL_COORDS}
+              pathOptions={{
+                color: '#d97706',
+                weight: 6,
+                opacity: 0.95,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+            />
+            {/* Eje central luminoso con punteado sutil */}
+            <Polyline
+              positions={SENDA_DEL_CARNAVAL_COORDS}
+              pathOptions={{
+                color: '#fef08a',
+                weight: 2,
+                opacity: 0.9,
+                dashArray: '8, 8',
+              }}
+            />
+
+            {/* Marcador de Salida Oficial: Normal Superior */}
+            <Marker position={SENDA_DEL_CARNAVAL_COORDS[0]}>
+              <Popup>
+                <div className="text-xs p-1 text-slate-800 dark:text-slate-100">
+                  <div className="font-bold text-amber-500 flex items-center gap-1">
+                    <span>🚩</span> Salida Oficial de la Senda
+                  </div>
+                  <p className="font-semibold mt-0.5">Escuela Normal Superior / Av. Boyacá</p>
+                  <p className="text-[10px] text-slate-400">Punto tradicional de concentración y salida</p>
+                </div>
+              </Popup>
+            </Marker>
+
+            {/* Marcador de Llegada Oficial: Champagnat / Fuente de la Transparencia */}
+            <Marker position={SENDA_DEL_CARNAVAL_COORDS[SENDA_DEL_CARNAVAL_COORDS.length - 1]}>
+              <Popup>
+                <div className="text-xs p-1 text-slate-800 dark:text-slate-100">
+                  <div className="font-bold text-rose-500 flex items-center gap-1">
+                    <span>🏁</span> Llegada Oficial de la Senda
+                  </div>
+                  <p className="font-semibold mt-0.5">Champagnat / Fuente de la Transparencia</p>
+                  <p className="text-[10px] text-slate-400">Culminación del desfile y desconcentración</p>
+                </div>
+              </Popup>
+            </Marker>
+          </>
+        )}
 
         {/* Polilínea Dinámica: Trazado oficial del día seleccionado */}
         {currentEvent.route && currentEvent.route.length > 1 && (
