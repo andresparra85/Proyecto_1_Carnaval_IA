@@ -94,6 +94,16 @@ export function App() {
     }
   }, [isAuthenticated, loadDashboardData]);
 
+  // Al iniciar sesión, asegurar que la vista por defecto sea el mapa principal (Senda)
+  useEffect(() => {
+    if (isAuthenticated) {
+      setActiveView('senda');
+      setCalendarOpen(false);
+      setReportsModalOpen(false);
+      setReportModalOpen(false);
+    }
+  }, [isAuthenticated]);
+
   // Manejar selección de coordenadas al hacer clic en el mapa (solo en modo de reporte)
   const handleSelectCoordinates = (lat, lng) => {
     setSelectedLocation({ lat, lng });

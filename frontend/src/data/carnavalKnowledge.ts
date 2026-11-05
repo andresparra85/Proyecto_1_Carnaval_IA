@@ -125,3 +125,4 @@ export function findCarnavalLandmark(query: string): Landmark | null {
 
   return null;
 }
+
