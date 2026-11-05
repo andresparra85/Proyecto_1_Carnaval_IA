@@ -122,15 +122,18 @@ export function Header({
                 </span>
               </div>
 
-              {/* Botón Salir */}
+              {/* Botón Visible de Cerrar Sesión / Salir */}
               <button
+                id="header-logout-btn"
                 type="button"
                 onClick={logout}
-                className="p-2 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition cursor-pointer flex items-center"
-                title="Cerrar sesión"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-rose-500 hover:text-white bg-rose-500/10 hover:bg-rose-600 border border-rose-500/20 hover:border-rose-600 shadow-sm transition-all duration-200 active:scale-95 cursor-pointer"
+                title="Cerrar sesión y volver a la pantalla de Login"
                 aria-label="Cerrar sesión"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">Cerrar Sesión</span>
+                <span className="inline sm:hidden">Salir</span>
               </button>
             </div>
           ) : (

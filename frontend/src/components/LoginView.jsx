@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function LoginView() {
-  const { login, register } = useAuth();
+  const { login, register, loginAsGuest } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -193,6 +193,34 @@ export function LoginView() {
               <span>{isRegister ? 'Crear Cuenta' : 'Iniciar Sesión'}</span>
             )}
           </button>
+
+          {/* Opción de Acceso Rápido / Demo para evaluación directa */}
+          {!isRegister && (
+            <>
+              <div className="relative my-3 flex items-center justify-center">
+                <div className="border-t border-white/10 w-full" />
+                <span className="bg-slate-900/90 px-3 text-[10px] text-slate-400 uppercase tracking-widest font-bold select-none">
+                  o acceso evaluador
+                </span>
+                <div className="border-t border-white/10 w-full" />
+              </div>
+
+              <button
+                id="guest-login-btn"
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  loginAsGuest();
+                }}
+                disabled={loading}
+                className="w-full py-3 px-4 rounded-2xl font-bold text-sm text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-sm group"
+                title="Acceso directo de 1 clic para que el profesor evaluador pueda probar la plataforma sin credenciales"
+              >
+                <Sparkles className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
+                <span>Ingresar como Turista / Demo</span>
+              </button>
+            </>
+          )}
         </form>
 
         {/* Enlace inferior simple para alternar entre Login y Registro */}
@@ -221,20 +249,6 @@ export function LoginView() {
             </p>
           )}
         </div>
-
-        {/* Botón rápido demo para sustentación */}
-        {!isRegister && (
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={handleQuickDemo}
-              disabled={loading}
-              className="text-[11px] text-slate-500 hover:text-amber-400 transition cursor-pointer font-medium"
-            >
-              ⚡ Ingresar con cuenta de demostración
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

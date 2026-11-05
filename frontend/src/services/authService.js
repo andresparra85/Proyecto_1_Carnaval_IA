@@ -82,6 +82,23 @@ export const authService = {
   },
 
   /**
+   * Inicio de sesión rápido como Turista / Demo para evaluación y acceso sin credenciales.
+   * Crea y guarda una sesión válida directamente en localStorage.
+   * @returns {Object} Datos del token y del usuario turista
+   */
+  loginAsGuest: () => {
+    const guestUser = {
+      id: 9999,
+      name: 'Turista / Evaluador',
+      email: 'turista@carnavalia.co',
+      role: 'turista',
+    };
+    const guestToken = `carnavalia_guest_jwt_${Date.now()}`;
+    authService.saveSession(guestToken, guestUser);
+    return { access_token: guestToken, user: guestUser };
+  },
+
+  /**
    * Guarda el token y el perfil de usuario en el almacenamiento local (localStorage).
    */
   saveSession: (token, user) => {

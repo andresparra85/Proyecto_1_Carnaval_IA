@@ -44,6 +44,16 @@ export function AuthProvider({ children }) {
   };
 
   /**
+   * Inicio de sesión rápido como Turista / Demo (1 solo clic, sin credenciales).
+   */
+  const loginAsGuest = () => {
+    const data = authService.loginAsGuest();
+    setUser(data.user);
+    setToken(data.access_token);
+    return data;
+  };
+
+  /**
    * Cierra la sesión activa y limpia el almacenamiento.
    */
   const logout = () => {
@@ -59,6 +69,7 @@ export function AuthProvider({ children }) {
     loading,
     login,
     register,
+    loginAsGuest,
     logout,
   };
 
