@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Sparkles, RotateCcw } from 'lucide-react';
+import { findCarnavalLandmark, CARNAVAL_LANDMARKS } from '../data/carnavalKnowledge';
 
 const QUICK_PROMPTS = [
   '¿Cómo es el recorrido de la Senda?',
+  '¿Dónde queda un puesto de salud?',
   '¿Qué eventos hay el 5 y 6 de enero?',
   '¿Dónde comer frito pastuso y cuy?',
 ];
@@ -13,7 +15,7 @@ export function ChatIA({ onFocusSenda } = {}) {
     {
       id: 1,
       sender: 'bot',
-      text: '¡Qué viva Pasto, carajo! 🎉 Soy GuaneñaBot, tu guía en el Carnaval de Pasto. Pregúntame sobre el recorrido de la Senda, el calendario de eventos o los mejores lugares gastronómicos.',
+      text: '¡Qué viva Pasto, carajo! 🎉 Soy GuaneñaBot, tu guía en el Carnaval de Pasto. Pregúntame sobre el recorrido de la Senda, puntos de salud, eventos del 4 al 6 de enero o los mejores lugares gastronómicos.',
       timestamp: new Date(),
     },
   ]);
@@ -47,14 +49,17 @@ export function ChatIA({ onFocusSenda } = {}) {
     setLoading(true);
 
     const q = userText.toLowerCase();
+    const landmark = findCarnavalLandmark(userText);
+
     const isSendaQuery =
       q.includes('senda') ||
       q.includes('recorrido') ||
       q.includes('ruta') ||
       q.includes('dónde es') ||
-      q.includes('donde es');
+      q.includes('donde es') ||
+      (landmark && (landmark.id === 'desfile_magno' || landmark.id === 'castaneda'));
 
-    // 1. Activar capa y enfocar la Senda del Carnaval si se consulta por el recorrido
+    // 1. Activar capa y enfocar la Senda del Carnaval si se consulta por el recorrido o eventos de la Senda
     if (isSendaQuery) {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
@@ -68,11 +73,63 @@ export function ChatIA({ onFocusSenda } = {}) {
       }
     }
 
+    // 2. Mover cámara y activar capas específicas si se detecta un hito o punto de interés
+    if (landmark) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('focus-landmark', {
+            detail: {
+              coords: landmark.coords,
+              name: landmark.name,
+              category: landmark.category,
+              zoom: landmark.category === 'salud' ? 18 : 17,
+              showSenda: landmark.category === 'evento',
+            },
+          })
+        );
+      }
+    }
+
+    // Descripción contextual enriquecida del hito o evento
+    let landmarkDescription = '';
+    if (landmark) {
+      if (landmark.category === 'salud') {
+        landmarkDescription =
+          `🏥 **${landmark.name}**\n\n` +
+          `${landmark.description}\n\n` +
+          `📍 **Ubicación en el mapa:** He enfocado la cámara en sus coordenadas exactas y activado la visualización de puestos de salud.\n\n` +
+          `💡 *Recomendación:* Mantente hidratado y ubica los socorristas de Cruz Roja y Defensa Civil a lo largo de la Senda.`;
+      } else if (landmark.id === 'desfile_magno') {
+        landmarkDescription =
+          `🤍 **${landmark.name}**\n\n` +
+          `${landmark.description}\n\n` +
+          `🎉 **Día de Blancos:** Las majestuosas Carrozas Monumentales parten desde las 8:00 AM en la Normal Superior y avanzan por toda la Cra 27 hasta Champagnat.\n\n` +
+          `🗺️ *¡He enfocado la Senda completa en el mapa para que sigas el desfile de principio a fin!*`;
+      } else if (landmark.id === 'castaneda') {
+        landmarkDescription =
+          `🎭 **${landmark.name}**\n\n` +
+          `${landmark.description}\n\n` +
+          `🐎 **4 de Enero:** Carretas y jinetes recrean la bienvenida histórica de 1929 abriendo oficialmente el Carnaval en la Senda.\n\n` +
+          `🗺️ *¡He enfocado en el mapa el punto de partida en la Normal Superior!*`;
+      } else if (landmark.id === 'dia_negros') {
+        landmarkDescription =
+          `🖤 **${landmark.name}**\n\n` +
+          `${landmark.description}\n\n` +
+          `🎶 **5 de Enero:** Día de la fraternidad y el juego de la "pintica" con tablados de orquestas en vivo en la Plaza del Carnaval y Plaza de Nariño.\n\n` +
+          `🗺️ *¡Cámara enfocada en el corazón festivo de la Plaza del Carnaval!*`;
+      } else {
+        landmarkDescription =
+          `📍 **${landmark.name}**\n\n` +
+          `${landmark.description}\n\n` +
+          `🗺️ *¡He enfocado sus coordenadas en el mapa interactivo!*`;
+      }
+    }
+
     const sendaDescription =
       '¡Qué viva Pasto, carajo! 🎉 Aquí tienes el recorrido oficial de la Senda del Carnaval (~7 km de arte y emoción):\n\n' +
-      '• 🚩 Punto de partida: Inicia en la Escuela Normal Superior y la Av. Santander / Boyacá.\n' +
+      '• 🚩 Punto de partida: Inicia en la I.E. Normal Superior de Pasto y la Av. Santander / Boyacá.\n' +
       '• 📍 Tramos principales: Recorre la Carrera 27 pasando por Bomboná, la Plaza del Carnaval y la Plaza de Nariño, avanzando por el Parque Infantil y la Av. Los Estudiantes.\n' +
-      '• 🏁 Llegada oficial: Culmina en el sector Champagnat y la Fuente de la Transparencia.\n\n' +
+      '• 🏁 Llegada oficial: Culmina en la Glorieta / Salida Colegio Champagnat.\n\n' +
       '🗺️ ¡He enfocado y resaltado la Senda del Carnaval en el mapa para que veas todo el trayecto!';
 
     try {
@@ -92,7 +149,9 @@ export function ChatIA({ onFocusSenda } = {}) {
       let botResponse = data.response || data.reply || data.message;
 
       if (!botResponse) {
-        botResponse = isSendaQuery ? sendaDescription : 'Sin respuesta';
+        botResponse = landmarkDescription || (isSendaQuery ? sendaDescription : 'Sin respuesta');
+      } else if (landmarkDescription && !botResponse.toLowerCase().includes(landmark.name.toLowerCase().slice(0, 10))) {
+        botResponse = `${botResponse}\n\n${landmarkDescription}`;
       } else if (isSendaQuery && !botResponse.toLowerCase().includes('normal')) {
         botResponse = `${botResponse}\n\n${sendaDescription}`;
       }
@@ -107,7 +166,15 @@ export function ChatIA({ onFocusSenda } = {}) {
       setMessages((prev) => [...prev, botMsg]);
     } catch (error) {
       console.error('Error al conectar con GuaneñaBot:', error);
-      if (isSendaQuery) {
+      if (landmarkDescription) {
+        const contextualMsg = {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: landmarkDescription,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, contextualMsg]);
+      } else if (isSendaQuery) {
         const sendaMsg = {
           id: Date.now() + 1,
           sender: 'bot',

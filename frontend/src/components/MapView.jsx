@@ -411,6 +411,51 @@ function SendaController({ onSendaFocus, focusTrigger }) {
   return null;
 }
 
+// Controlador para enfocar eventos y puntos de interés clave solicitados desde GuaneñaBot
+function LandmarkController({ onActivateCategory, onActivateSenda, showSenda }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const handleFocusLandmark = (e) => {
+      const detail = e.detail;
+      if (!detail || !detail.coords || !map) return;
+
+      const [lat, lng] = detail.coords;
+      const zoom = detail.zoom || 17;
+
+      try {
+        if (typeof map.flyTo === 'function') {
+          map.flyTo([lat, lng], zoom, {
+            animate: true,
+            duration: 1.5,
+          });
+        } else if (typeof map.setView === 'function') {
+          map.setView([lat, lng], zoom);
+        }
+      } catch (err) {
+        console.warn('Error al enfocar hito:', err);
+      }
+
+      if (detail.category && onActivateCategory) {
+        if (detail.category === 'salud') {
+          onActivateCategory('salud');
+        } else if (detail.category === 'plaza' || detail.category === 'evento') {
+          onActivateCategory('todos');
+        }
+      }
+
+      if (detail.showSenda && onActivateSenda && !showSenda) {
+        onActivateSenda();
+      }
+    };
+
+    window.addEventListener('focus-landmark', handleFocusLandmark);
+    return () => window.removeEventListener('focus-landmark', handleFocusLandmark);
+  }, [map, onActivateCategory, onActivateSenda, showSenda]);
+
+  return null;
+}
+
 // Controles flotantes limpios estilo Google Maps (Mi Ubicación + Zoom In/Out)
 function GoogleMapsNavigationControls({ onLocate, isLocating, hasUserGps }) {
   const map = useMap();
@@ -1013,6 +1058,13 @@ export function MapView({
           onSendaFocus={() => {
             if (!showSenda) toggleSenda();
           }}
+        />
+
+        {/* Controlador para enfocar eventos y puntos clave solicitados desde GuaneñaBot */}
+        <LandmarkController
+          onActivateCategory={setActiveFilter}
+          onActivateSenda={toggleSenda}
+          showSenda={showSenda}
         />
 
         {/* Inicializador de geolocalización automática al cargar */}
