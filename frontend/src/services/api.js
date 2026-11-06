@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+// URL base del backend desacoplada, obtenida prioritariamente de variables de entorno con fallback local
+export const BACKEND_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+export const API_BASE_URL = BACKEND_URL.endsWith('/api/v1') ? BACKEND_URL : `${BACKEND_URL}/api/v1`;
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -66,7 +68,7 @@ export const api = {
       const response = await apiClient.post('/chat/', payload);
       return response.data;
     } catch (err) {
-      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
+      const baseUrl = BACKEND_URL.replace(/\/api\/v1\/?$/, '');
       const directResponse = await axios.post(`${baseUrl}/api/chat`, payload);
       return directResponse.data;
     }
@@ -74,4 +76,3 @@ export const api = {
 };
 
 export default api;
-
