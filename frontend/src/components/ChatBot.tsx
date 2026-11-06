@@ -133,7 +133,8 @@ export function ChatBot({ onFocusSenda }: { onFocusSenda?: () => void } = {}) {
       '🗺️ ¡He enfocado y resaltado la Senda del Carnaval en el mapa para que veas todo el trayecto!';
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat', {
+      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
+      const response = await fetch(`${baseUrl}/api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
