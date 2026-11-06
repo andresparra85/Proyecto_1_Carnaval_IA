@@ -1,7 +1,8 @@
 {
-  "name": "frontend",
+  "name": "carnavalia-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "CarnavalIA - Aplicación Web Oficial y Sistema Inteligente del Carnaval de Negros y Blancos de Pasto",
   "type": "module",
   "scripts": {
     "dev": "vite",
