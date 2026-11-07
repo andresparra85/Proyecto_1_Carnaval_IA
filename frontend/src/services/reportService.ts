@@ -2,16 +2,25 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // URL de la API del Backend (FastAPI) y Supabase
 const BACKEND_API_URL = 'http://localhost:8000/api';
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://demo-carnavalia-pasto.supabase.co';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_dummy_anon_key_for_safe_fallback_carnavalia_2026';
+const supabaseUrl = (import.meta.env?.VITE_SUPABASE_URL as string) || 'https://placeholder.supabase.co';
+const supabaseAnonKey = (import.meta.env?.VITE_SUPABASE_ANON_KEY as string) || 'placeholder-anon-key';
 
 export const isSupabaseConfigured = Boolean(
-  import.meta.env.VITE_SUPABASE_URL && 
-  import.meta.env.VITE_SUPABASE_ANON_KEY &&
+  import.meta.env?.VITE_SUPABASE_URL && 
+  import.meta.env?.VITE_SUPABASE_ANON_KEY &&
+  !import.meta.env.VITE_SUPABASE_URL.includes('placeholder') &&
   !import.meta.env.VITE_SUPABASE_URL.includes('demo-carnavalia')
 );
 
-export const supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabaseClient: SupabaseClient;
+try {
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+} catch (err) {
+  console.warn('Advertencia al inicializar cliente Supabase, usando cliente seguro fallback:', err);
+  supabaseClient = createClient('https://placeholder.supabase.co', 'placeholder-anon-key');
+}
+
+export const supabase: SupabaseClient = supabaseClient;
 
 export interface IncidentReportPayload {
   title?: string;

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // URL base del backend desacoplada, obtenida prioritariamente de variables de entorno con fallback local
-export const BACKEND_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+export const BACKEND_URL = ((import.meta.env && import.meta.env.VITE_API_URL) || 'http://localhost:8000').replace(/\/+$/, '');
 export const API_BASE_URL = BACKEND_URL.endsWith('/api/v1') ? BACKEND_URL : `${BACKEND_URL}/api/v1`;
 
 export const apiClient = axios.create({
