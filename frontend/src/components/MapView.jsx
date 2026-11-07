@@ -11,6 +11,7 @@ import {
 } from 'react-leaflet';
 import L from 'leaflet';
 import { CARNIVAL_ROUTES } from '../data/carnivalRoutes';
+import { SENDA_OFICIAL_COORDS, HITOS_SENDA } from '../data/sendaCoords';
 import {
   RESTAURANTS_DATA,
   getRestaurantStatus,
@@ -32,26 +33,9 @@ import {
 // Coordenadas centrales de San Juan de Pasto (Plaza de Nariño / Corazón del Carnaval)
 const PASTO_CENTER = [1.2136, -77.2811];
 
-// Trazado 100% real y georreferenciado de la Senda del Carnaval de Pasto
-export const SENDA_CARNAVAL_COORDS = [
-  [1.21852, -77.26941], // Salida Oficial: I.E. Normal Superior de Pasto
-  [1.21780, -77.27110], // Av. Santander (Calle 4 con Cra 27)
-  [1.21695, -77.27312], // Av. Santander bajando hacia Glorieta
-  [1.21550, -77.27530], // Cra 27 intersección Calle 12
-  [1.21440, -77.27690], // Cra 27 tramo medio
-  [1.21320, -77.27850], // Intersección Cra 27 con Calle 16
-  [1.21250, -77.27960], // Giro hacia Calle 18 (Centro histórico)
-  [1.21310, -77.28080], // Calle 18 aproximación Parque Nariño
-  [1.21380, -77.28180], // Parque Nariño
-  [1.21460, -77.28290], // Calle 19 paso peatonal comercial
-  [1.21540, -77.28410], // Plaza del Carnaval y la Cultura (Punto neurálgico)
-  [1.21420, -77.28550], // Conexión hacia Carrera 25 / Av. Boyacá
-  [1.21280, -77.28690], // Av. Boyacá tramo sur
-  [1.21110, -77.28850], // Calle 12 bajando
-  [1.20920, -77.28990], // Sector Bomboná
-  [1.20780, -77.29130]  // Llegada Oficial: Glorieta / Salida Colegio Champagnat
-];
-export const SENDA_DEL_CARNAVAL_COORDS = SENDA_CARNAVAL_COORDS;
+// Trazado vial milimétrico y continuo de la Senda del Carnaval de Pasto
+export const SENDA_CARNAVAL_COORDS = SENDA_OFICIAL_COORDS;
+export const SENDA_DEL_CARNAVAL_COORDS = SENDA_OFICIAL_COORDS;
 
 // Zonas de congestión y riesgo por defecto (con las 4 ubicaciones clave solicitadas)
 const DEFAULT_CARNAVAL_ZONES = [
@@ -1165,31 +1149,49 @@ export function MapView({
               }}
             />
 
-            {/* Marcador de Salida Oficial: I.E. Normal Superior de Pasto */}
-            <Marker position={SENDA_CARNAVAL_COORDS[0]}>
-              <Popup>
-                <div className="text-xs p-1 text-slate-800 dark:text-slate-100">
-                  <div className="font-bold text-amber-500 flex items-center gap-1">
-                    <span>🚩</span> Salida Oficial de la Senda
+            {/* Hitos Oficiales Clave de la Senda del Carnaval */}
+            {HITOS_SENDA.map((hito) => (
+              <Marker
+                key={`hito-senda-${hito.id}`}
+                position={hito.coords}
+                icon={createCustomIcon(
+                  hito.tipo === 'inicio'
+                    ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                    : hito.tipo === 'fin'
+                    ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'
+                    : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                  hito.tipo === 'inicio' ? '🚩' : hito.tipo === 'fin' ? '🏁' : '📍',
+                  false,
+                  hito.tipo === 'inicio'
+                    ? 'rgba(16, 185, 129, 0.4)'
+                    : hito.tipo === 'fin'
+                    ? 'rgba(239, 68, 68, 0.4)'
+                    : 'rgba(245, 158, 11, 0.4)'
+                )}
+              >
+                <Popup>
+                  <div className="text-xs p-1 min-w-[200px] font-sans">
+                    <div
+                      className={`font-black flex items-center gap-1.5 pb-1 mb-1 border-b ${
+                        hito.tipo === 'inicio'
+                          ? 'text-emerald-400 border-emerald-500/20'
+                          : hito.tipo === 'fin'
+                          ? 'text-rose-400 border-rose-500/20'
+                          : 'text-amber-400 border-amber-500/20'
+                      }`}
+                    >
+                      <span>{hito.tipo === 'inicio' ? '🚩' : hito.tipo === 'fin' ? '🏁' : '📍'}</span>
+                      <span className="text-[11px] uppercase tracking-wide">{hito.nombre}</span>
+                    </div>
+                    <p className="text-xs text-slate-200 mt-1 leading-relaxed">{hito.desc}</p>
+                    <div className="mt-2 text-[10px] text-slate-400 font-mono flex justify-between border-t border-white/10 pt-1">
+                      <span>Lat: {hito.coords[0].toFixed(5)}</span>
+                      <span>Lng: {hito.coords[1].toFixed(5)}</span>
+                    </div>
                   </div>
-                  <p className="font-semibold mt-0.5">I.E. Normal Superior de Pasto</p>
-                  <p className="text-[10px] text-slate-400">Punto oficial de inicio y concentración</p>
-                </div>
-              </Popup>
-            </Marker>
-
-            {/* Marcador de Llegada Oficial: Glorieta / Salida Colegio Champagnat */}
-            <Marker position={SENDA_CARNAVAL_COORDS[SENDA_CARNAVAL_COORDS.length - 1]}>
-              <Popup>
-                <div className="text-xs p-1 text-slate-800 dark:text-slate-100">
-                  <div className="font-bold text-rose-500 flex items-center gap-1">
-                    <span>🏁</span> Llegada Oficial de la Senda
-                  </div>
-                  <p className="font-semibold mt-0.5">Glorieta / Salida Colegio Champagnat</p>
-                  <p className="text-[10px] text-slate-400">Culminación del desfile y desconcentración</p>
-                </div>
-              </Popup>
-            </Marker>
+                </Popup>
+              </Marker>
+            ))}
           </>
         )}
 

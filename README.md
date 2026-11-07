@@ -95,3 +95,4 @@ frontend/
 La aplicación cuenta con protección estricta de rutas:
 - La vista inicial por defecto es la pantalla de **Login**.
 - Para facilitar la evaluación académica y sustentación, se incluye el botón **"Ingresar como Turista / Demo"**, el cual permite probar todas las capacidades interactivas en un solo clic sin necesidad de credenciales previas ni conexión a backend externo.
+
