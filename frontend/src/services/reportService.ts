@@ -257,3 +257,4 @@ export default {
   fetchActiveReports,
   supabase,
 };
+

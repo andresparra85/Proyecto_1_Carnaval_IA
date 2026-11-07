@@ -58,17 +58,17 @@ export function AuthModal({
       onClose();
     } catch (err) {
       console.error('Error de autenticación:', err);
-      const detail = err.response?.data?.detail;
+      const detail = err.detail || err.response?.data?.detail;
       if (typeof detail === 'string') {
         setError(detail);
       } else if (Array.isArray(detail) && detail[0]?.msg) {
         setError(detail[0].msg);
-      } else if (err.response?.status === 401) {
+      } else if (err.status === 401 || err.response?.status === 401) {
         setError('Credenciales incorrectas. Verifica tu correo y contraseña.');
-      } else if (err.response?.status === 400) {
+      } else if (err.status === 400 || err.response?.status === 400) {
         setError('Este correo electrónico ya está registrado.');
       } else {
-        setError('No fue posible conectar con el servidor. Intenta de nuevo.');
+        setError(err.message || 'No fue posible conectar con el servidor. Intenta de nuevo.');
       }
     } finally {
       setLoading(false);

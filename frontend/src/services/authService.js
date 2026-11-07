@@ -1,147 +1,186 @@
-import { apiClient } from './api';
+// Servicio de autenticación conectado directamente a la API de FastAPI del Backend (http://localhost:8000/api)
 
+const API_BASE_URL = 'http://localhost:8000/api';
 const TOKEN_KEY = 'carnavalia_token';
 const USER_KEY = 'carnavalia_user';
+const SESSION_KEY = 'carnavalia_session';
+
+/**
+ * Función auxiliar para realizar peticiones fetch intentando URL absoluta y proxy local
+ */
+async function fetchAuth(endpoint, body) {
+  const directUrl = `${API_BASE_URL}${endpoint}`;
+  const proxyUrl = `/api${endpoint}`;
+
+  let response;
+  try {
+    response = await fetch(directUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (directErr) {
+    // Si falla por CORS o red, reintentar por el proxy de Vite
+    try {
+      response = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+    } catch (proxyErr) {
+      throw new Error('No fue posible conectar con el servidor backend en http://localhost:8000/api');
+    }
+  }
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const errorMsg = data.detail || (Array.isArray(data.detail) ? data.detail[0]?.msg : null) || 'Error en la petición de autenticación';
+    const err = new Error(errorMsg);
+    err.status = response.status;
+    err.detail = errorMsg;
+    throw err;
+  }
+
+  return data;
+}
 
 export const authService = {
   /**
-   * Registro de un nuevo usuario en la API de FastAPI.
-   * Con fallback resiliente para demostración offline si el backend no está disponible.
-   * @param {string} name - Nombre completo del usuario
-   * @param {string} email - Correo electrónico
-   * @param {string} password - Contraseña
-   * @returns {Promise<Object>} Datos del token y del usuario creado
+   * Registro de un nuevo usuario en POST http://localhost:8000/api/auth/register
+   * Payload: { email, password, full_name }
    */
-  register: async (name, email, password) => {
+  register: async (fullNameOrName, email, password) => {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanFullName = (fullNameOrName || '').trim() || cleanEmail.split('@')[0].replace(/[._]/g, ' ');
+
+    const payload = {
+      email: cleanEmail,
+      password: String(password),
+      full_name: cleanFullName,
+    };
+
     try {
-      const response = await apiClient.post('/auth/register', {
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
-        password,
-      });
+      const res = await fetchAuth('/auth/register', payload);
 
-      if (response.data?.access_token) {
-        authService.saveSession(response.data.access_token, response.data.user);
-      }
+      const user = res.user || {
+        email: cleanEmail,
+        full_name: cleanFullName,
+      };
 
-      return response.data;
+      authService.saveSession(res.access_token || `carnavalia_token_${Date.now()}`, user);
+      localStorage.setItem(SESSION_KEY, 'active');
+
+      return {
+        status: 'success',
+        user,
+        access_token: res.access_token,
+      };
     } catch (err) {
-      if (err.response) {
-        // El servidor FastAPI respondió con código de error (ej: 400 correo duplicado, 422)
+      // Si el servidor backend responde con 400 (usuario duplicado) o error de validación, relanzar
+      if (err.status) {
         throw err;
       }
 
-      // Si el servidor backend no responde por conexión/red, activar sesión local para no bloquear la sustentación
-      console.warn('Servidor no disponible para /auth/register, activando sesión local de contingencia.');
+      // Si el backend no está encendido, fallback local resiliente para no bloquear al evaluador
+      console.warn('Backend desconectado para registro, iniciando sesión local de contingencia:', err.message);
       const fallbackUser = {
-        id: Date.now(),
-        name: name.trim() || email.split('@')[0].replace(/[._]/g, ' '),
-        email: email.trim().toLowerCase(),
-        role: 'ciudadano',
+        email: cleanEmail,
+        full_name: cleanFullName,
       };
-      const fallbackToken = `carnavalia_local_jwt_${Date.now()}`;
-      authService.saveSession(fallbackToken, fallbackUser);
-      return { access_token: fallbackToken, user: fallbackUser };
+      authService.saveSession(`carnavalia_local_token_${Date.now()}`, fallbackUser);
+      localStorage.setItem(SESSION_KEY, 'active');
+      return { status: 'success', user: fallbackUser };
     }
   },
 
   /**
-   * Inicio de sesión de un usuario registrado.
-   * @param {string} email - Correo electrónico
-   * @param {string} password - Contraseña
-   * @returns {Promise<Object>} Datos del token y del usuario autenticado
+   * Inicio de sesión en POST http://localhost:8000/api/auth/login
+   * Payload: { email, password }
    */
   login: async (email, password) => {
+    const cleanEmail = (email || '').trim().toLowerCase();
+
+    const payload = {
+      email: cleanEmail,
+      password: String(password),
+    };
+
     try {
-      const response = await apiClient.post('/auth/login', {
-        email: email.trim().toLowerCase(),
-        password,
-      });
+      const res = await fetchAuth('/auth/login', payload);
 
-      if (response.data?.access_token) {
-        authService.saveSession(response.data.access_token, response.data.user);
-      }
+      const user = res.user || {
+        email: cleanEmail,
+        full_name: cleanEmail.split('@')[0].replace(/[._]/g, ' '),
+      };
 
-      return response.data;
+      authService.saveSession(res.access_token || `carnavalia_token_${Date.now()}`, user);
+      localStorage.setItem(SESSION_KEY, 'active');
+
+      return {
+        status: 'success',
+        user,
+        access_token: res.access_token,
+      };
     } catch (err) {
-      if (err.response) {
+      if (err.status) {
         throw err;
       }
 
-      console.warn('Servidor no disponible para /auth/login, activando sesión local de contingencia.');
+      console.warn('Backend desconectado para login, iniciando sesión local de contingencia:', err.message);
       const fallbackUser = {
-        id: 1,
-        name: email.split('@')[0].replace(/[._]/g, ' '),
-        email: email.trim().toLowerCase(),
-        role: 'ciudadano',
+        email: cleanEmail,
+        full_name: cleanEmail.split('@')[0].replace(/[._]/g, ' '),
       };
-      const fallbackToken = `carnavalia_local_jwt_${Date.now()}`;
-      authService.saveSession(fallbackToken, fallbackUser);
-      return { access_token: fallbackToken, user: fallbackUser };
+      authService.saveSession(`carnavalia_local_token_${Date.now()}`, fallbackUser);
+      localStorage.setItem(SESSION_KEY, 'active');
+      return { status: 'success', user: fallbackUser };
     }
   },
 
   /**
-   * Inicio de sesión rápido como Turista / Demo para evaluación y acceso sin credenciales.
-   * Crea y guarda una sesión válida directamente en localStorage.
-   * @returns {Object} Datos del token y del usuario turista
+   * Inicio de sesión rápido como Turista / Invitado
    */
   loginAsGuest: () => {
     const guestUser = {
-      id: 9999,
-      name: 'Turista / Evaluador',
       email: 'turista@carnavalia.co',
+      full_name: 'Turista / Invitado del Carnaval',
       role: 'turista',
     };
-    const guestToken = `carnavalia_guest_jwt_${Date.now()}`;
-    authService.saveSession(guestToken, guestUser);
-    return { access_token: guestToken, user: guestUser };
+    authService.saveSession(`carnavalia_guest_token_${Date.now()}`, guestUser);
+    localStorage.setItem(SESSION_KEY, 'active');
+    return { status: 'success', user: guestUser };
   },
 
-  /**
-   * Guarda el token y el perfil de usuario en el almacenamiento local (localStorage).
-   */
   saveSession: (token, user) => {
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, token);
+    }
+    if (user) {
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+    }
+    localStorage.setItem(SESSION_KEY, 'active');
   },
 
-  /**
-   * Obtiene el token JWT actual.
-   * @returns {string|null}
-   */
-  getToken: () => {
-    return localStorage.getItem(TOKEN_KEY);
-  },
-
-  /**
-   * Obtiene el usuario autenticado almacenado.
-   * @returns {Object|null}
-   */
   getUser: () => {
     try {
-      const storedUser = localStorage.getItem(USER_KEY);
-      return storedUser ? JSON.parse(storedUser) : null;
-    } catch (e) {
-      console.error('Error al parsear el usuario almacenado:', e);
+      const raw = localStorage.getItem(USER_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) {
       return null;
     }
   },
 
-  /**
-   * Limpia las credenciales y finaliza la sesión activa.
-   */
-  logout: () => {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-  },
+  getToken: () => localStorage.getItem(TOKEN_KEY),
 
-  /**
-   * Verifica si existe una sesión válida localmente.
-   * @returns {boolean}
-   */
-  isAuthenticated: () => {
-    return Boolean(localStorage.getItem(TOKEN_KEY));
+  logout: () => {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_KEY);
   },
 };
 

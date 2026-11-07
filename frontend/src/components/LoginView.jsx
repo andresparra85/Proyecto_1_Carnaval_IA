@@ -41,17 +41,17 @@ export function LoginView() {
       localStorage.setItem('carnavalia_session', 'active');
     } catch (err) {
       console.error('Error de autenticación:', err);
-      const detail = err.response?.data?.detail;
+      const detail = err.detail || err.response?.data?.detail;
       if (typeof detail === 'string') {
         setError(detail);
       } else if (Array.isArray(detail) && detail[0]?.msg) {
         setError(detail[0].msg);
-      } else if (err.response?.status === 401) {
+      } else if (err.status === 401 || err.response?.status === 401) {
         setError('Credenciales incorrectas. Verifica tu correo y contraseña.');
-      } else if (err.response?.status === 400) {
+      } else if (err.status === 400 || err.response?.status === 400) {
         setError('Este correo electrónico ya se encuentra registrado.');
       } else {
-        setError('No fue posible conectar con el servidor. Intenta de nuevo.');
+        setError(err.message || 'No fue posible conectar con el servidor. Intenta de nuevo.');
       }
     } finally {
       setLoading(false);
@@ -203,29 +203,25 @@ export function LoginView() {
           </button>
 
           {/* Opción de Acceso Rápido / Demo para evaluación directa */}
-          {!isRegister && (
-            <>
-              <div className="relative my-3 flex items-center justify-center">
-                <div className="border-t border-white/10 w-full" />
-                <span className="bg-slate-900/90 px-3 text-[10px] text-slate-400 uppercase tracking-widest font-bold select-none">
-                  o acceso evaluador
-                </span>
-                <div className="border-t border-white/10 w-full" />
-              </div>
+          <div className="relative my-3 flex items-center justify-center">
+            <div className="border-t border-white/10 w-full" />
+            <span className="bg-slate-900/90 px-3 text-[10px] text-slate-400 uppercase tracking-widest font-bold select-none">
+              o acceso directo
+            </span>
+            <div className="border-t border-white/10 w-full" />
+          </div>
 
-              <button
-                id="guest-login-btn"
-                type="button"
-                onClick={handleGuestLogin}
-                disabled={loading}
-                className="w-full py-3 px-4 rounded-2xl font-bold text-sm text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-sm group"
-                title="Acceso directo de 1 clic para que el profesor evaluador pueda probar la plataforma sin credenciales"
-              >
-                <Sparkles className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
-                <span>Ingresar como Turista / Demo</span>
-              </button>
-            </>
-          )}
+          <button
+            id="guest-login-btn"
+            type="button"
+            onClick={handleGuestLogin}
+            disabled={loading}
+            className="w-full py-3 px-4 rounded-2xl font-bold text-sm text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-sm group"
+            title="Entrar como Turista / Invitado sin credenciales para acceso inmediato"
+          >
+            <Sparkles className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
+            <span>Entrar como Turista / Invitado</span>
+          </button>
         </form>
 
         {/* Enlace inferior simple para alternar entre Login y Registro */}

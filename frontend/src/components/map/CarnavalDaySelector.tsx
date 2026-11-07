@@ -119,3 +119,4 @@ export function DayCameraController({ selectedDay }: { selectedDay: string }) {
 }
 
 export default CarnavalDaySelector;
+

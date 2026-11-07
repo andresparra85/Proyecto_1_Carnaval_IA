@@ -31,37 +31,49 @@ export function AuthProvider({ children }) {
   }, []);
 
   /**
-   * Inicia sesión con credenciales y actualiza el estado global.
+   * Inicia sesión con credenciales y da acceso inmediato a la app.
    */
   const login = async (email, password) => {
     const data = await authService.login(email, password);
     localStorage.setItem('carnavalia_session', 'active');
-    setUser(data.user);
-    setToken(data.access_token);
+    if (data?.user) {
+      localStorage.setItem('carnavalia_user', JSON.stringify(data.user));
+      setUser(data.user);
+    }
+    if (data?.access_token) {
+      setToken(data.access_token);
+    }
     setIsAuthenticated(true);
     return data;
   };
 
   /**
-   * Registra un nuevo usuario y actualiza el estado global.
+   * Registra un nuevo usuario en el backend y da acceso inmediato a la app.
    */
-  const register = async (name, email, password) => {
-    const data = await authService.register(name, email, password);
+  const register = async (fullName, email, password) => {
+    const data = await authService.register(fullName, email, password);
     localStorage.setItem('carnavalia_session', 'active');
-    setUser(data.user);
-    setToken(data.access_token);
+    if (data?.user) {
+      localStorage.setItem('carnavalia_user', JSON.stringify(data.user));
+      setUser(data.user);
+    }
+    if (data?.access_token) {
+      setToken(data.access_token);
+    }
     setIsAuthenticated(true);
     return data;
   };
 
   /**
-   * Inicio de sesión rápido como Turista / Demo (1 solo clic, sin credenciales).
+   * Entrada directa como Turista / Invitado (acceso inmediato sin trabas).
    */
   const loginAsGuest = () => {
     const data = authService.loginAsGuest();
     localStorage.setItem('carnavalia_session', 'active');
-    setUser(data.user);
-    setToken(data.access_token);
+    if (data?.user) {
+      localStorage.setItem('carnavalia_user', JSON.stringify(data.user));
+      setUser(data.user);
+    }
     setIsAuthenticated(true);
     return data;
   };
@@ -72,6 +84,8 @@ export function AuthProvider({ children }) {
   const logout = () => {
     authService.logout();
     localStorage.removeItem('carnavalia_session');
+    localStorage.removeItem('carnavalia_user');
+    localStorage.removeItem('carnavalia_token');
     setUser(null);
     setToken(null);
     setIsAuthenticated(false);
@@ -98,5 +112,3 @@ export function useAuth() {
   }
   return context;
 }
-
-export default AuthContext;

@@ -455,20 +455,18 @@ function GoogleMapsNavigationControls({ onLocate, isLocating, hasUserGps }) {
       <button
         type="button"
         onClick={() => onLocate(map)}
-        className={`p-3 rounded-xl bg-white shadow-lg hover:shadow-xl border border-slate-200 transition-all duration-200 active:scale-95 flex items-center justify-center group ${
-          isLocating
+        className={`p-3 rounded-xl bg-white shadow-lg hover:shadow-xl border border-slate-200 transition-all duration-200 active:scale-95 flex items-center justify-center group ${isLocating
             ? 'text-blue-600 ring-2 ring-blue-500/40'
             : hasUserGps
-            ? 'text-blue-600'
-            : 'text-slate-700 hover:text-blue-600'
-        }`}
+              ? 'text-blue-600'
+              : 'text-slate-700 hover:text-blue-600'
+          }`}
         title="Centrar en mi ubicación actual (GPS en tiempo real)"
         aria-label="Mi Ubicación"
       >
         <Locate
-          className={`w-5 h-5 ${
-            isLocating ? 'animate-spin text-blue-500' : 'group-hover:scale-110 transition-transform'
-          }`}
+          className={`w-5 h-5 ${isLocating ? 'animate-spin text-blue-500' : 'group-hover:scale-110 transition-transform'
+            }`}
         />
       </button>
 
@@ -916,19 +914,17 @@ export function MapView({
           <button
             type="button"
             onClick={toggleSenda}
-            className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-sm ${
-              showSenda
+            className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-sm ${showSenda
                 ? 'bg-amber-500 hover:bg-amber-400 text-white shadow-md ring-2 ring-amber-400/50'
                 : 'bg-white/90 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
-            }`}
+              }`}
             title={showSenda ? 'Ocultar Senda del Carnaval' : 'Mostrar Senda del Carnaval'}
           >
             <span className="text-sm">🎭</span>
             <span>Senda del Carnaval</span>
             <span
-              className={`w-2 h-2 rounded-full transition-all ${
-                showSenda ? 'bg-white shadow-sm' : 'bg-slate-400'
-              }`}
+              className={`w-2 h-2 rounded-full transition-all ${showSenda ? 'bg-white shadow-sm' : 'bg-slate-400'
+                }`}
             />
           </button>
 
@@ -939,11 +935,10 @@ export function MapView({
                 key={f.id}
                 type="button"
                 onClick={() => setActiveFilter(f.id)}
-                className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-sm ${
-                  isActive
+                className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-sm ${isActive
                     ? 'bg-slate-900 dark:bg-gradient-to-r dark:from-amber-500 dark:to-orange-500 text-white shadow-md font-semibold'
                     : 'bg-white/90 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
-                }`}
+                  }`}
               >
                 <span className="text-sm">{f.icon}</span>
                 <span>{f.label}</span>
@@ -1243,27 +1238,26 @@ export function MapView({
                   hito.tipo === 'inicio'
                     ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
                     : hito.tipo === 'fin'
-                    ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'
-                    : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                      ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'
+                      : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                   hito.tipo === 'inicio' ? '🚩' : hito.tipo === 'fin' ? '🏁' : '📍',
                   false,
                   hito.tipo === 'inicio'
                     ? 'rgba(16, 185, 129, 0.4)'
                     : hito.tipo === 'fin'
-                    ? 'rgba(239, 68, 68, 0.4)'
-                    : 'rgba(245, 158, 11, 0.4)'
+                      ? 'rgba(239, 68, 68, 0.4)'
+                      : 'rgba(245, 158, 11, 0.4)'
                 )}
               >
                 <Popup>
                   <div className="text-xs p-1 min-w-[200px] font-sans">
                     <div
-                      className={`font-black flex items-center gap-1.5 pb-1 mb-1 border-b ${
-                        hito.tipo === 'inicio'
+                      className={`font-black flex items-center gap-1.5 pb-1 mb-1 border-b ${hito.tipo === 'inicio'
                           ? 'text-emerald-400 border-emerald-500/20'
                           : hito.tipo === 'fin'
-                          ? 'text-rose-400 border-rose-500/20'
-                          : 'text-amber-400 border-amber-500/20'
-                      }`}
+                            ? 'text-rose-400 border-rose-500/20'
+                            : 'text-amber-400 border-amber-500/20'
+                        }`}
                     >
                       <span>{hito.tipo === 'inicio' ? '🚩' : hito.tipo === 'fin' ? '🏁' : '📍'}</span>
                       <span className="text-[11px] uppercase tracking-wide">{hito.nombre}</span>
@@ -1542,11 +1536,11 @@ export function MapView({
             const status = getRestaurantStatus(restaurant.hours);
             const distKm = userGps
               ? calculateDistanceKm(
-                  userGps.lat,
-                  userGps.lng,
-                  restaurant.latitude,
-                  restaurant.longitude
-                )
+                userGps.lat,
+                userGps.lng,
+                restaurant.latitude,
+                restaurant.longitude
+              )
               : null;
             const distStr = formatDistance(distKm);
 
@@ -1617,13 +1611,12 @@ export function MapView({
                     {report.category}
                   </span>
                   <span
-                    className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${
-                      report.ai_risk_level === 'Alto'
+                    className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${report.ai_risk_level === 'Alto'
                         ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
                         : report.ai_risk_level === 'Medio'
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                        : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                    }`}
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                          : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                      }`}
                   >
                     Riesgo {report.ai_risk_level || 'Bajo'}
                   </span>
