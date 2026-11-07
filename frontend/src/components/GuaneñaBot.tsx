@@ -1,3 +1,3 @@
-export * from './ChatBot';
-export { default } from './ChatBot';
-export { ChatBot as GuaneñaBot, ChatBot as GuanenaBot, ChatBot as ChatIA } from './ChatBot';
+export * from './chat/GuanenaBot';
+export { default } from './chat/GuanenaBot';
+export { GuanenaBot as GuaneñaBot, GuanenaBot, GuanenaBot as ChatBot } from './chat/GuanenaBot';
