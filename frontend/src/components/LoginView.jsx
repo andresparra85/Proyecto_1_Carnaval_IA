@@ -38,6 +38,7 @@ export function LoginView() {
       } else {
         await login(trimmedEmail, trimmedPassword);
       }
+      localStorage.setItem('carnavalia_session', 'active');
     } catch (err) {
       console.error('Error de autenticación:', err);
       const detail = err.response?.data?.detail;
@@ -69,12 +70,19 @@ export function LoginView() {
     setLoading(true);
     try {
       await login('juan@pasto.gov.co', 'Password123!');
+      localStorage.setItem('carnavalia_session', 'active');
     } catch (err) {
       console.error(err);
       setError('Error al ingresar con la cuenta de demostración.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGuestLogin = () => {
+    setError(null);
+    localStorage.setItem('carnavalia_session', 'active');
+    loginAsGuest();
   };
 
   return (
@@ -208,10 +216,7 @@ export function LoginView() {
               <button
                 id="guest-login-btn"
                 type="button"
-                onClick={() => {
-                  setError(null);
-                  loginAsGuest();
-                }}
+                onClick={handleGuestLogin}
                 disabled={loading}
                 className="w-full py-3 px-4 rounded-2xl font-bold text-sm text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-sm group"
                 title="Acceso directo de 1 clic para que el profesor evaluador pueda probar la plataforma sin credenciales"

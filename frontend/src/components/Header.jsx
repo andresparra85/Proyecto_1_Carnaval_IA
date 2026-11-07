@@ -13,6 +13,11 @@ export function Header({
 }) {
   const { user, isAuthenticated, logout } = useAuth();
 
+  const handleLogout = () => {
+    localStorage.removeItem('carnavalia_session');
+    logout();
+  };
+
   return (
     <header className="sticky top-0 z-30 w-full bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 px-4 sm:px-6 py-2.5 transition-all shadow-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
@@ -126,7 +131,7 @@ export function Header({
               <button
                 id="header-logout-btn"
                 type="button"
-                onClick={logout}
+                onClick={handleLogout}
                 className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-rose-500 hover:text-white bg-rose-500/10 hover:bg-rose-600 border border-rose-500/20 hover:border-rose-600 shadow-sm transition-all duration-200 active:scale-95 cursor-pointer"
                 title="Cerrar sesión y volver a la pantalla de Login"
                 aria-label="Cerrar sesión"

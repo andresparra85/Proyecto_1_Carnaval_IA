@@ -4,21 +4,28 @@ import { authService } from '../services/authService';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return typeof window !== 'undefined' && localStorage.getItem('carnavalia_session') === 'active';
+  });
   const [user, setUser] = useState(() => authService.getUser());
   const [token, setToken] = useState(() => authService.getToken());
   const [loading, setLoading] = useState(true);
 
   // Sincronizar estado inicial al montar la aplicación
   useEffect(() => {
+    const isSessionActive = localStorage.getItem('carnavalia_session') === 'active';
     const storedUser = authService.getUser();
     const storedToken = authService.getToken();
 
-    if (storedUser && storedToken) {
-      setUser(storedUser);
-      setToken(storedToken);
+    if (isSessionActive) {
+      setIsAuthenticated(true);
+      if (storedUser) setUser(storedUser);
+      if (storedToken) setToken(storedToken);
     } else {
+      setIsAuthenticated(false);
       setUser(null);
       setToken(null);
+      localStorage.removeItem('carnavalia_session');
     }
     setLoading(false);
   }, []);
@@ -28,8 +35,10 @@ export function AuthProvider({ children }) {
    */
   const login = async (email, password) => {
     const data = await authService.login(email, password);
+    localStorage.setItem('carnavalia_session', 'active');
     setUser(data.user);
     setToken(data.access_token);
+    setIsAuthenticated(true);
     return data;
   };
 
@@ -38,8 +47,10 @@ export function AuthProvider({ children }) {
    */
   const register = async (name, email, password) => {
     const data = await authService.register(name, email, password);
+    localStorage.setItem('carnavalia_session', 'active');
     setUser(data.user);
     setToken(data.access_token);
+    setIsAuthenticated(true);
     return data;
   };
 
@@ -48,8 +59,10 @@ export function AuthProvider({ children }) {
    */
   const loginAsGuest = () => {
     const data = authService.loginAsGuest();
+    localStorage.setItem('carnavalia_session', 'active');
     setUser(data.user);
     setToken(data.access_token);
+    setIsAuthenticated(true);
     return data;
   };
 
@@ -58,14 +71,16 @@ export function AuthProvider({ children }) {
    */
   const logout = () => {
     authService.logout();
+    localStorage.removeItem('carnavalia_session');
     setUser(null);
     setToken(null);
+    setIsAuthenticated(false);
   };
 
   const value = {
     user,
     token,
-    isAuthenticated: Boolean(token && user),
+    isAuthenticated,
     loading,
     login,
     register,
