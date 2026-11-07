@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Marker, Popup, Polyline } from 'react-leaflet';
+import React, { useState, useEffect } from 'react';
+import { Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { PASTO_POIS, PointOfInterest, LatLngTuple, dispatchGuanenaAction } from '../../data/pastoPOIs';
 
 // Resuelve el error clásico de Leaflet con Vite donde las rutas de los iconos por defecto se rompen
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -53,6 +54,94 @@ export function GuardedNavigationPolyline({ navigationPath }: { navigationPath: 
       pathOptions={{ color: '#2563eb', weight: 6, opacity: 0.85 }}
     />
   );
+}
+
+/**
+ * Capa de marcadores interactivos georreferenciados para Pasto (Restaurantes, Baños, CAIs, Salud)
+ */
+export function PastoPoiMarkersLayer({
+  activeCategory = 'todos',
+  onSelectPoi,
+}: {
+  activeCategory?: string;
+  onSelectPoi?: (poi: PointOfInterest) => void;
+}) {
+  const filtered = activeCategory === 'todos'
+    ? PASTO_POIS
+    : PASTO_POIS.filter((p) => p.category === activeCategory || (activeCategory === 'banio' && p.category === 'bano'));
+
+  return (
+    <>
+      {filtered.map((poi) => (
+        <Marker
+          key={poi.id}
+          position={poi.coords}
+          eventHandlers={{
+            click: () => onSelectPoi && onSelectPoi(poi),
+          }}
+        >
+          <Popup>
+            <div className="p-1 font-sans text-xs">
+              <strong className="block text-amber-500 font-bold">{poi.name}</strong>
+              <p className="text-slate-600 dark:text-slate-300 my-1">{poi.description}</p>
+              <span className="text-[10px] text-slate-400 block">{poi.address}</span>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+    </>
+  );
+}
+
+/**
+ * Hook para sincronizar comandos conversacionales de GuaneñaBot (FOCUS_CATEGORY, SHOW_SENDA, NAVIGATE_TO)
+ */
+export function useConversationalMapActions({
+  onFilterCategory,
+  onShowSenda,
+}: {
+  onFilterCategory?: (category: string) => void;
+  onShowSenda?: () => void;
+} = {}) {
+  const map = useMap();
+
+  useEffect(() => {
+    const handleGuanena = (e: any) => {
+      const detail = e.detail || {};
+      const actionType = detail.type || e.type;
+
+      if (actionType === 'FOCUS_CATEGORY') {
+        const cat = detail.category || 'todos';
+        if (onFilterCategory) onFilterCategory(cat);
+        const target = PASTO_POIS.find((p) => p.category === cat || (cat === 'banio' && p.category === 'bano'));
+        if (target && map?.flyTo) {
+          map.flyTo(target.coords, 16, { animate: true, duration: 1.5 });
+        }
+      } else if (actionType === 'SHOW_SENDA') {
+        if (onShowSenda) onShowSenda();
+        if (map?.flyTo) {
+          map.flyTo([1.2140, -77.2820], 15, { animate: true, duration: 1.5 });
+        }
+      } else if (actionType === 'NAVIGATE_TO') {
+        const coords = detail.targetCoords || detail.coords;
+        if (coords && map?.flyTo) {
+          map.flyTo(coords, 17, { animate: true, duration: 1.5 });
+        }
+      }
+    };
+
+    window.addEventListener('FOCUS_CATEGORY', handleGuanena);
+    window.addEventListener('SHOW_SENDA', handleGuanena);
+    window.addEventListener('NAVIGATE_TO', handleGuanena);
+    window.addEventListener('guanena-action', handleGuanena);
+
+    return () => {
+      window.removeEventListener('FOCUS_CATEGORY', handleGuanena);
+      window.removeEventListener('SHOW_SENDA', handleGuanena);
+      window.removeEventListener('NAVIGATE_TO', handleGuanena);
+      window.removeEventListener('guanena-action', handleGuanena);
+    };
+  }, [map, onFilterCategory, onShowSenda]);
 }
 
 /**

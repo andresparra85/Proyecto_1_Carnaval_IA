@@ -460,7 +460,7 @@ function LandmarkController({ onActivateCategory, onActivateSenda, showSenda }) 
     };
 
     const handleCategoryFilter = (e) => {
-      const cat = e.detail?.category?.toLowerCase();
+      const cat = (e.detail?.category || e.detail)?.toLowerCase();
       if (cat && onActivateCategory) {
         if (cat === 'bano' || cat === 'banio') onActivateCategory('banio');
         else if (cat === 'cai' || cat === 'policia') onActivateCategory('policia');
@@ -469,13 +469,52 @@ function LandmarkController({ onActivateCategory, onActivateSenda, showSenda }) 
       }
     };
 
+    // Manejador central de acciones e intenciones conversacionales despachadas por GuaneñaBot
+    const handleGuanenaAction = (e) => {
+      const detail = e.detail || {};
+      const actionType = detail.type || e.type;
+
+      if (actionType === 'FOCUS_CATEGORY') {
+        const cat = (detail.category || '').toLowerCase();
+        if (onActivateCategory) {
+          if (cat === 'bano' || cat === 'banio') onActivateCategory('banio');
+          else if (cat === 'cai' || cat === 'policia') onActivateCategory('policia');
+          else if (cat === 'restaurante' || cat === 'restaurantes') onActivateCategory('restaurantes');
+          else onActivateCategory(cat || 'todos');
+        }
+        // Centrar y mover la cámara suavemente con flyTo al primer POI de esa categoría
+        const targetPoi = PASTO_POIS.find((p) => p.category === cat || (cat === 'banio' && p.category === 'bano'));
+        if (targetPoi && map && typeof map.flyTo === 'function') {
+          map.flyTo(targetPoi.coords, 16, { animate: true, duration: 1.5 });
+        }
+      } else if (actionType === 'SHOW_SENDA') {
+        if (onActivateSenda && !showSenda) onActivateSenda();
+        if (map && typeof map.flyTo === 'function') {
+          map.flyTo([1.2140, -77.2820], 15, { animate: true, duration: 1.5 });
+        }
+      } else if (actionType === 'NAVIGATE_TO') {
+        const target = detail.targetCoords || detail.coords;
+        if (target && map && typeof map.flyTo === 'function') {
+          map.flyTo(target, 17, { animate: true, duration: 1.5 });
+        }
+      }
+    };
+
     window.addEventListener('focus-landmark', handleFocusLandmark);
     window.addEventListener('highlight-poi', handleFocusLandmark);
     window.addEventListener('show-poi-category', handleCategoryFilter);
+    window.addEventListener('FOCUS_CATEGORY', handleGuanenaAction);
+    window.addEventListener('SHOW_SENDA', handleGuanenaAction);
+    window.addEventListener('NAVIGATE_TO', handleGuanenaAction);
+    window.addEventListener('guanena-action', handleGuanenaAction);
     return () => {
       window.removeEventListener('focus-landmark', handleFocusLandmark);
       window.removeEventListener('highlight-poi', handleFocusLandmark);
       window.removeEventListener('show-poi-category', handleCategoryFilter);
+      window.removeEventListener('FOCUS_CATEGORY', handleGuanenaAction);
+      window.removeEventListener('SHOW_SENDA', handleGuanenaAction);
+      window.removeEventListener('NAVIGATE_TO', handleGuanenaAction);
+      window.removeEventListener('guanena-action', handleGuanenaAction);
     };
   }, [map, onActivateCategory, onActivateSenda, showSenda]);
 

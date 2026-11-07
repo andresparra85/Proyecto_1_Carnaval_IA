@@ -197,5 +197,27 @@ export function searchPastoPOI(query: string): PointOfInterest | null {
   return PASTO_POIS.find((p) => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)) || null;
 }
 
+export type GuanenaMapAction =
+  | { type: 'FOCUS_CATEGORY'; category: 'restaurante' | 'bano' | 'cai' | 'salud' | 'todos' }
+  | { type: 'SHOW_SENDA'; dayId?: string }
+  | { type: 'NAVIGATE_TO'; targetCoords: LatLngTuple; targetName: string; startCoords?: LatLngTuple };
+
+/**
+ * Despacha acciones directas de GuaneñaBot al mapa interactivo
+ */
+export function dispatchGuanenaAction(action: GuanenaMapAction) {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent('guanena-action', { detail: action }));
+  window.dispatchEvent(new CustomEvent(action.type, { detail: action }));
+
+  if (action.type === 'FOCUS_CATEGORY') {
+    window.dispatchEvent(new CustomEvent('show-poi-category', { detail: { category: action.category } }));
+  } else if (action.type === 'SHOW_SENDA') {
+    window.dispatchEvent(new CustomEvent('focus-senda', { detail: action }));
+  } else if (action.type === 'NAVIGATE_TO') {
+    window.dispatchEvent(new CustomEvent('route-to-poi', { detail: action }));
+  }
+}
+
 export default PASTO_POIS;
 
