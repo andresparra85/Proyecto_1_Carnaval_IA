@@ -13,6 +13,7 @@ import L from 'leaflet';
 import { CARNIVAL_ROUTES } from '../data/carnivalRoutes';
 import { SENDA_OFICIAL_COORDS, HITOS_SENDA } from '../data/sendaCoords';
 import { CarnavalDaySelector, DayCameraController } from './map/CarnavalDaySelector';
+import { fetchActiveReports } from '../services/reportService';
 import {
   RESTAURANTS_DATA,
   getRestaurantStatus,
@@ -643,6 +644,22 @@ export function MapView({
     }
   };
 
+  // Sincronización y carga de reportes activos desde Supabase / caché local
+  const [internalReports, setInternalReports] = useState(reports || []);
+  useEffect(() => {
+    if (reports && reports.length > 0) {
+      setInternalReports(reports);
+    } else {
+      fetchActiveReports()
+        .then((active) => {
+          if (active && active.length > 0) {
+            setInternalReports(active);
+          }
+        })
+        .catch((err) => console.warn('Error al recuperar reportes activos:', err));
+    }
+  }, [reports]);
+
   // Estado local para almacenar la ruta calculada por OSRM
   const [routePath, setRoutePath] = useState(null);
   const [isRouting, setIsRouting] = useState(false);
@@ -854,11 +871,12 @@ export function MapView({
     return pois;
   }, [pois, activeFilter]);
 
-  // Filtrado de reportes
+  // Filtrado de reportes activos
   const filteredReports = useMemo(() => {
-    if (activeFilter === 'todos' || activeFilter === 'zonas') return reports;
-    return [];
-  }, [reports, activeFilter]);
+    const list = internalReports && internalReports.length > 0 ? internalReports : reports;
+    if (activeFilter === 'todos' || activeFilter === 'zonas') return list;
+    return list.filter((r) => (r.category && r.category.toLowerCase() === activeFilter.toLowerCase()) || (r.type && r.type.toLowerCase() === activeFilter.toLowerCase()));
+  }, [reports, internalReports, activeFilter]);
 
   // Determinar si se muestran las zonas
   const showZones = activeFilter === 'todos' || activeFilter === 'zonas';

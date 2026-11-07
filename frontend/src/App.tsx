@@ -9,6 +9,7 @@ import InstallPwaPrompt from './components/InstallPwaPrompt';
 import LoginView from './components/LoginView';
 import Toast from './components/Toast';
 import { api } from './services/api';
+import { fetchActiveReports, submitIncidentReport } from './services/reportService';
 import { useAuth } from './context/AuthContext';
 import { RefreshCw, ShieldAlert, MapPin } from 'lucide-react';
 
@@ -56,14 +57,15 @@ export function App() {
     }, 4000);
   }, []);
 
-  // Carga sincronizada de datos desde el backend
+  // Carga sincronizada de datos desde el backend y Supabase
   const loadDashboardData = useCallback(async () => {
     try {
-      const [healthRes, poisRes, reportsRes, zonesRes] = await Promise.allSettled([
+      const [healthRes, poisRes, reportsRes, zonesRes, supabaseReportsRes] = await Promise.allSettled([
         api.checkHealth(),
         api.getPOIs(),
         api.getReports(),
         api.getZonesRisk(),
+        fetchActiveReports(),
       ]);
 
       if (healthRes.status === 'fulfilled' && healthRes.value?.status === 'healthy') {
@@ -76,7 +78,10 @@ export function App() {
         setPois(poisRes.value || []);
       }
 
-      if (reportsRes.status === 'fulfilled') {
+      // Priorizar o fusionar reportes de Supabase y API de respaldo
+      if (supabaseReportsRes.status === 'fulfilled' && Array.isArray(supabaseReportsRes.value) && supabaseReportsRes.value.length > 0) {
+        setReports(supabaseReportsRes.value);
+      } else if (reportsRes.status === 'fulfilled') {
         setReports(reportsRes.value || []);
       }
 
@@ -290,3 +295,4 @@ export function App() {
 }
 
 export default App;
+
