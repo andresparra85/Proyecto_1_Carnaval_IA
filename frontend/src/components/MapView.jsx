@@ -13,6 +13,7 @@ import L from 'leaflet';
 import { CARNIVAL_ROUTES } from '../data/carnivalRoutes';
 import { SENDA_OFICIAL_COORDS, HITOS_SENDA } from '../data/sendaCoords';
 import { CarnavalDaySelector, DayCameraController } from './map/CarnavalDaySelector';
+import { createSvgLandmarkPin } from './map/MapComponent';
 import { fetchActiveReports } from '../services/reportService';
 import {
   RESTAURANTS_DATA,
@@ -1151,39 +1152,51 @@ export function MapView({
           </>
         )}
 
-        {/* Capa Oficial Visible y Destacada de la Senda del Carnaval */}
+        {/* Capa Oficial Visible y Destacada de la Senda del Carnaval con Efecto Neón Festivo */}
         {showSenda && (
           <>
-            {/* Halo exterior amplio para destacar el recorrido con color dinámico del día */}
+            {/* 1. Halo exterior ultra-amplio de Neón con efecto de resplandor festivo */}
             <Polyline
               positions={SENDA_CARNAVAL_COORDS}
               pathOptions={{
                 color: dayRouteColor,
-                weight: 12,
-                opacity: 0.35,
+                weight: 18,
+                opacity: 0.28,
                 lineCap: 'round',
                 lineJoin: 'round',
+                className: 'senda-glow-path',
               }}
             />
-            {/* Trazo continuo sólido y nítido con color dinámico del día */}
+            {/* 2. Trazo intermedio de resplandor saturado */}
             <Polyline
               positions={SENDA_CARNAVAL_COORDS}
               pathOptions={{
                 color: dayRouteColor,
-                weight: 6,
-                opacity: 0.95,
+                weight: 8,
+                opacity: 0.75,
                 lineCap: 'round',
                 lineJoin: 'round',
               }}
             />
-            {/* Eje central luminoso con punteado sutil */}
+            {/* 3. Núcleo de neón sólido y nítido */}
+            <Polyline
+              positions={SENDA_CARNAVAL_COORDS}
+              pathOptions={{
+                color: dayRouteColor,
+                weight: 4.5,
+                opacity: 1,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+            />
+            {/* 4. Eje central láser blanco de alta precisión */}
             <Polyline
               positions={SENDA_CARNAVAL_COORDS}
               pathOptions={{
                 color: '#ffffff',
                 weight: 2,
-                opacity: 0.9,
-                dashArray: '8, 8',
+                opacity: 0.95,
+                dashArray: '8, 12',
               }}
             />
 
@@ -1229,38 +1242,29 @@ export function MapView({
               </>
             )}
 
-            {/* Hitos Oficiales Clave de la Senda del Carnaval */}
+            {/* Hitos Oficiales Clave con Pines SVG Personalizados y Modernos */}
             {HITOS_SENDA.map((hito) => (
               <Marker
                 key={`hito-senda-${hito.id}`}
                 position={hito.coords}
-                icon={createCustomIcon(
-                  hito.tipo === 'inicio'
-                    ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-                    : hito.tipo === 'fin'
-                      ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'
-                      : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                  hito.tipo === 'inicio' ? '🚩' : hito.tipo === 'fin' ? '🏁' : '📍',
-                  false,
-                  hito.tipo === 'inicio'
-                    ? 'rgba(16, 185, 129, 0.4)'
-                    : hito.tipo === 'fin'
-                      ? 'rgba(239, 68, 68, 0.4)'
-                      : 'rgba(245, 158, 11, 0.4)'
-                )}
+                icon={createSvgLandmarkPin({
+                  type: hito.tipo,
+                  label: hito.nombre,
+                })}
               >
-                <Popup>
-                  <div className="text-xs p-1 min-w-[200px] font-sans">
+                <Popup className="custom-popup">
+                  <div className="text-xs p-2 min-w-[210px] max-w-[260px] font-sans rounded-2xl bg-slate-900/95 backdrop-blur-md text-white border border-white/10 shadow-2xl">
                     <div
-                      className={`font-black flex items-center gap-1.5 pb-1 mb-1 border-b ${hito.tipo === 'inicio'
-                          ? 'text-emerald-400 border-emerald-500/20'
+                      className={`font-black flex items-center gap-1.5 pb-1.5 mb-1.5 border-b ${
+                        hito.tipo === 'inicio'
+                          ? 'text-emerald-400 border-emerald-500/25'
                           : hito.tipo === 'fin'
-                            ? 'text-rose-400 border-rose-500/20'
-                            : 'text-amber-400 border-amber-500/20'
-                        }`}
+                            ? 'text-rose-400 border-rose-500/25'
+                            : 'text-amber-400 border-amber-500/25'
+                      }`}
                     >
-                      <span>{hito.tipo === 'inicio' ? '🚩' : hito.tipo === 'fin' ? '🏁' : '📍'}</span>
-                      <span className="text-[11px] uppercase tracking-wide">{hito.nombre}</span>
+                      <span className="text-sm">{hito.tipo === 'inicio' ? '🚩' : hito.tipo === 'fin' ? '🏁' : '👑'}</span>
+                      <span className="text-[11px] uppercase tracking-wider font-extrabold leading-tight">{hito.nombre}</span>
                     </div>
                     <p className="text-xs text-slate-200 mt-1 leading-relaxed">{hito.desc}</p>
                     <div className="mt-2 text-[10px] text-slate-400 font-mono flex justify-between border-t border-white/10 pt-1">
