@@ -10,43 +10,32 @@ export interface StreetRouteResponse {
 }
 
 /**
- * Calcula la ruta exacta a pie por la malla vial de Pasto usando OSRM.
+ * Calcula la ruta exacta a pie por la malla vial de Pasto usando OSRM con timeout seguro y fallback en línea recta.
  * @param start Coordenadas de inicio [latitud, longitud]
  * @param end Coordenadas de destino [latitud, longitud]
  * @returns Promesa con array de coordenadas [latitud, longitud] formateadas para Leaflet
  */
-export async function getStreetRoute(
-  start: [number, number],
-  end: [number, number]
-): Promise<[number, number][]> {
+export async function getStreetRoute(start: [number, number], end: [number, number]): Promise<[number, number][]> {
   try {
-    // OSRM utiliza formato [longitud, latitud]
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
     const url = `https://router.project-osrm.org/route/v1/foot/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
-    const res = await fetch(url);
-    if (res.ok) {
-      const data = await res.json();
-      if (data.routes && data.routes.length > 0 && data.routes[0].geometry?.coordinates) {
-        // Convierte [lng, lat] retornado por OSRM a [lat, lng] para Leaflet
-        return data.routes[0].geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
-      }
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      return [start, end];
     }
 
-    // Fallback con el perfil alternativo 'walking' de OSRM
-    const fallbackUrl = `https://router.project-osrm.org/route/v1/walking/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
-    const fallbackRes = await fetch(fallbackUrl);
-    if (fallbackRes.ok) {
-      const fallbackData = await fallbackRes.json();
-      if (fallbackData.routes && fallbackData.routes.length > 0 && fallbackData.routes[0].geometry?.coordinates) {
-        return fallbackData.routes[0].geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
-      }
+    const data = await res.json();
+    if (data.routes && data.routes[0]?.geometry?.coordinates) {
+      return data.routes[0].geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
     }
-
     return [start, end];
   } catch (err) {
-    console.error('Error calculando ruta en OSRM:', err);
+    console.warn('Fallback de ruta activado:', err);
     return [start, end];
   }
 }
 
 export default getStreetRoute;
-
