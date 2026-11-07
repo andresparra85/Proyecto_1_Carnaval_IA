@@ -884,7 +884,7 @@ export function MapView({
     <div className="relative w-full h-full min-h-[500px] overflow-hidden shadow-2xl bg-slate-950">
       {/* 1. Contenedor Superior Fijo: Banner de Evento Activo y Chips de Filtros Tipo Píldora */}
       <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none">
-        {/* Banner Superior Sutil de Evento Oficial */}
+        {/* Banner Superior Dinámico de Evento Oficial controlado por GuaneñaBot */}
         <div className="pointer-events-auto flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/60 shadow-sm text-xs max-w-lg">
           <div className="flex items-center gap-2 min-w-0">
             <span
@@ -892,22 +892,16 @@ export function MapView({
               style={{ backgroundColor: currentEvent.color || '#f59e0b' }}
             />
             <div className="truncate text-slate-600 dark:text-slate-300">
-              <span className="hidden sm:inline text-slate-400">Evento: </span>
+              <span className="hidden sm:inline text-slate-400">Evento Activo: </span>
               <strong className="font-bold text-slate-900 dark:text-white">
                 {currentEvent.name}
               </strong>
             </div>
           </div>
-          <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300">
-            {currentEvent.hours}
+          <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-amber-500 dark:text-amber-400">
+            🎭 GuaneñaBot AI
           </span>
         </div>
-
-        {/* Selector de Fechas Oficiales del Carnaval con Trazo Dinámico */}
-        <CarnavalDaySelector
-          selectedDay={selectedDay}
-          onSelectDay={_setSelectedDay}
-        />
 
         {/* Chips de Categorías (Filtros del Mapa) tipo Píldora (Pill Badges) */}
         <div className="pointer-events-auto flex items-center gap-2 max-w-full overflow-x-auto no-scrollbar py-0.5">

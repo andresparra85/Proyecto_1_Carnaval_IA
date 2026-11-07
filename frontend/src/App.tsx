@@ -47,6 +47,26 @@ export function App() {
     setFocusSendaTrigger((prev) => prev + 1);
   }, []);
 
+  // Escuchar comandos de IA emitidos desde GuaneñaBot para cambiar fecha de carnaval o trazar ruta OSRM
+  useEffect(() => {
+    const handleDayEvent = (e: any) => {
+      if (e?.detail?.dayId) {
+        setCurrentCarnivalDay(e.detail.dayId);
+      }
+    };
+    const handleRouteEvent = (e: any) => {
+      if (e?.detail) {
+        setNavRoute(e.detail);
+      }
+    };
+    window.addEventListener('focus-carnival-day', handleDayEvent);
+    window.addEventListener('route-to-poi', handleRouteEvent);
+    return () => {
+      window.removeEventListener('focus-carnival-day', handleDayEvent);
+      window.removeEventListener('route-to-poi', handleRouteEvent);
+    };
+  }, []);
+
   // Estado para Toast de notificaciones
   const [toast, setToast] = useState({ message: '', type: 'success' });
 
