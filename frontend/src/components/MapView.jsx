@@ -12,6 +12,7 @@ import {
 import L from 'leaflet';
 import { CARNIVAL_ROUTES } from '../data/carnivalRoutes';
 import { SENDA_OFICIAL_COORDS, HITOS_SENDA } from '../data/sendaCoords';
+import { CarnavalDaySelector, DayCameraController } from './map/CarnavalDaySelector';
 import {
   RESTAURANTS_DATA,
   getRestaurantStatus,
@@ -722,6 +723,21 @@ export function MapView({
     return CARNIVAL_ROUTES[selectedDay] || CARNIVAL_ROUTES['06-ene'];
   }, [selectedDay]);
 
+  // Color dinámico de la Senda según la fecha oficial seleccionada
+  const dayRouteColor = useMemo(() => {
+    switch (selectedDay) {
+      case '03-ene':
+        return '#F59E0B'; // Ámbar (3 de Enero - Canto a la Tierra)
+      case '04-ene':
+        return '#D946EF'; // Magenta (4 de Enero - Familia Castañeda)
+      case '05-ene':
+        return '#38BDF8'; // Cyan festivo (5 de Enero - Día de Negros)
+      case '06-ene':
+      default:
+        return '#E11D48'; // Rojo Carmesí (6 de Enero - Desfile Magno)
+    }
+  }, [selectedDay]);
+
   // Filtro activo de visualización rápida
   const [activeFilter, setActiveFilter] = useState('todos');
 
@@ -869,6 +885,12 @@ export function MapView({
             {currentEvent.hours}
           </span>
         </div>
+
+        {/* Selector de Fechas Oficiales del Carnaval con Trazo Dinámico */}
+        <CarnavalDaySelector
+          selectedDay={selectedDay}
+          onSelectDay={_setSelectedDay}
+        />
 
         {/* Chips de Categorías (Filtros del Mapa) tipo Píldora (Pill Badges) */}
         <div className="pointer-events-auto flex items-center gap-2 max-w-full overflow-x-auto no-scrollbar py-0.5">
@@ -1057,6 +1079,9 @@ export function MapView({
         {/* Controlador para centrar y animar la vista al cambiar de día/evento */}
         <MapRouteController currentEvent={currentEvent} currentCarnivalDay={selectedDay} />
 
+        {/* Controlador que ejecuta fitBounds sobre la Senda oficial al cambiar de fecha */}
+        <DayCameraController selectedDay={selectedDay} />
+
         {/* Controlador para centrar y animar la vista al trazar una ruta de navegación */}
         <NavRouteController routePath={routePath} />
 
@@ -1116,22 +1141,22 @@ export function MapView({
         {/* Capa Oficial Visible y Destacada de la Senda del Carnaval */}
         {showSenda && (
           <>
-            {/* Halo exterior amplio para destacar el recorrido */}
+            {/* Halo exterior amplio para destacar el recorrido con color dinámico del día */}
             <Polyline
               positions={SENDA_CARNAVAL_COORDS}
               pathOptions={{
-                color: '#f59e0b',
+                color: dayRouteColor,
                 weight: 12,
                 opacity: 0.35,
                 lineCap: 'round',
                 lineJoin: 'round',
               }}
             />
-            {/* Trazo continuo sólido y nítido */}
+            {/* Trazo continuo sólido y nítido con color dinámico del día */}
             <Polyline
               positions={SENDA_CARNAVAL_COORDS}
               pathOptions={{
-                color: '#d97706',
+                color: dayRouteColor,
                 weight: 6,
                 opacity: 0.95,
                 lineCap: 'round',
@@ -1142,12 +1167,54 @@ export function MapView({
             <Polyline
               positions={SENDA_CARNAVAL_COORDS}
               pathOptions={{
-                color: '#fef08a',
+                color: '#ffffff',
                 weight: 2,
                 opacity: 0.9,
                 dashArray: '8, 8',
               }}
             />
+
+            {/* Zonas de Tablados y Juego destacadas para el Día de Negros (5 de Enero) */}
+            {selectedDay === '05-ene' && (
+              <>
+                <Circle
+                  center={[1.21540, -77.28410]}
+                  radius={180}
+                  pathOptions={{
+                    color: '#38bdf8',
+                    fillColor: '#0284c7',
+                    fillOpacity: 0.35,
+                    weight: 3,
+                    dashArray: '6, 6',
+                  }}
+                >
+                  <Popup>
+                    <div className="text-xs p-1 font-sans">
+                      <strong className="text-sky-400 block font-black">🎭 Tablado Principal - Plaza del Carnaval</strong>
+                      <p className="text-slate-200 mt-1">Conciertos en vivo y zona neurálgica de juego con cosmético negro.</p>
+                    </div>
+                  </Popup>
+                </Circle>
+                <Circle
+                  center={[1.21380, -77.28180]}
+                  radius={160}
+                  pathOptions={{
+                    color: '#38bdf8',
+                    fillColor: '#0284c7',
+                    fillOpacity: 0.35,
+                    weight: 3,
+                    dashArray: '6, 6',
+                  }}
+                >
+                  <Popup>
+                    <div className="text-xs p-1 font-sans">
+                      <strong className="text-sky-400 block font-black">🎭 Tablado Histórico - Plaza de Nariño</strong>
+                      <p className="text-slate-200 mt-1">Presentaciones de orquestas y concentración de juego de la pintica.</p>
+                    </div>
+                  </Popup>
+                </Circle>
+              </>
+            )}
 
             {/* Hitos Oficiales Clave de la Senda del Carnaval */}
             {HITOS_SENDA.map((hito) => (

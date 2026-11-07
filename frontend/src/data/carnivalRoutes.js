@@ -122,82 +122,65 @@ export const CARNIVAL_ROUTES = {
   '03-ene': {
     name: "Canto a la Tierra (Colectivos Coreográficos)",
     hours: "09:00 - 16:00",
-    description: "Miles de músicos y danzantes andinos con zampoñas y bombos.",
-    color: "#10b981", // Verde
-    startPoint: { lat: 1.2012, lng: -77.2748, label: "Salida: Escuela Normal Superior" },
-    endPoint: { lat: 1.2225, lng: -77.2862, label: "Llegada: Champagnat" },
+    description: "Recorrido completo por la Senda con trazo Ámbar. Miles de músicos y danzantes andinos.",
+    color: "#F59E0B", // Ámbar oficial
+    startPoint: { lat: 1.21852, lng: -77.26941, label: "Salida Oficial: I.E. Normal Superior" },
+    endPoint: { lat: 1.20780, lng: -77.29130, label: "Llegada Oficial: Champagnat / Bomboná" },
     closedPoints: [
-      { lat: 1.2012, lng: -77.2748, label: "Cierre total Carrera 27" },
-      { lat: 1.2140, lng: -77.2780, label: "Cierre Calle 19" },
-      { lat: 1.2260, lng: -77.2880, label: "Restricción cruces Av. Los Estudiantes" }
+      { lat: 1.21852, lng: -77.26941, label: "Cierre Salida Normal Superior" },
+      { lat: 1.21380, lng: -77.28180, label: "Cierre Eje Plaza de Nariño" },
+      { lat: 1.21540, lng: -77.28410, label: "Cierre Plaza del Carnaval" }
     ],
-    route: [
-      [1.2012, -77.2748],
-      [1.2085, -77.2762],
-      [1.2140, -77.2780],
-      [1.2180, -77.2825],
-      [1.2225, -77.2862]
-    ]
+    route: SENDA_OFICIAL_COORDS
   },
 
   '04-ene': {
     name: "Llegada de la Familia Castañeda",
     hours: "08:00 - 15:00",
-    description: "Teatro callejero y estampas de época recreando la bienvenida campesina de 1929.",
-    color: "#8b5cf6", // Violeta
-    startPoint: { lat: 1.2012, lng: -77.2748, label: "Salida: Normal Superior" },
-    endPoint: { lat: 1.2225, lng: -77.2862, label: "Llegada: Champagnat" },
+    description: "Recorrido completo por la Senda con trazo Magenta. Estampas de época y bienvenida campesina de 1929.",
+    color: "#D946EF", // Magenta oficial
+    startPoint: { lat: 1.21852, lng: -77.26941, label: "Salida Oficial: Normal Superior" },
+    endPoint: { lat: 1.20780, lng: -77.29130, label: "Llegada Oficial: Champagnat / Bomboná" },
     closedPoints: [
-      { lat: 1.2012, lng: -77.2748, label: "Cierre Cra 27" },
-      { lat: 1.2140, lng: -77.2780, label: "Cierre Calle 19 y Plaza de Nariño" }
+      { lat: 1.21852, lng: -77.26941, label: "Cierre Cra 27 y Av. Santander" },
+      { lat: 1.21380, lng: -77.28180, label: "Cierre Calle 18 y Plaza de Nariño" }
     ],
-    route: [
-      [1.2012, -77.2748],
-      [1.2085, -77.2762],
-      [1.2140, -77.2780],
-      [1.2180, -77.2825],
-      [1.2225, -77.2862]
-    ]
+    route: SENDA_OFICIAL_COORDS
   },
 
   '05-ene': {
-    name: "Día de Negros (Juego de la Pintica y Tarimas)",
+    name: "Día de Negros (Juego de la Pintica y Tablados)",
     hours: "11:00 - 23:00",
-    description: "Conmemoración de la igualdad étnica, juego con cosmético negro y orquestas en plazas.",
-    color: "#a855f7", // Púrpura festivo
-    startPoint: { lat: 1.2145, lng: -77.2782, label: "Tarima Principal: Plaza de Nariño" },
-    endPoint: { lat: 1.2115, lng: -77.2785, label: "Tarima Oficial: Plaza del Carnaval" },
+    description: "Tablados y zonas de juego en Plaza del Carnaval y Plaza de Nariño. Conmemoración de la igualdad étnica.",
+    color: "#38BDF8", // Cyan festivo / Tablados
+    startPoint: { lat: 1.21380, lng: -77.28180, label: "Tablado Principal: Plaza de Nariño" },
+    endPoint: { lat: 1.21540, lng: -77.28410, label: "Tablado Oficial: Plaza del Carnaval" },
     closedPoints: [
-      { lat: 1.2115, lng: -77.2785, label: "Peatonalización Plaza del Carnaval" },
-      { lat: 1.2145, lng: -77.2782, label: "Peatonalización Plaza de Nariño" },
-      { lat: 1.2090, lng: -77.2765, label: "Zona de Graderías controladas (San Juan Bosco)" }
+      { lat: 1.21540, lng: -77.28410, label: "Peatonalización Plaza del Carnaval" },
+      { lat: 1.21380, lng: -77.28180, label: "Peatonalización Plaza de Nariño" },
+      { lat: 1.21460, lng: -77.28290, label: "Zona Peatonal Calle 19" }
     ],
     route: [
-      [1.2145, -77.2782], // Plaza de Nariño
-      [1.2130, -77.2780], // Corredor Cra 27
-      [1.2115, -77.2785]  // Plaza del Carnaval
+      [1.21380, -77.28180], // Plaza de Nariño
+      [1.21460, -77.28290], // Calle 19
+      [1.21540, -77.28410]  // Plaza del Carnaval
     ]
   },
 
   '06-ene': {
     name: "Día de Blancos (El Desfile Magno)",
     hours: "05:00 - 17:00",
-    description: "Paso de Carrozas Monumentales gigantes de 12 metros, murgas, comparsas, talco y carioca.",
-    color: "#dc2626", // Rojo festivo
-    startPoint: { lat: 1.2185, lng: -77.2970, label: "Salida: Avenida Emmanuel (Tamasagra / Anganoy)" },
-    endPoint: { lat: 1.2045, lng: -77.2680, label: "Llegada: Avenida Alfonso Zambrano (Estadio Libertad)" },
+    description: "Recorrido oficial completo con trazo Rojo Carmesí y todos los hitos visibles. Carrozas Monumentales.",
+    color: "#E11D48", // Rojo Carmesí oficial
+    startPoint: { lat: 1.21852, lng: -77.26941, label: "Salida Oficial: I.E. Normal Superior" },
+    endPoint: { lat: 1.20780, lng: -77.29130, label: "Llegada Oficial: Champagnat / Bomboná" },
     closedPoints: [
-      { lat: 1.2185, lng: -77.2970, label: "Cierre Av. Emmanuel desde las 5:00 AM" },
-      { lat: 1.2155, lng: -77.2910, label: "Cierre Avenida Mijitayo" },
-      { lat: 1.2120, lng: -77.2840, label: "Corte cruce Av. Panamericana" },
-      { lat: 1.2085, lng: -77.2762, label: "Cierre Carrera 27" },
-      { lat: 1.2140, lng: -77.2780, label: "Cierre Calle 19" },
-      { lat: 1.2045, lng: -77.2680, label: "Cierre Av. Alfonso Zambrano" }
+      { lat: 1.21852, lng: -77.26941, label: "Cierre Total Salida Normal Superior" },
+      { lat: 1.21380, lng: -77.28180, label: "Cierre Total Eje Plaza de Nariño" },
+      { lat: 1.21540, lng: -77.28410, label: "Cierre Total Plaza del Carnaval" },
+      { lat: 1.20780, lng: -77.29130, label: "Desmonte y Cierre Champagnat" }
     ],
-    route: [
-      [1.2185, -77.2970], // Av. Emmanuel
-      [1.2155, -77.2910], // Mijitayo
-      [1.2120, -77.2840], // Panamericana
+    route: SENDA_OFICIAL_COORDS
       [1.2085, -77.2762], // Cra 27
       [1.2140, -77.2780], // Cll 19
       [1.2100, -77.2730], // Hacia el oriente
