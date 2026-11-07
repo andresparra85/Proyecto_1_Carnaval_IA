@@ -3,8 +3,10 @@
  * Georreferenciación 100% real sobre la malla vial oficial.
  */
 
-// Coordenadas continuas sobre la calzada vial real:
-export const SENDA_OFICIAL_COORDS: [number, number][] = [
+export type LatLngTuple = [number, number];
+
+// Coordenadas continuas sobre la calzada vial real (estrictamente validadas [latitud, longitud]):
+export const SENDA_OFICIAL_COORDS: LatLngTuple[] = [
   // 1. Salida: I.E. Normal Superior (Calle 4 con Cra 27)
   [1.21852, -77.26941],
   [1.21815, -77.27025],
@@ -42,7 +44,7 @@ export const SENDA_OFICIAL_COORDS: [number, number][] = [
 export interface HitoSenda {
   id: string;
   nombre: string;
-  coords: [number, number];
+  coords: LatLngTuple;
   tipo: 'inicio' | 'intermedio' | 'fin';
   desc: string;
 }
@@ -55,8 +57,8 @@ export const HITOS_SENDA: HitoSenda[] = [
 ];
 
 // Aliases para retrocompatibilidad
-export const SENDA_CARNAVAL_COORDS = SENDA_OFICIAL_COORDS;
-export const SENDA_DEL_CARNAVAL_COORDS = SENDA_OFICIAL_COORDS;
+export const SENDA_CARNAVAL_COORDS: LatLngTuple[] = SENDA_OFICIAL_COORDS;
+export const SENDA_DEL_CARNAVAL_COORDS: LatLngTuple[] = SENDA_OFICIAL_COORDS;
 
 export default SENDA_OFICIAL_COORDS;
 

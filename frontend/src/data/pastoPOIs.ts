@@ -3,11 +3,13 @@
  * para la experiencia guiada por IA en el Carnaval de Negros y Blancos.
  */
 
+export type LatLngTuple = [number, number];
+
 export interface PointOfInterest {
   id: string;
   name: string;
   category: 'restaurante' | 'bano' | 'cai' | 'salud';
-  coords: [number, number];
+  coords: LatLngTuple;
   address: string;
   description: string;
   schedule?: string;
