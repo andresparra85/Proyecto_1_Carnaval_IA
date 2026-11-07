@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -8,6 +9,15 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
+
+/**
+ * Hook de geolocalización segura para MapComponent que garantiza orden de declaración hoisted
+ */
+export function useMapUserGps() {
+  const [userGps, setUserGps] = useState<[number, number] | null>(null);
+  const originPoint: [number, number] = userGps || [1.2138, -77.2818]; // Fallback al Parque Nariño si no hay GPS activo
+  return { userGps, setUserGps, originPoint };
+}
 
 /**
  * Generador de pines SVG modernos y festivos con resplandor para los Hitos de la Senda del Carnaval

@@ -664,6 +664,11 @@ export function MapView({
   onToggleSenda: propOnToggleSenda,
   focusSendaTrigger = 0,
 }) {
+  // 1. Estado de geolocalización GPS del usuario (declarado al inicio absoluto para evitar ReferenceError)
+  const [userGps, setUserGps] = useState(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const originPoint = userGps ? [userGps.lat || userGps[0], userGps.lng || userGps[1]] : [1.2138, -77.2818]; // Fallback al Parque Nariño si no hay GPS activo
+
   // Estado local para activar o desactivar la capa de la Senda del Carnaval
   const [internalShowSenda, setInternalShowSenda] = useState(true);
   const showSenda = propShowSenda !== undefined ? propShowSenda : internalShowSenda;
@@ -789,10 +794,6 @@ export function MapView({
 
   // Filtro activo de visualización rápida
   const [activeFilter, setActiveFilter] = useState('todos');
-
-  // Estado de geolocalización GPS del usuario
-  const [userGps, setUserGps] = useState(null);
-  const [isLocating, setIsLocating] = useState(false);
 
   // Opciones de filtro
   const filterOptions = [
