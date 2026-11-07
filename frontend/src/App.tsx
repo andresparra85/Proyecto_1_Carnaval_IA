@@ -17,12 +17,32 @@ import { RefreshCw, ShieldAlert, MapPin } from 'lucide-react';
 export function App() {
   const { isAuthenticated, loading: authLoading } = useAuth();
   
-  // Auditar estrictamente el estado de autenticación desde localStorage
-  const isSessionActive = Boolean(
-    isAuthenticated &&
-    typeof window !== 'undefined' &&
-    localStorage.getItem('carnavalia_session') === 'active'
-  );
+  // Auditar estrictamente el estado de autenticación desde localStorage con manejo seguro de excepciones
+  const [isSessionActive, setIsSessionActive] = useState<boolean>(() => {
+    try {
+      return Boolean(
+        typeof window !== 'undefined' &&
+        localStorage.getItem('carnavalia_session') === 'active'
+      );
+    } catch (e) {
+      console.warn('Error leyendo carnavalia_session en inicialización:', e);
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      const active = Boolean(
+        isAuthenticated &&
+        typeof window !== 'undefined' &&
+        localStorage.getItem('carnavalia_session') === 'active'
+      );
+      setIsSessionActive(active);
+    } catch (e) {
+      console.warn('Error actualizando carnavalia_session:', e);
+      setIsSessionActive(false);
+    }
+  }, [isAuthenticated]);
 
   const [pois, setPois] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);

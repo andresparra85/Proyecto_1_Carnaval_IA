@@ -5,7 +5,11 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return typeof window !== 'undefined' && localStorage.getItem('carnavalia_session') === 'active';
+    try {
+      return typeof window !== 'undefined' && localStorage.getItem('carnavalia_session') === 'active';
+    } catch (_) {
+      return false;
+    }
   });
   const [user, setUser] = useState(() => authService.getUser());
   const [token, setToken] = useState(() => authService.getToken());
@@ -13,21 +17,27 @@ export function AuthProvider({ children }) {
 
   // Sincronizar estado inicial al montar la aplicación
   useEffect(() => {
-    const isSessionActive = localStorage.getItem('carnavalia_session') === 'active';
-    const storedUser = authService.getUser();
-    const storedToken = authService.getToken();
+    try {
+      const isSessionActive = typeof window !== 'undefined' && localStorage.getItem('carnavalia_session') === 'active';
+      const storedUser = authService.getUser();
+      const storedToken = authService.getToken();
 
-    if (isSessionActive) {
-      setIsAuthenticated(true);
-      if (storedUser) setUser(storedUser);
-      if (storedToken) setToken(storedToken);
-    } else {
+      if (isSessionActive) {
+        setIsAuthenticated(true);
+        if (storedUser) setUser(storedUser);
+        if (storedToken) setToken(storedToken);
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('carnavalia_session');
+      }
+    } catch (err) {
+      console.warn('Error inicializando estado de autenticación:', err);
       setIsAuthenticated(false);
-      setUser(null);
-      setToken(null);
-      localStorage.removeItem('carnavalia_session');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   /**
