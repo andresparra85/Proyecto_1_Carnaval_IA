@@ -8,6 +8,7 @@ import ChatBot from './components/ChatBot';
 import InstallPwaPrompt from './components/InstallPwaPrompt';
 import LoginView from './components/LoginView';
 import Toast from './components/Toast';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { api } from './services/api';
 import { fetchActiveReports, submitIncidentReport } from './services/reportService';
 import { useAuth } from './context/AuthContext';
@@ -211,24 +212,26 @@ export function App() {
 
       {/* 2. Cuerpo Principal (Mapa de la Senda + Widgets flotantes) */}
       <main className="relative flex-1 w-full h-full overflow-hidden">
-        {/* Mapa Interactivo Leaflet */}
-        <MapView
-          pois={pois}
-          reports={reports}
-          zones={zones}
-          onSelectCoordinates={handleSelectCoordinates}
-          isSelectingLocation={reportModalOpen}
-          selectedLocation={selectedLocation}
-          currentCarnivalDay={currentCarnivalDay}
-          selectedDay={currentCarnivalDay}
-          onSelectDay={setCurrentCarnivalDay}
-          onUserLocationChange={setUserGps}
-          navRoute={navRoute}
-          setNavRoute={setNavRoute}
-          showSenda={showSenda}
-          onToggleSenda={() => setShowSenda((prev) => !prev)}
-          focusSendaTrigger={focusSendaTrigger}
-        />
+        {/* Mapa Interactivo Leaflet con ErrorBoundary de protección */}
+        <ErrorBoundary>
+          <MapView
+            pois={pois}
+            reports={reports}
+            zones={zones}
+            onSelectCoordinates={handleSelectCoordinates}
+            isSelectingLocation={reportModalOpen}
+            selectedLocation={selectedLocation}
+            currentCarnivalDay={currentCarnivalDay}
+            selectedDay={currentCarnivalDay}
+            onSelectDay={setCurrentCarnivalDay}
+            onUserLocationChange={setUserGps}
+            navRoute={navRoute}
+            setNavRoute={setNavRoute}
+            showSenda={showSenda}
+            onToggleSenda={() => setShowSenda((prev) => !prev)}
+            focusSendaTrigger={focusSendaTrigger}
+          />
+        </ErrorBoundary>
 
         {/* Panel Superior Flotante: Métricas en Vivo */}
         <div className="absolute top-4 right-4 z-[900] flex flex-col sm:flex-row items-end sm:items-center gap-2 pointer-events-auto">
