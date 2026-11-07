@@ -181,11 +181,6 @@ export const CARNIVAL_ROUTES = {
       { lat: 1.20780, lng: -77.29130, label: "Desmonte y Cierre Champagnat" }
     ],
     route: SENDA_OFICIAL_COORDS
-      [1.2085, -77.2762], // Cra 27
-      [1.2140, -77.2780], // Cll 19
-      [1.2100, -77.2730], // Hacia el oriente
-      [1.2045, -77.2680]  // Alfonso Zambrano / Estadio Libertad
-    ]
   },
 
   '07-ene': {
