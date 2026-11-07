@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -17,6 +18,35 @@ export function useMapUserGps() {
   const [userGps, setUserGps] = useState<[number, number] | null>(null);
   const originPoint: [number, number] = userGps || [1.2138, -77.2818]; // Fallback al Parque Nariño si no hay GPS activo
   return { userGps, setUserGps, originPoint };
+}
+
+/**
+ * Componente blindado para renderizar el marcador de usuario solo con coordenadas válidas
+ */
+export function GuardedUserMarker({ userGps }: { userGps: [number, number] | null }) {
+  if (!userGps || isNaN(userGps[0]) || isNaN(userGps[1])) {
+    return null;
+  }
+  return (
+    <Marker position={userGps}>
+      <Popup>Tu ubicación actual</Popup>
+    </Marker>
+  );
+}
+
+/**
+ * Componente blindado para renderizar polilíneas de navegación solo con arrays de al menos 2 puntos
+ */
+export function GuardedNavigationPolyline({ navigationPath }: { navigationPath: [number, number][] | null | undefined }) {
+  if (!Array.isArray(navigationPath) || navigationPath.length < 2) {
+    return null;
+  }
+  return (
+    <Polyline
+      positions={navigationPath}
+      pathOptions={{ color: '#2563eb', weight: 6, opacity: 0.85 }}
+    />
+  );
 }
 
 /**

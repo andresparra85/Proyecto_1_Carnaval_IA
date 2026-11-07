@@ -1177,43 +1177,37 @@ export function MapView({
         />
 
         {/* Marcador GPS del Usuario (Punto Azul con Halo Pulsante estilo Google Maps) */}
-        {userGps && (
-          <>
-            {/* Halo semitransparente de precisión GPS */}
-            <Circle
-              center={[userGps.lat, userGps.lng]}
-              radius={Math.min(userGps.accuracy || 35, 60)}
-              pathOptions={{
-                fillColor: '#3b82f6',
-                fillOpacity: 0.15,
-                color: '#2563eb',
-                weight: 1.5,
-                opacity: 0.45,
-              }}
-            />
-            {/* Punto azul característico con pulso */}
-            <Marker
-              position={[userGps.lat, userGps.lng]}
-              icon={createGoogleMapsGpsIcon()}
-            >
-              <Popup>
-                <div className="p-1 min-w-[200px] font-sans">
-                  <div className="flex items-center gap-2 border-b border-white/10 pb-1.5 mb-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(37,99,235,0.7)] animate-pulse"></span>
-                    <strong className="text-blue-400 text-xs font-black">Tu ubicación actual en Pasto</strong>
-                  </div>
-                  <p className="text-xs text-slate-300 leading-snug">
-                    Geolocalización GPS de alta precisión en tiempo real.
-                  </p>
-                  <div className="mt-2 text-[10px] text-slate-400 font-mono flex items-center justify-between border-t border-white/10 pt-1">
-                    <span>Lat: {userGps.lat.toFixed(5)}</span>
-                    <span>Lng: {userGps.lng.toFixed(5)}</span>
-                  </div>
-                </div>
-              </Popup>
-            </Marker>
-          </>
-        )}
+        {/* Marcador de geolocalización blindado estrictamente contra valores nulos o NaN */}
+        {(() => {
+          if (!userGps) return null;
+          const pos = Array.isArray(userGps)
+            ? userGps
+            : (typeof userGps.lat === 'number' && typeof userGps.lng === 'number' ? [userGps.lat, userGps.lng] : null);
+          if (!pos || isNaN(pos[0]) || isNaN(pos[1])) return null;
+          return (
+            <>
+              {/* Halo semitransparente de precisión GPS */}
+              <Circle
+                center={pos}
+                radius={Math.min(userGps.accuracy || 35, 60)}
+                pathOptions={{
+                  fillColor: '#3b82f6',
+                  fillOpacity: 0.15,
+                  color: '#2563eb',
+                  weight: 1.5,
+                  opacity: 0.45,
+                }}
+              />
+              {/* Marcador protegido */}
+              <Marker
+                position={pos}
+                icon={createGoogleMapsGpsIcon()}
+              >
+                <Popup>Tu ubicación actual</Popup>
+              </Marker>
+            </>
+          );
+        })()}
 
         {/* Capa Oficial Visible y Destacada de la Senda del Carnaval con Efecto Neón Festivo */}
         {showSenda && (
@@ -1392,8 +1386,8 @@ export function MapView({
           </>
         )}
 
-        {/* Renderizado de la ruta peatonal en Leaflet con OSRM */}
-        {routePath && (
+        {/* Renderizado de la ruta peatonal en Leaflet con OSRM blindado */}
+        {Array.isArray(routePath) && routePath.length >= 2 && (
           <Polyline
             positions={routePath}
             pathOptions={{ color: '#2563eb', weight: 6, opacity: 0.85 }}
