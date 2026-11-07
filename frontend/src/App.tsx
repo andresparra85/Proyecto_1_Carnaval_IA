@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Header from './components/Header';
 import MapView from './components/MapView';
 import ReportModal from './components/ReportModal';
@@ -35,6 +35,11 @@ export function App() {
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [currentCarnivalDay, setCurrentCarnivalDay] = useState('06-ene');
   const [userGps, setUserGps] = useState<any>(null);
+  const userGpsRef = useRef<any>(null);
+  useEffect(() => {
+    userGpsRef.current = userGps;
+  }, [userGps]);
+
   const [navRoute, setNavRoute] = useState<any>(null);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
@@ -56,7 +61,13 @@ export function App() {
     };
     const handleRouteEvent = (e: any) => {
       if (e?.detail) {
-        setNavRoute(e.detail);
+        const detail = e.detail;
+        const currentGps = userGpsRef.current;
+        const start = detail.startCoords || (currentGps ? [currentGps.lat, currentGps.lng] : [1.2136, -77.2811]);
+        setNavRoute({
+          ...detail,
+          startCoords: start,
+        });
       }
     };
     window.addEventListener('focus-carnival-day', handleDayEvent);

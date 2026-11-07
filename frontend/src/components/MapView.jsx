@@ -15,6 +15,7 @@ import { SENDA_OFICIAL_COORDS, HITOS_SENDA } from '../data/sendaCoords';
 import { CarnavalDaySelector, DayCameraController } from './map/CarnavalDaySelector';
 import { createSvgLandmarkPin } from './map/MapComponent';
 import { fetchActiveReports } from '../services/reportService';
+import { PASTO_POIS } from '../data/pastoPOIs';
 import {
   RESTAURANTS_DATA,
   getRestaurantStatus,
@@ -301,11 +302,16 @@ const getPoiIcon = (category) => {
     case 'salud':
       return createCustomIcon('linear-gradient(135deg, #ff2a6d 0%, #e11d48 100%)', '🏥', false, 'rgba(255, 42, 109, 0.6)');
     case 'policia':
+    case 'cai':
       return createCustomIcon('linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', '👮', false, 'rgba(59, 130, 246, 0.6)');
     case 'tarima':
       return createCustomIcon('linear-gradient(135deg, #c084fc 0%, #9333ea 100%)', '🎭', false, 'rgba(192, 132, 252, 0.6)');
     case 'banio':
-      return createCustomIcon('linear-gradient(135deg, #22d3ee 0%, #0891b2 100%)', '🚻', false, 'rgba(34, 211, 238, 0.6)');
+    case 'bano':
+      return createCustomIcon('linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)', '🚻', false, 'rgba(6, 182, 212, 0.6)');
+    case 'restaurante':
+    case 'restaurantes':
+      return createCustomIcon('linear-gradient(135deg, #f97316 0%, #ea580c 100%)', '🍽️', false, 'rgba(249, 115, 22, 0.6)');
     case 'salida':
       return createCustomIcon('linear-gradient(135deg, #34d399 0%, #059669 100%)', '🚪', false, 'rgba(52, 211, 153, 0.6)');
     default:
@@ -424,9 +430,16 @@ function LandmarkController({ onActivateCategory, onActivateSenda, showSenda }) 
       }
 
       if (detail.category && onActivateCategory) {
-        if (detail.category === 'salud') {
+        const cat = detail.category.toLowerCase();
+        if (cat === 'salud') {
           onActivateCategory('salud');
-        } else if (detail.category === 'plaza' || detail.category === 'evento') {
+        } else if (cat === 'bano' || cat === 'banio') {
+          onActivateCategory('banio');
+        } else if (cat === 'cai' || cat === 'policia') {
+          onActivateCategory('policia');
+        } else if (cat === 'restaurante' || cat === 'restaurantes') {
+          onActivateCategory('restaurantes');
+        } else if (cat === 'plaza' || cat === 'evento') {
           onActivateCategory('todos');
         }
       }
@@ -436,8 +449,24 @@ function LandmarkController({ onActivateCategory, onActivateSenda, showSenda }) 
       }
     };
 
+    const handleCategoryFilter = (e) => {
+      const cat = e.detail?.category?.toLowerCase();
+      if (cat && onActivateCategory) {
+        if (cat === 'bano' || cat === 'banio') onActivateCategory('banio');
+        else if (cat === 'cai' || cat === 'policia') onActivateCategory('policia');
+        else if (cat === 'restaurante' || cat === 'restaurantes') onActivateCategory('restaurantes');
+        else onActivateCategory(cat);
+      }
+    };
+
     window.addEventListener('focus-landmark', handleFocusLandmark);
-    return () => window.removeEventListener('focus-landmark', handleFocusLandmark);
+    window.addEventListener('highlight-poi', handleFocusLandmark);
+    window.addEventListener('show-poi-category', handleCategoryFilter);
+    return () => {
+      window.removeEventListener('focus-landmark', handleFocusLandmark);
+      window.removeEventListener('highlight-poi', handleFocusLandmark);
+      window.removeEventListener('show-poi-category', handleCategoryFilter);
+    };
   }, [map, onActivateCategory, onActivateSenda, showSenda]);
 
   return null;
@@ -665,11 +694,12 @@ export function MapView({
 
   // Efecto que escucha los cambios de navRoute: invoca fetchRealRoute o limpia routePath
   useEffect(() => {
-    if (navRoute && navRoute.startCoords && navRoute.targetCoords) {
+    if (navRoute && navRoute.targetCoords) {
+      const start = navRoute.startCoords || (userGps ? [userGps.lat, userGps.lng] : PASTO_CENTER);
       let isMounted = true;
       setIsRouting(true);
 
-      fetchRealRoute(navRoute.startCoords, navRoute.targetCoords)
+      fetchRealRoute(start, navRoute.targetCoords)
         .then((coords) => {
           if (isMounted) {
             setRoutePath(coords);
@@ -678,7 +708,7 @@ export function MapView({
         .catch((err) => {
           console.warn('Error al calcular ruta real:', err);
           if (isMounted) {
-            setRoutePath([navRoute.startCoords, navRoute.targetCoords]);
+            setRoutePath([start, navRoute.targetCoords]);
           }
         })
         .finally(() => {
@@ -694,7 +724,7 @@ export function MapView({
       setRoutePath(null);
       setIsRouting(false);
     }
-  }, [navRoute]);
+  }, [navRoute, userGps]);
 
   // Distancia estimada para mostrar en la tarjeta de navegación
   const displayDistance = useMemo(() => {
@@ -766,9 +796,9 @@ export function MapView({
     { id: 'todos', label: 'Todos', icon: '✨' },
     { id: 'restaurantes', label: 'Restaurantes', icon: '🍽️' },
     { id: 'salud', label: 'Salud', icon: '🏥' },
-    { id: 'policia', label: 'Policía', icon: '👮' },
-    { id: 'tarima', label: 'Tarimas', icon: '🎭' },
+    { id: 'policia', label: 'Seguridad / CAI', icon: '👮' },
     { id: 'banio', label: 'Baños', icon: '🚻' },
+    { id: 'tarima', label: 'Tarimas', icon: '🎭' },
     { id: 'zonas', label: 'Zonas de Riesgo', icon: '⚠️' },
   ];
 
@@ -858,17 +888,51 @@ export function MapView({
     return DEFAULT_CARNAVAL_ZONES;
   }, [zones]);
 
+  // Consolidación de POIs del backend con el catálogo georreferenciado de Pasto (baños, CAIs, salud, restaurantes)
+  const allPOIs = useMemo(() => {
+    const pastoMapped = PASTO_POIS.map((p) => ({
+      id: p.id,
+      name: p.name,
+      category: p.category,
+      latitude: p.coords[0],
+      longitude: p.coords[1],
+      address: p.address,
+      description: p.description,
+      schedule: p.schedule,
+      phone: p.phone,
+      isPastoCatalog: true,
+    }));
+
+    if (!pois || pois.length === 0) {
+      return pastoMapped;
+    }
+
+    const existingIds = new Set(pois.map((p) => p.id));
+    const nonDuplicates = pastoMapped.filter((p) => !existingIds.has(p.id));
+    return [...pois, ...nonDuplicates];
+  }, [pois]);
+
   // Filtrado reactivo de POIs según el botón seleccionado
   const filteredPois = useMemo(() => {
-    if (activeFilter === 'todos') return pois;
-    if (['salud', 'policia', 'tarima', 'banio'].includes(activeFilter)) {
-      return pois.filter(
-        (p) => p.category?.toLowerCase() === activeFilter.toLowerCase()
-      );
+    if (activeFilter === 'todos') return allPOIs;
+    if (activeFilter === 'restaurantes' || activeFilter === 'restaurante') {
+      return allPOIs.filter((p) => p.category?.toLowerCase() === 'restaurante' || p.category?.toLowerCase() === 'restaurantes');
     }
-    if (activeFilter === 'zonas' || activeFilter === 'restaurantes') return [];
-    return pois;
-  }, [pois, activeFilter]);
+    if (activeFilter === 'salud') {
+      return allPOIs.filter((p) => p.category?.toLowerCase() === 'salud');
+    }
+    if (activeFilter === 'policia' || activeFilter === 'cai') {
+      return allPOIs.filter((p) => ['policia', 'cai', 'seguridad'].includes(p.category?.toLowerCase()));
+    }
+    if (activeFilter === 'banio' || activeFilter === 'bano') {
+      return allPOIs.filter((p) => ['banio', 'bano', 'sanitario'].includes(p.category?.toLowerCase()));
+    }
+    if (activeFilter === 'tarima') {
+      return allPOIs.filter((p) => p.category?.toLowerCase() === 'tarima');
+    }
+    if (activeFilter === 'zonas') return [];
+    return allPOIs.filter((p) => p.category?.toLowerCase() === activeFilter.toLowerCase());
+  }, [allPOIs, activeFilter]);
 
   // Filtrado de reportes activos
   const filteredReports = useMemo(() => {
@@ -1509,16 +1573,50 @@ export function MapView({
             icon={getPoiIcon(poi.category)}
           >
             <Popup>
-              <div className="p-1 min-w-[220px] font-sans">
-                <span className="text-[10px] uppercase font-extrabold tracking-wider text-rose-300 bg-rose-500/20 px-2.5 py-0.5 rounded-full border border-rose-500/30">
-                  {poi.category}
-                </span>
-                <h4 className="font-black text-sm text-white mt-2">{poi.name}</h4>
+              <div className="p-1 min-w-[220px] max-w-[280px] font-sans">
+                <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-1.5 mb-1.5">
+                  <span className="text-[10px] uppercase font-extrabold tracking-wider text-rose-300 bg-rose-500/20 px-2.5 py-0.5 rounded-full border border-rose-500/30">
+                    {poi.category}
+                  </span>
+                  {poi.schedule && (
+                    <span className="text-[10px] text-slate-300 font-medium bg-white/10 px-2 py-0.5 rounded-md">
+                      {poi.schedule}
+                    </span>
+                  )}
+                </div>
+                <h4 className="font-black text-sm text-white mt-1">{poi.name}</h4>
+                {poi.address && (
+                  <p className="text-[11px] text-amber-300 font-medium mt-0.5 flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-amber-400 shrink-0" />
+                    <span>{poi.address}</span>
+                  </p>
+                )}
                 {poi.description && (
                   <p className="text-xs text-slate-300 mt-1 leading-relaxed">
                     {poi.description}
                   </p>
                 )}
+
+                {/* Botón de Enrutamiento OSRM a Pie */}
+                {setNavRoute && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const start = userGps ? [userGps.lat, userGps.lng] : PASTO_CENTER;
+                      setNavRoute({
+                        startCoords: start,
+                        targetCoords: [poi.latitude, poi.longitude],
+                        targetName: poi.name,
+                      });
+                    }}
+                    className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+                    title="Calcular ruta a pie con OSRM"
+                  >
+                    <Navigation className="w-3.5 h-3.5" />
+                    <span>¿Cómo llegar a pie? (OSRM)</span>
+                  </button>
+                )}
+
                 <div className="mt-2.5 pt-1.5 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
                   <span className="text-amber-400/80 font-medium">Senda del Carnaval</span>
                   <span>{poi.latitude.toFixed(4)}, {poi.longitude.toFixed(4)}</span>
@@ -1587,6 +1685,26 @@ export function MapView({
                           </span>
                           <span>A {distStr} de ti</span>
                         </div>
+                      )}
+
+                      {/* Botón de Enrutamiento OSRM a Pie */}
+                      {setNavRoute && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const start = userGps ? [userGps.lat, userGps.lng] : PASTO_CENTER;
+                            setNavRoute({
+                              startCoords: start,
+                              targetCoords: [restaurant.latitude, restaurant.longitude],
+                              targetName: restaurant.name,
+                            });
+                          }}
+                          className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+                          title="Calcular ruta a pie con OSRM"
+                        >
+                          <Navigation className="w-3.5 h-3.5" />
+                          <span>¿Cómo llegar a pie? (OSRM)</span>
+                        </button>
                       )}
                     </div>
                   </div>

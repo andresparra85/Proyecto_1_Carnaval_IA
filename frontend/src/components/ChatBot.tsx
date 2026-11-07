@@ -1,47 +1,87 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Sparkles, RotateCcw, MessageSquare } from 'lucide-react';
 import { findCarnavalLandmark, CARNAVAL_LANDMARKS } from '../data/carnavalKnowledge';
+import { searchPastoPOI, PASTO_POIS, PointOfInterest } from '../data/pastoPOIs';
 
 export interface ChatBotProps {
   onFocusSenda?: () => void;
   onFocusLandmark?: (coords: [number, number], name?: string) => void;
 }
 
-// 3 Quick Action Chips solicitados expresamente para GuaneñaBot
-export const QUICK_ACTION_CHIPS = [
+export interface QuickActionChip {
+  id: string;
+  icon: string;
+  label: string;
+  prompt: string;
+  type: 'senda' | 'landmark' | 'poi' | 'day';
+  dayId?: string;
+  coords?: [number, number];
+  name?: string;
+  category?: string;
+  zoom?: number;
+  answer: string;
+}
+
+// 5 Quick Action Chips solicitados para GuaneñaBot con acciones automáticas al mapa
+export const QUICK_ACTION_CHIPS: QuickActionChip[] = [
   {
     id: 'ruta_6_enero',
     icon: '📌',
     label: 'Ruta 6 de Enero',
-    prompt: '¿Cómo es el recorrido de la Senda el 6 de Enero?',
-    type: 'senda' as const,
-    coords: [1.2154, -77.2841] as [number, number],
-    name: 'Senda del Carnaval (Desfile Magno)',
-    answer: '¡Que viva Pasto, carajo! 🎭 El Desfile Magno recorre 7 km desde la Normal Superior por toda la Cra 27 hasta Champagnat con las monumentales carrozas. ¡Te he enfocado la Senda completa en el mapa!',
+    prompt: '¿Cómo es el recorrido del Desfile Magno el 6 de Enero?',
+    type: 'day',
+    dayId: '06-ene',
+    coords: [1.2154, -77.2841],
+    name: 'Senda del Carnaval - Desfile Magno',
+    answer: '¡Que viva Pasto, carajo! 🎭 El 6 de Enero es el Desfile Magno: 7 km de derroche artístico desde la Normal Superior por la Cra 27 hasta Champagnat con las monumentales carrozas. ¡Te he enfocado la Senda oficial en el mapa!',
   },
   {
-    id: 'plaza_carnaval',
-    icon: '🎭',
-    label: 'Plaza del Carnaval',
-    prompt: 'Cuéntame de la Plaza del Carnaval',
-    type: 'landmark' as const,
-    coords: [1.2115, -77.2785] as [number, number],
-    name: 'Plaza del Carnaval y la Cultura',
-    category: 'plaza',
-    zoom: 17,
-    answer: '¡Que viva Pasto, carajo! 💃 La Plaza del Carnaval es el corazón de la fiesta con tarimas de orquestas en vivo, juego de cosmético y encuentro de murgas. ¡Cámara enfocada en la plaza!',
+    id: 'banos_publicos',
+    icon: '🚻',
+    label: 'Baños Públicos',
+    prompt: '¿Dónde hay un baño público cerca de la Plaza del Carnaval?',
+    type: 'poi',
+    coords: [1.2153, -77.2843],
+    name: 'Batería Sanitaria Plaza del Carnaval',
+    category: 'bano',
+    zoom: 18,
+    answer: '¡Que viva Pasto, carajo! 🚻 Baterías sanitarias habilitadas 24 horas en el Costado Sur de la Plaza del Carnaval y en la Plaza de Nariño (Cra 25). ¡Capa activada y ruta a pie trazada en el mapa!',
+  },
+  {
+    id: 'comer_cuy',
+    icon: '🍽️',
+    label: 'Comer Cuy / Frito',
+    prompt: '¿Dónde puedo comer un buen cuy asado o comida tradicional?',
+    type: 'poi',
+    coords: [1.2132, -77.2798],
+    name: 'Restaurante Rancho Grande',
+    category: 'restaurante',
+    zoom: 18,
+    answer: '¡Que viva Pasto, carajo! 🍽️ Te recomiendo el Restaurante Rancho Grande (Calle 18 # 25-30 Centro) para un buen cuy asado o La Merced cerca a la Plaza del Carnaval. ¡Ruta a pie trazada en el mapa!',
+  },
+  {
+    id: 'cai_policia',
+    icon: '👮',
+    label: 'CAI Policía',
+    prompt: '¿Dónde está el CAI de policía más cercano?',
+    type: 'poi',
+    coords: [1.2155, -77.2839],
+    name: 'CAI Plaza del Carnaval',
+    category: 'cai',
+    zoom: 18,
+    answer: '¡Que viva Pasto, carajo! 👮 Tienes el CAI Plaza del Carnaval y el CAI Parque Nariño activos para seguridad y recepción de extraviados. ¡Puesto localizado y ruta trazada en el mapa!',
   },
   {
     id: 'puestos_salud',
     icon: '🚨',
     label: 'Puestos de Salud',
-    prompt: '¿Dónde están los puestos de salud y primeros auxilios?',
-    type: 'landmark' as const,
-    coords: [1.21820, -77.27010] as [number, number],
-    name: 'Puesto de Salud Cruz Roja / Bomboná',
+    prompt: '¿Dónde hay puestos de primeros auxilios y emergencias?',
+    type: 'poi',
+    coords: [1.2151, -77.2845],
+    name: 'Puesto de Primeros Auxilios Cruz Roja',
     category: 'salud',
-    zoom: 17,
-    answer: '¡Que viva Pasto, carajo! 🚨 Puestos de primeros auxilios activos con Cruz Roja y Defensa Civil en Bomboná, Plaza del Carnaval y Champagnat. ¡Cámara y capa médica activadas!',
+    zoom: 18,
+    answer: '¡Que viva Pasto, carajo! 🚨 Puesto de Primeros Auxilios de la Cruz Roja en Plaza del Carnaval y punto médico en Parque Nariño, además del Hospital Civil en la Calle 11. ¡Ruta de asistencia activada!',
   },
 ];
 
@@ -103,12 +143,58 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
   };
 
   // Manejo de clic en los Quick Action Chips
-  const handleQuickChip = (chip: typeof QUICK_ACTION_CHIPS[number]) => {
+  const handleQuickChip = (chip: QuickActionChip) => {
     if (loading) return;
 
-    if (chip.type === 'senda') {
+    if (chip.type === 'day' && chip.dayId) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('focus-carnival-day', {
+            detail: { dayId: chip.dayId },
+          })
+        );
+        window.dispatchEvent(
+          new CustomEvent('focus-senda', {
+            detail: { show: true },
+          })
+        );
+      }
+      if (onFocusSenda) {
+        onFocusSenda();
+      }
+    } else if (chip.type === 'poi' && chip.coords) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('show-poi-category', {
+            detail: { category: chip.category || 'todos' },
+          })
+        );
+        window.dispatchEvent(
+          new CustomEvent('highlight-poi', {
+            detail: {
+              coords: chip.coords,
+              name: chip.name || 'Punto de Interés',
+              category: chip.category || 'general',
+              zoom: chip.zoom || 18,
+              showSenda: true,
+            },
+          })
+        );
+        window.dispatchEvent(
+          new CustomEvent('route-to-poi', {
+            detail: {
+              targetCoords: chip.coords,
+              targetName: chip.name,
+            },
+          })
+        );
+      }
+      if (onFocusLandmark) {
+        onFocusLandmark(chip.coords, chip.name);
+      }
+    } else if (chip.type === 'senda') {
       triggerCameraAction('senda');
-    } else if (chip.type === 'landmark') {
+    } else if (chip.type === 'landmark' && chip.coords) {
       triggerCameraAction('landmark', chip.coords, chip.name, chip.category, chip.zoom);
     }
 
@@ -145,50 +231,85 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
     setLoading(true);
 
     const q = userText.toLowerCase();
-    const landmark = findCarnavalLandmark(userText);
 
-    const isSendaQuery =
-      q.includes('senda') ||
-      q.includes('recorrido') ||
-      q.includes('ruta') ||
-      q.includes('6 de enero') ||
-      q.includes('desfile magno') ||
-      (landmark && (landmark.id === 'desfile_magno' || landmark.id === 'castaneda'));
-
-    const isSaludQuery =
-      q.includes('salud') ||
-      q.includes('médic') ||
-      q.includes('medic') ||
-      q.includes('primeros auxilios') ||
-      q.includes('cruz roja') ||
-      q.includes('defensa civil') ||
-      (landmark && landmark.category === 'salud');
-
-    const isPlazaQuery =
-      q.includes('plaza del carnaval') ||
-      q.includes('plaza de nariño') ||
-      q.includes('plaza narino') ||
-      (landmark && landmark.category === 'plaza');
-
-    if (isSendaQuery) {
-      triggerCameraAction('senda');
-    } else if (isSaludQuery) {
-      triggerCameraAction('landmark', [1.21820, -77.27010], 'Puestos de Salud', 'salud', 17);
-    } else if (isPlazaQuery) {
-      triggerCameraAction('landmark', [1.2115, -77.2785], 'Plaza del Carnaval', 'plaza', 17);
-    } else if (landmark) {
-      triggerCameraAction('landmark', landmark.coords, landmark.name, landmark.category, landmark.category === 'salud' ? 18 : 17);
+    // 1. Detección de intenciones sobre Días del Carnaval
+    let matchedDay: { dayId: string; name: string; desc: string } | null = null;
+    if (q.includes('3 de enero') || q.includes('tres de enero') || q.includes('canto a la tierra') || q.includes('colectivos coreográficos') || q.includes('coreograficos')) {
+      matchedDay = {
+        dayId: '03-ene',
+        name: 'Canto a la Tierra (3 de Enero)',
+        desc: 'Desfile de colectivos coreográficos en honor a la Madre Tierra por toda la Senda oficial.',
+      };
+    } else if (q.includes('4 de enero') || q.includes('cuatro de enero') || q.includes('castañeda') || q.includes('castaneda') || q.includes('familia')) {
+      matchedDay = {
+        dayId: '04-ene',
+        name: 'Llegada de la Familia Castañeda (4 de Enero)',
+        desc: 'Apertura tradicional de la fiesta con estampas costumbristas y bienvenida al Carnaval.',
+      };
+    } else if (q.includes('5 de enero') || q.includes('cinco de enero') || q.includes('día de negros') || q.includes('dia de negros') || q.includes('negros') || q.includes('pintica') || q.includes('cosmético') || q.includes('cosmetico')) {
+      matchedDay = {
+        dayId: '05-ene',
+        name: 'Día de Negros (5 de Enero)',
+        desc: '¡Una pintica por favor! Tablados principales con orquestas en Plaza del Carnaval y Plaza de Nariño.',
+      };
+    } else if (q.includes('6 de enero') || q.includes('seis de enero') || q.includes('desfile magno') || q.includes('magno') || q.includes('blancos') || q.includes('carrozas') || q.includes('carroza')) {
+      matchedDay = {
+        dayId: '06-ene',
+        name: 'Desfile Magno (6 de Enero)',
+        desc: 'El día cumbre del Carnaval: 7 km de derroche artístico desde la Normal Superior por la Cra 27 hasta Champagnat.',
+      };
     }
 
+    // 2. Detección de POIs reales de Pasto (baños, restaurantes/cuy, policía/CAI, puestos de salud)
+    const poiMatch = searchPastoPOI(userText);
+
+    // 3. Detección de hitos de la Senda
+    const landmark = findCarnavalLandmark(userText);
+
     let conciseFallback = '';
-    if (isSendaQuery) {
-      conciseFallback = '¡Que viva Pasto, carajo! 🎭 La Senda recorre 7 km desde la Normal Superior por la Cra 27 hasta Champagnat. ¡He enfocado la ruta en tu mapa!';
-    } else if (isSaludQuery) {
-      conciseFallback = '¡Que viva Pasto, carajo! 🚨 Hay puestos médicos de Cruz Roja y Defensa Civil en Bomboná, Plaza del Carnaval y Champagnat. ¡He activado la capa de salud!';
-    } else if (isPlazaQuery) {
-      conciseFallback = '¡Que viva Pasto, carajo! 💃 La Plaza del Carnaval es el epicentro de la fiesta, orquestas y juego de cosmético. ¡Cámara centrada en la plaza!';
+
+    if (matchedDay) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('focus-carnival-day', { detail: { dayId: matchedDay.dayId } }));
+        window.dispatchEvent(new CustomEvent('focus-senda', { detail: { show: true } }));
+      }
+      if (onFocusSenda) onFocusSenda();
+      conciseFallback = `¡Que viva Pasto, carajo! 🎭 He activado el ${matchedDay.name}: ${matchedDay.desc} ¡Senda y evento oficial enfocados en tu mapa!`;
+    } else if (poiMatch) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-poi-category', { detail: { category: poiMatch.category } }));
+        window.dispatchEvent(
+          new CustomEvent('highlight-poi', {
+            detail: {
+              coords: poiMatch.coords,
+              name: poiMatch.name,
+              category: poiMatch.category,
+              zoom: 18,
+              showSenda: true,
+            },
+          })
+        );
+        window.dispatchEvent(
+          new CustomEvent('route-to-poi', {
+            detail: {
+              targetCoords: poiMatch.coords,
+              targetName: poiMatch.name,
+            },
+          })
+        );
+      }
+      if (onFocusLandmark) onFocusLandmark(poiMatch.coords, poiMatch.name);
+
+      const emoji = poiMatch.category === 'bano' ? '🚻' : poiMatch.category === 'cai' ? '👮' : poiMatch.category === 'salud' ? '🚨' : '🍽️';
+      const addressStr = poiMatch.address ? ` (${poiMatch.address})` : '';
+      const scheduleStr = poiMatch.schedule ? ` • Horario: ${poiMatch.schedule}` : '';
+      conciseFallback = `¡Que viva Pasto, carajo! ${emoji} He ubicado **${poiMatch.name}**${addressStr}${scheduleStr}. ${poiMatch.description} ¡He activado la capa en el mapa y trazado la ruta a pie más rápida con OSRM!`;
     } else if (landmark) {
+      triggerCameraAction('landmark', landmark.coords, landmark.name, landmark.category, landmark.category === 'salud' ? 18 : 17);
       conciseFallback = `¡Que viva Pasto, carajo! 📍 ${landmark.name}: ${landmark.description.slice(0, 110)}... ¡He enfocado sus coordenadas en el mapa!`;
+    } else if (q.includes('senda') || q.includes('recorrido') || q.includes('ruta')) {
+      triggerCameraAction('senda');
+      conciseFallback = '¡Que viva Pasto, carajo! 🎭 La Senda oficial del Carnaval recorre 7 km desde la Normal Superior por la Cra 27 hasta Champagnat. ¡He enfocado la ruta en tu mapa!';
     }
 
     try {
@@ -213,6 +334,9 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
       } else {
         if (!botResponse.toLowerCase().includes('pasto, carajo')) {
           botResponse = `¡Que viva Pasto, carajo! 🎉 ${botResponse}`;
+        }
+        if (conciseFallback && (matchedDay || poiMatch)) {
+          botResponse = `${botResponse}\n\n${conciseFallback}`;
         }
       }
 
