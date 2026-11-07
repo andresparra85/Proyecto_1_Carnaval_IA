@@ -15,6 +15,7 @@ import { SENDA_OFICIAL_COORDS, HITOS_SENDA } from '../data/sendaCoords';
 import { CarnavalDaySelector, DayCameraController } from './map/CarnavalDaySelector';
 import { createSvgLandmarkPin } from './map/MapComponent';
 import { fetchActiveReports } from '../services/reportService';
+import { getStreetRoute } from '../services/routingService';
 import { PASTO_POIS } from '../data/pastoPOIs';
 import {
   RESTAURANTS_DATA,
@@ -597,19 +598,12 @@ function MapRouteController({ currentEvent, currentCarnivalDay }) {
   return null;
 }
 
-// Función asíncrona de enrutamiento peatonal real por calles usando el servicio público de OSRM
+// Función asíncrona de enrutamiento peatonal real por calles usando el servicio centralizado de OSRM
 export async function fetchRealRoute(startCoords, targetCoords) {
   try {
-    const url = `https://router.project-osrm.org/route/v1/walking/${startCoords[1]},${startCoords[0]};${targetCoords[1]},${targetCoords[0]}?overview=full&geometries=geojson`;
-    const response = await axios.get(url, { timeout: 8000 });
-    const route = response.data?.routes?.[0];
-    if (route?.geometry?.coordinates && route.geometry.coordinates.length > 0) {
-      // Convierte el array GeoJSON devuelto [lng, lat] al formato requerido por Leaflet [lat, lng]
-      return route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
-    }
-    return [startCoords, targetCoords];
+    return await getStreetRoute(startCoords, targetCoords);
   } catch (error) {
-    console.warn('Fallo o timeout al consultar ruta peatonal con OSRM:', error);
+    console.warn('Fallo al consultar ruta peatonal con OSRM:', error);
     return [startCoords, targetCoords];
   }
 }
