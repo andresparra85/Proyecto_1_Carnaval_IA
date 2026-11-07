@@ -36,14 +36,24 @@ export const api = {
 
   // Reportes ciudadanos de incidencias
   getReports: async (params = {}) => {
-    const response = await apiClient.get('/reports/', { params });
-    return response.data;
+    try {
+      const response = await axios.get('http://localhost:8000/api/reports', { params });
+      return response.data;
+    } catch (_) {
+      const response = await apiClient.get('/reports/', { params });
+      return response.data;
+    }
   },
 
   // Crear nuevo reporte ciudadano (con clasificación de riesgo IA)
   createReport: async (reportData) => {
-    const response = await apiClient.post('/reports/', reportData);
-    return response.data;
+    try {
+      const response = await axios.post('http://localhost:8000/api/reports', reportData);
+      return response.data;
+    } catch (_) {
+      const response = await apiClient.post('/reports/', reportData);
+      return response.data;
+    }
   },
 
   // Zonas de riesgo y congestión calculadas dinámicamente

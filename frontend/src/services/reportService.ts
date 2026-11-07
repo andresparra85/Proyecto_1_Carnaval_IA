@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Variables de entorno para Supabase con fallback de contingencia seguro
+// URL de la API del Backend (FastAPI) y Supabase
+const BACKEND_API_URL = 'http://localhost:8000/api';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://demo-carnavalia-pasto.supabase.co';
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_dummy_anon_key_for_safe_fallback_carnavalia_2026';
 
@@ -113,7 +114,7 @@ const saveStoredReports = (reports: IncidentReport[]) => {
 /**
  * Normaliza un reporte asegurando lat/latitude, lng/longitude y valores consistentes
  */
-const normalizeReport = (raw: any): IncidentReport => {
+export const normalizeReport = (raw: any): IncidentReport => {
   const lat = Number(raw.latitude ?? raw.lat ?? 1.2115);
   const lng = Number(raw.longitude ?? raw.lng ?? -77.2785);
   const category = raw.category || raw.type || 'Aglomeracion';
@@ -136,102 +137,135 @@ const normalizeReport = (raw: any): IncidentReport => {
 };
 
 /**
- * Inserta un reporte de incidente directamente en Supabase (o en almacenamiento local)
+ * Inserta un reporte de incidente enviando POST http://localhost:8000/api/reports
+ * Body: { title, category, description, latitude, longitude }
  */
 export async function submitIncidentReport(payload: IncidentReportPayload): Promise<IncidentReport> {
   const lat = Number(payload.latitude ?? payload.lat ?? 1.2115);
   const lng = Number(payload.longitude ?? payload.lng ?? -77.2785);
   const category = payload.category || payload.type || 'Aglomeracion';
   const risk: 'Alto' | 'Medio' | 'Bajo' = payload.ai_risk_level || (category === 'Emergencia' || category === 'Aglomeracion' ? 'Alto' : 'Medio');
-  const title = payload.title || payload.type || `${category} en Senda del Carnaval`;
+  const title = payload.title || `${category} en Senda del Carnaval`;
   const description = payload.description || 'Incidente reportado en la senda.';
-  const now = new Date().toISOString();
 
-  const recordToInsert = {
+  const requestBody = {
     title,
-    type: category,
     category,
     description,
-    lat,
-    lng,
     latitude: lat,
     longitude: lng,
-    ai_risk_level: risk,
-    status: 'active',
-    created_at: now,
   };
 
-  let createdReport: IncidentReport = normalizeReport({
-    id: `rep-${Date.now()}`,
-    ...recordToInsert,
-  });
+  let createdReport: IncidentReport | null = null;
 
-  if (isSupabaseConfigured) {
+  // 1. Enviar POST http://localhost:8000/api/reports
+  try {
+    let response: Response;
     try {
-      // Intentar insertar en tabla 'incident_reports' o 'reports'
+      response = await fetch(`${BACKEND_API_URL}/reports`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+    } catch (directErr) {
+      // Reintento con proxy local de Vite /api/reports
+      response = await fetch('/api/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+    }
+
+    if (response.ok) {
+      const data = await response.json();
+      createdReport = normalizeReport(data);
+    } else {
+      console.warn('Backend respondió con estado no exitoso:', response.status);
+    }
+  } catch (apiErr) {
+    console.warn('No fue posible contactar a http://localhost:8000/api/reports, intentando respaldo:', apiErr);
+  }
+
+  // 2. Respaldo directo en Supabase si no se pudo crear en la API
+  if (!createdReport && isSupabaseConfigured) {
+    try {
       const { data, error } = await supabase
-        .from('incident_reports')
-        .insert([recordToInsert])
+        .from('reports')
+        .insert([{
+          ...requestBody,
+          ai_risk_level: risk,
+          status: 'active',
+          created_at: new Date().toISOString(),
+        }])
         .select()
         .single();
 
-      if (error) {
-        // Intentar fallback con tabla 'reports'
-        const fallbackRes = await supabase
-          .from('reports')
-          .insert([recordToInsert])
-          .select()
-          .single();
-
-        if (!fallbackRes.error && fallbackRes.data) {
-          createdReport = normalizeReport(fallbackRes.data);
-        } else {
-          console.warn('Supabase insert warning, usando almacenamiento seguro:', error.message);
-        }
-      } else if (data) {
+      if (!error && data) {
         createdReport = normalizeReport(data);
       }
     } catch (sbErr) {
-      console.warn('Error de conexión con Supabase, usando respaldo local:', sbErr);
+      console.warn('Error en fallback Supabase:', sbErr);
     }
+  }
+
+  // 3. Fallback local reactivo garantizado para que nunca falle la experiencia del usuario
+  if (!createdReport) {
+    createdReport = normalizeReport({
+      id: `rep-${Date.now()}`,
+      ...requestBody,
+      ai_risk_level: risk,
+      status: 'active',
+      created_at: new Date().toISOString(),
+    });
   }
 
   // Guardar en caché local para visualización reactiva inmediata
   const localList = getStoredReports();
-  const updatedList = [createdReport, ...localList.filter((r) => r.id !== createdReport.id)];
+  const updatedList = [createdReport, ...localList.filter((r) => r.id !== createdReport!.id)];
   saveStoredReports(updatedList);
 
   return createdReport;
 }
 
 /**
- * Consulta los reportes activos para cargarlos al iniciar el mapa
+ * Consulta los reportes activos haciendo GET http://localhost:8000/api/reports
  */
 export async function fetchActiveReports(): Promise<IncidentReport[]> {
-  let remoteReports: IncidentReport[] = [];
+  let backendReports: IncidentReport[] = [];
 
-  if (isSupabaseConfigured) {
+  // 1. GET http://localhost:8000/api/reports
+  try {
+    let response: Response;
     try {
-      // Intentar consultar de 'incident_reports'
+      response = await fetch(`${BACKEND_API_URL}/reports`);
+    } catch (directErr) {
+      response = await fetch('/api/reports');
+    }
+
+    if (response.ok) {
+      const data = await response.json();
+      if (Array.isArray(data) && data.length > 0) {
+        backendReports = data.map(normalizeReport);
+      }
+    }
+  } catch (apiErr) {
+    console.warn('Aviso: backend no disponible en http://localhost:8000/api/reports, consultando respaldo:', apiErr);
+  }
+
+  // 2. Respaldo directo de Supabase si la API no retornó datos
+  if (backendReports.length === 0 && isSupabaseConfigured) {
+    try {
       const { data, error } = await supabase
-        .from('incident_reports')
+        .from('reports')
         .select('*')
-        .eq('status', 'active')
         .order('created_at', { ascending: false });
 
       if (!error && data && data.length > 0) {
-        remoteReports = data.map(normalizeReport);
-      } else {
-        // Fallback a tabla 'reports'
-        const fallbackRes = await supabase
-          .from('reports')
-          .select('*')
-          .eq('status', 'active')
-          .order('created_at', { ascending: false });
-
-        if (!fallbackRes.error && fallbackRes.data && fallbackRes.data.length > 0) {
-          remoteReports = fallbackRes.data.map(normalizeReport);
-        }
+        backendReports = data.map(normalizeReport);
       }
     } catch (sbErr) {
       console.warn('Consulta a Supabase en modo desconectado/offline:', sbErr);
@@ -239,13 +273,13 @@ export async function fetchActiveReports(): Promise<IncidentReport[]> {
   }
 
   const storedLocals = getStoredReports();
-  
-  // Fusionar remotos, locales persistidos y los iniciales de la Senda
+
+  // 3. Fusionar remotos, locales persistidos y los iniciales de la Senda
   const mapById = new Map<string | number, IncidentReport>();
-  
+
   INITIAL_ACTIVE_REPORTS.forEach((r) => mapById.set(r.id, r));
   storedLocals.forEach((r) => mapById.set(r.id, r));
-  remoteReports.forEach((r) => mapById.set(r.id, r));
+  backendReports.forEach((r) => mapById.set(r.id, r));
 
   return Array.from(mapById.values()).sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -255,6 +289,6 @@ export async function fetchActiveReports(): Promise<IncidentReport[]> {
 export default {
   submitIncidentReport,
   fetchActiveReports,
+  normalizeReport,
   supabase,
 };
-
