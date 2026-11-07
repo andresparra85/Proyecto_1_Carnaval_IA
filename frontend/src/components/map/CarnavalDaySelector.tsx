@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useMap } from 'react-leaflet';
 import { SENDA_OFICIAL_COORDS } from '../../data/sendaCoords';
 
@@ -19,7 +19,7 @@ export const OFFICIAL_CARNIVAL_DATES: CarnivalDayOption[] = [
     name: 'Canto a la Tierra',
     color: '#F59E0B', // Ámbar
     description: 'Recorrido completo por la Senda con trazo Ámbar',
-    badge: 'Colectivos Coreográficos'
+    badge: 'Colectivos Coreográficos',
   },
   {
     id: '04-ene',
@@ -27,7 +27,7 @@ export const OFFICIAL_CARNIVAL_DATES: CarnivalDayOption[] = [
     name: 'Familia Castañeda',
     color: '#D946EF', // Magenta
     description: 'Recorrido completo por la Senda con trazo Magenta',
-    badge: 'Estampas y Carretas'
+    badge: 'Estampas y Carretas',
   },
   {
     id: '05-ene',
@@ -35,7 +35,7 @@ export const OFFICIAL_CARNIVAL_DATES: CarnivalDayOption[] = [
     name: 'Día de Negros',
     color: '#38BDF8', // Cyan festivo / Tablados
     description: 'Tablados y zonas de juego en Plaza del Carnaval y Plaza de Nariño',
-    badge: 'Juego de Cosmético'
+    badge: 'Juego de Cosmético',
   },
   {
     id: '06-ene',
@@ -43,8 +43,8 @@ export const OFFICIAL_CARNIVAL_DATES: CarnivalDayOption[] = [
     name: 'Desfile Magno',
     color: '#E11D48', // Rojo Carmesí
     description: 'Recorrido oficial completo con trazo Rojo Carmesí y todos los hitos',
-    badge: 'Carrozas Monumentales'
-  }
+    badge: 'Carrozas Monumentales',
+  },
 ];
 
 export function CarnavalDaySelector({
@@ -55,42 +55,56 @@ export function CarnavalDaySelector({
   onSelectDay: (dayId: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-1 sm:gap-1.5 p-1 rounded-2xl bg-slate-900/90 backdrop-blur-md border border-white/10 shadow-lg overflow-x-auto no-scrollbar pointer-events-auto">
-      <div className="hidden sm:flex items-center gap-1.5 pl-2.5 pr-1.5 text-xs font-bold text-amber-400 select-none">
-        <Calendar className="w-3.5 h-3.5" />
-        <span className="text-[11px] uppercase tracking-wider">Fechas:</span>
-      </div>
+    <nav
+      aria-label="Selector de días oficiales del Carnaval"
+      className="pointer-events-auto flex items-center justify-center p-1.5 sm:p-2 rounded-full bg-slate-900/85 backdrop-blur-xl border border-white/15 shadow-2xl shadow-black/60 overflow-x-auto no-scrollbar max-w-full mx-auto select-none transition-all"
+    >
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        {OFFICIAL_CARNIVAL_DATES.map((day) => {
+          const isSelected = selectedDay === day.id;
 
-      {OFFICIAL_CARNIVAL_DATES.map((day) => {
-        const isSelected = selectedDay === day.id;
-        return (
-          <button
-            key={day.id}
-            type="button"
-            onClick={() => onSelectDay(day.id)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap ${
-              isSelected
-                ? 'text-white shadow-md ring-2 ring-white/30 scale-[1.02]'
-                : 'text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5'
-            }`}
-            style={
-              isSelected
-                ? {
-                    backgroundColor: day.color,
-                    boxShadow: `0 0 16px ${day.color}80`,
-                  }
-                : {}
-            }
-            title={`${day.dateLabel} - ${day.name}: ${day.description}`}
-          >
-            <span>{day.dateLabel}</span>
-            <span className="hidden md:inline text-[10px] font-semibold opacity-90">
-              {day.name}
-            </span>
-          </button>
-        );
-      })}
-    </div>
+          return (
+            <button
+              key={day.id}
+              type="button"
+              onClick={() => onSelectDay(day.id)}
+              className={`rounded-full px-3.5 sm:px-4 py-1.5 sm:py-2 text-sm font-semibold transition-all duration-300 flex flex-col items-center justify-center cursor-pointer whitespace-nowrap min-w-[95px] sm:min-w-[120px] ${
+                isSelected
+                  ? 'text-white scale-105 shadow-lg ring-2 ring-white/30 font-bold'
+                  : 'bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/5 hover:border-white/15 hover:scale-[1.02]'
+              }`}
+              style={
+                isSelected
+                  ? {
+                      backgroundColor: day.color,
+                      boxShadow: `0 0 24px ${day.color}90`,
+                    }
+                  : {}
+              }
+              title={`${day.dateLabel} - ${day.name}: ${day.description}`}
+              aria-pressed={isSelected}
+            >
+              {/* Fecha principal en píldora */}
+              <div className="flex items-center gap-1">
+                {isSelected && <Sparkles className="w-3 h-3 text-white/90 animate-pulse" />}
+                <span className="text-xs sm:text-sm font-black tracking-tight leading-tight">
+                  {day.dateLabel}
+                </span>
+              </div>
+
+              {/* Microcopia cultural visible */}
+              <span
+                className={`text-[9px] sm:text-[10px] tracking-tight leading-tight mt-0.5 truncate max-w-[90px] sm:max-w-[115px] ${
+                  isSelected ? 'text-white/95 font-semibold' : 'text-slate-400 font-medium'
+                }`}
+              >
+                {day.name}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
 
@@ -119,4 +133,3 @@ export function DayCameraController({ selectedDay }: { selectedDay: string }) {
 }
 
 export default CarnavalDaySelector;
-
