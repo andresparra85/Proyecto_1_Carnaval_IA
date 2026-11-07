@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Sparkles } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Sparkles, Compass, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function LoginView() {
@@ -63,22 +63,6 @@ export function LoginView() {
     setError(null);
   };
 
-  const handleQuickDemo = async () => {
-    setEmail('juan@pasto.gov.co');
-    setPassword('Password123!');
-    setError(null);
-    setLoading(true);
-    try {
-      await login('juan@pasto.gov.co', 'Password123!');
-      localStorage.setItem('carnavalia_session', 'active');
-    } catch (err) {
-      console.error(err);
-      setError('Error al ingresar con la cuenta de demostración.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleGuestLogin = () => {
     setError(null);
     localStorage.setItem('carnavalia_session', 'active');
@@ -87,24 +71,47 @@ export function LoginView() {
 
   return (
     <div className="min-h-screen w-screen flex items-center justify-center p-4 bg-slate-950 relative overflow-hidden select-none">
-      {/* Fondo sutil con resplandor suave */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-slate-950 pointer-events-none" />
+      {/* 1. Fondo Atmosférico con Gradientes y Resplandor Carnavalesco */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 pointer-events-none" />
+      
+      {/* Orbes de luz difuminada inspirados en la paleta andina */}
+      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-rose-600/25 rounded-full blur-3xl pointer-events-none animate-pulse-slow" />
+      <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl pointer-events-none animate-pulse-slow" style={{ animationDelay: '1.5s' }} />
+      <div className="absolute -top-32 right-1/4 w-80 h-80 bg-fuchsia-600/20 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Tarjeta centrada con estilo pulido Glassmorphic */}
-      <div className="relative w-full max-w-sm sm:max-w-md p-8 sm:p-9 rounded-3xl bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 shadow-2xl z-10">
-        {/* Encabezado e identidad */}
+      {/* Siluetas y partículas sutiles alusivas a la fiesta */}
+      <div className="absolute inset-0 opacity-[0.035] pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]" />
+
+      {/* Elementos flotantes decorativos estilo carnaval */}
+      <div className="absolute top-12 left-12 text-2xl opacity-20 pointer-events-none hidden sm:block animate-float">🎭</div>
+      <div className="absolute bottom-16 left-20 text-xl opacity-20 pointer-events-none hidden sm:block animate-float" style={{ animationDelay: '2s' }}>🎺</div>
+      <div className="absolute top-20 right-16 text-2xl opacity-20 pointer-events-none hidden sm:block animate-float" style={{ animationDelay: '3s' }}>👑</div>
+      <div className="absolute bottom-20 right-20 text-xl opacity-20 pointer-events-none hidden sm:block animate-float" style={{ animationDelay: '1s' }}>🎨</div>
+
+      {/* 2. Tarjeta Central Glassmorphism Pulida */}
+      <div className="relative w-full max-w-sm sm:max-w-md p-7 sm:p-9 rounded-3xl bg-slate-900/80 backdrop-blur-2xl border border-white/15 shadow-2xl shadow-rose-950/40 z-10 transition-all duration-300">
+        
+        {/* Cabecera de Impacto con Insignia Cultural */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white text-2xl mb-3 shadow-md shadow-orange-500/20">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-rose-500/15 via-fuchsia-500/15 to-amber-500/15 border border-white/10 text-[11px] font-semibold text-amber-300 shadow-sm mb-3">
+            <span>🎭</span>
+            <span>Patrimonio Cultural Inmaterial UNESCO</span>
+          </div>
+
+          <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-600 via-pink-600 to-amber-500 text-white text-3xl mb-2.5 shadow-lg shadow-rose-600/30 ring-4 ring-white/10">
             🎭
           </div>
 
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-            Carnaval<span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">IA</span>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-1">
+            Carnaval<span className="bg-gradient-to-r from-rose-500 via-pink-500 to-amber-400 bg-clip-text text-transparent">IA</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1 font-medium">
+          <p className="text-xs text-slate-300 mt-1 font-semibold tracking-wide">
+            Senda Interactiva y Guía Cultural • Pasto, Nariño
+          </p>
+          <p className="text-[11px] text-slate-400 mt-0.5">
             {isRegister
-              ? 'Crea tu cuenta para acceder a la Senda'
-              : 'Inicia sesión para acceder a la Senda'}
+              ? 'Regístrate para colaborar y explorar la fiesta magna'
+              : 'Inicia sesión para acceder a la Senda y servicios en vivo'}
           </p>
         </div>
 
@@ -112,7 +119,7 @@ export function LoginView() {
         {error && (
           <div
             role="alert"
-            className="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2.5 animate-in fade-in duration-200"
+            className="mb-4 p-3 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-200 text-xs flex items-center gap-2.5 animate-in fade-in duration-200 shadow-sm"
           >
             <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
             <span className="flex-1 font-medium leading-tight">{error}</span>
@@ -132,8 +139,8 @@ export function LoginView() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Tu nombre"
-                className="w-full px-4 py-2.5 bg-slate-950/70 border border-white/10 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/40 transition duration-200"
+                placeholder="Ej. Camila Narváez"
+                className="w-full px-4 py-2.5 bg-slate-950/70 border border-white/10 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500/50 transition duration-200"
               />
             </div>
           )}
@@ -152,7 +159,7 @@ export function LoginView() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ejemplo@carnavalia.co"
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-950/70 border border-white/10 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/40 transition duration-200"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-950/70 border border-white/10 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500/50 transition duration-200"
               />
             </div>
           </div>
@@ -171,7 +178,7 @@ export function LoginView() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mínimo 6 caracteres"
-                className="w-full pl-10 pr-11 py-2.5 bg-slate-950/70 border border-white/10 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/40 transition duration-200"
+                className="w-full pl-10 pr-11 py-2.5 bg-slate-950/70 border border-white/10 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500/50 transition duration-200"
               />
               <button
                 type="button"
@@ -185,12 +192,12 @@ export function LoginView() {
             </div>
           </div>
 
-          {/* Botón Principal de Acción */}
+          {/* Botón Principal de Acción con Degradado Festivo */}
           <button
             id="auth-submit-btn"
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-3 px-4 rounded-2xl font-bold text-sm text-white bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-400 hover:via-orange-400 hover:to-rose-400 active:scale-[0.99] shadow-md shadow-orange-500/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full mt-2 py-3.5 px-4 rounded-2xl font-bold text-sm text-white bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-rose-600/30 hover:shadow-rose-600/40 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
           >
             {loading ? (
               <>
@@ -198,41 +205,42 @@ export function LoginView() {
                 <span>{isRegister ? 'Creando cuenta...' : 'Iniciando sesión...'}</span>
               </>
             ) : (
-              <span>{isRegister ? 'Crear Cuenta' : 'Iniciar Sesión'}</span>
+              <span>{isRegister ? 'Crear Cuenta y Entrar' : 'Iniciar Sesión'}</span>
             )}
           </button>
 
-          {/* Opción de Acceso Rápido / Demo para evaluación directa */}
+          {/* Separador sutil */}
           <div className="relative my-3 flex items-center justify-center">
             <div className="border-t border-white/10 w-full" />
             <span className="bg-slate-900/90 px-3 text-[10px] text-slate-400 uppercase tracking-widest font-bold select-none">
-              o acceso directo
+              o acceso libre
             </span>
             <div className="border-t border-white/10 w-full" />
           </div>
 
+          {/* Botón Secundario: Explorar como Invitado / Turista */}
           <button
             id="guest-login-btn"
             type="button"
             onClick={handleGuestLogin}
             disabled={loading}
-            className="w-full py-3 px-4 rounded-2xl font-bold text-sm text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-sm group"
-            title="Entrar como Turista / Invitado sin credenciales para acceso inmediato"
+            className="w-full py-3 px-4 rounded-2xl font-bold text-sm text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-400/60 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-sm group"
+            title="Explorar como Invitado / Turista sin credenciales"
           >
-            <Sparkles className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
-            <span>Entrar como Turista / Invitado</span>
+            <Compass className="w-4 h-4 text-amber-400 group-hover:rotate-45 transition-transform" />
+            <span>Explorar como Invitado / Turista</span>
           </button>
         </form>
 
-        {/* Enlace inferior simple para alternar entre Login y Registro */}
-        <div className="mt-6 pt-5 border-t border-white/10 text-center text-xs text-slate-400">
+        {/* Enlace inferior para alternar entre Login y Registro */}
+        <div className="mt-5 pt-4 border-t border-white/10 text-center text-xs text-slate-400">
           {isRegister ? (
             <p>
               ¿Ya tienes cuenta?{' '}
               <button
                 type="button"
                 onClick={handleToggleMode}
-                className="font-bold text-amber-400 hover:text-amber-300 transition cursor-pointer ml-1"
+                className="font-bold text-rose-400 hover:text-amber-300 transition cursor-pointer ml-1 underline decoration-rose-500/40 underline-offset-4"
               >
                 Iniciar sesión
               </button>
@@ -243,7 +251,7 @@ export function LoginView() {
               <button
                 type="button"
                 onClick={handleToggleMode}
-                className="font-bold text-amber-400 hover:text-amber-300 transition cursor-pointer ml-1"
+                className="font-bold text-rose-400 hover:text-amber-300 transition cursor-pointer ml-1 underline decoration-rose-500/40 underline-offset-4"
               >
                 Regístrate aquí
               </button>
