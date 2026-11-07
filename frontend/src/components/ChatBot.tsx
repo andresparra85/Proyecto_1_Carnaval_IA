@@ -2,20 +2,56 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Sparkles, RotateCcw } from 'lucide-react';
 import { findCarnavalLandmark, CARNAVAL_LANDMARKS } from '../data/carnavalKnowledge';
 
-const QUICK_PROMPTS = [
-  '¿Cómo es el recorrido de la Senda?',
-  '¿Dónde queda un puesto de salud?',
-  '¿Qué eventos hay el 5 y 6 de enero?',
-  '¿Dónde comer frito pastuso y cuy?',
+export interface ChatBotProps {
+  onFocusSenda?: () => void;
+  onFocusLandmark?: (coords: [number, number], name?: string) => void;
+}
+
+// 3 Quick Action Chips solicitados expresamente para GuaneñaBot
+export const QUICK_ACTION_CHIPS = [
+  {
+    id: 'ruta_6_enero',
+    icon: '📌',
+    label: 'Ruta 6 de Enero',
+    prompt: '¿Cómo es el recorrido de la Senda el 6 de Enero?',
+    type: 'senda' as const,
+    coords: [1.2154, -77.2841] as [number, number],
+    name: 'Senda del Carnaval (Desfile Magno)',
+    answer: '¡Que viva Pasto, carajo! 🎭 El Desfile Magno recorre 7 km desde la Normal Superior por toda la Cra 27 hasta Champagnat con las monumentales carrozas. ¡Te he enfocado la Senda completa en el mapa!',
+  },
+  {
+    id: 'plaza_carnaval',
+    icon: '🎭',
+    label: 'Plaza del Carnaval',
+    prompt: 'Cuéntame de la Plaza del Carnaval',
+    type: 'landmark' as const,
+    coords: [1.2115, -77.2785] as [number, number],
+    name: 'Plaza del Carnaval y la Cultura',
+    category: 'plaza',
+    zoom: 17,
+    answer: '¡Que viva Pasto, carajo! 💃 La Plaza del Carnaval es el corazón de la fiesta con tarimas de orquestas en vivo, juego de cosmético y encuentro de murgas. ¡Cámara enfocada en la plaza!',
+  },
+  {
+    id: 'puestos_salud',
+    icon: '🚨',
+    label: 'Puestos de Salud',
+    prompt: '¿Dónde están los puestos de salud y primeros auxilios?',
+    type: 'landmark' as const,
+    coords: [1.21820, -77.27010] as [number, number],
+    name: 'Puesto de Salud Cruz Roja / Bomboná',
+    category: 'salud',
+    zoom: 17,
+    answer: '¡Que viva Pasto, carajo! 🚨 Puestos de primeros auxilios activos con Cruz Roja y Defensa Civil en Bomboná, Plaza del Carnaval y Champagnat. ¡Cámara y capa médica activadas!',
+  },
 ];
 
-export function ChatBot({ onFocusSenda }: { onFocusSenda?: () => void } = {}) {
+export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
       id: 1,
       sender: 'bot',
-      text: '¡Qué viva Pasto, carajo! 🎉 Soy GuaneñaBot, tu guía en el Carnaval de Pasto. Pregúntame sobre el recorrido de la Senda, puntos de salud, eventos del 4 al 6 de enero o los mejores lugares gastronómicos.',
+      text: '¡Que viva Pasto, carajo! 🎉 Soy GuaneñaBot, tu guía en el Carnaval de Negros y Blancos. Pregúntame sobre la Senda, puntos de salud o los eventos clave.',
       timestamp: new Date(),
     },
   ]);
@@ -32,6 +68,67 @@ export function ChatBot({ onFocusSenda }: { onFocusSenda?: () => void } = {}) {
       scrollToBottom();
     }
   }, [messages, isOpen, loading]);
+
+  // Ejecuta la interacción de cámara con el mapa de Leaflet
+  const triggerCameraAction = (actionType: 'senda' | 'landmark', coords?: [number, number], name?: string, category?: string, zoom: number = 17) => {
+    if (actionType === 'senda') {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('focus-senda', {
+            detail: { show: true },
+          })
+        );
+      }
+      if (onFocusSenda) {
+        onFocusSenda();
+      }
+    } else if (actionType === 'landmark' && coords) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('focus-landmark', {
+            detail: {
+              coords,
+              name: name || 'Punto Clave del Carnaval',
+              category: category || 'general',
+              zoom,
+              showSenda: true,
+            },
+          })
+        );
+      }
+      if (onFocusLandmark) {
+        onFocusLandmark(coords, name);
+      }
+    }
+  };
+
+  // Manejo de clic en los Quick Action Chips
+  const handleQuickChip = (chip: typeof QUICK_ACTION_CHIPS[number]) => {
+    if (loading) return;
+
+    // Disparar acción de mapa inmediata
+    if (chip.type === 'senda') {
+      triggerCameraAction('senda');
+    } else if (chip.type === 'landmark') {
+      triggerCameraAction('landmark', chip.coords, chip.name, chip.category, chip.zoom);
+    }
+
+    const userMsg = {
+      id: Date.now(),
+      sender: 'user',
+      text: chip.prompt,
+      timestamp: new Date(),
+    };
+
+    const botMsg = {
+      id: Date.now() + 1,
+      sender: 'bot',
+      text: chip.answer,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMsg, botMsg]);
+  };
 
   const handleSendMessage = async (textToSend?: string) => {
     const userText = (textToSend || inputMessage).trim();
@@ -55,82 +152,47 @@ export function ChatBot({ onFocusSenda }: { onFocusSenda?: () => void } = {}) {
       q.includes('senda') ||
       q.includes('recorrido') ||
       q.includes('ruta') ||
-      q.includes('dónde es') ||
-      q.includes('donde es') ||
+      q.includes('6 de enero') ||
+      q.includes('desfile magno') ||
       (landmark && (landmark.id === 'desfile_magno' || landmark.id === 'castaneda'));
 
-    // 1. Activar capa y enfocar la Senda del Carnaval si se consulta por el recorrido o eventos de la Senda
+    const isSaludQuery =
+      q.includes('salud') ||
+      q.includes('médic') ||
+      q.includes('medic') ||
+      q.includes('primeros auxilios') ||
+      q.includes('cruz roja') ||
+      q.includes('defensa civil') ||
+      (landmark && landmark.category === 'salud');
+
+    const isPlazaQuery =
+      q.includes('plaza del carnaval') ||
+      q.includes('plaza de nariño') ||
+      q.includes('plaza narino') ||
+      (landmark && landmark.category === 'plaza');
+
+    // 1. Activar cámara e interactividad según el tema consultado
     if (isSendaQuery) {
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('focus-senda', {
-            detail: { show: true },
-          })
-        );
-      }
-      if (onFocusSenda) {
-        onFocusSenda();
-      }
+      triggerCameraAction('senda');
+    } else if (isSaludQuery) {
+      triggerCameraAction('landmark', [1.21820, -77.27010], 'Puestos de Salud', 'salud', 17);
+    } else if (isPlazaQuery) {
+      triggerCameraAction('landmark', [1.2115, -77.2785], 'Plaza del Carnaval', 'plaza', 17);
+    } else if (landmark) {
+      triggerCameraAction('landmark', landmark.coords, landmark.name, landmark.category, landmark.category === 'salud' ? 18 : 17);
     }
 
-    // 2. Mover cámara y activar capas específicas si se detecta un hito o punto de interés
-    if (landmark) {
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('focus-landmark', {
-            detail: {
-              coords: landmark.coords,
-              name: landmark.name,
-              category: landmark.category,
-              zoom: landmark.category === 'salud' ? 18 : 17,
-              showSenda: landmark.category === 'evento',
-            },
-          })
-        );
-      }
+    // 2. Respuesta hiperconcisa (máximo 2 a 3 líneas) estilo pastuso
+    let conciseFallback = '';
+    if (isSendaQuery) {
+      conciseFallback = '¡Que viva Pasto, carajo! 🎭 La Senda recorre 7 km desde la Normal Superior por la Cra 27 hasta Champagnat. ¡He enfocado la ruta en tu mapa!';
+    } else if (isSaludQuery) {
+      conciseFallback = '¡Que viva Pasto, carajo! 🚨 Hay puestos médicos de Cruz Roja y Defensa Civil en Bomboná, Plaza del Carnaval y Champagnat. ¡He activado la capa de salud!';
+    } else if (isPlazaQuery) {
+      conciseFallback = '¡Que viva Pasto, carajo! 💃 La Plaza del Carnaval es el epicentro de la fiesta, orquestas y juego de cosmético. ¡Cámara centrada en la plaza!';
+    } else if (landmark) {
+      conciseFallback = `¡Que viva Pasto, carajo! 📍 ${landmark.name}: ${landmark.description.slice(0, 110)}... ¡He enfocado sus coordenadas en el mapa!`;
     }
-
-    // Descripción contextual enriquecida del hito o evento
-    let landmarkDescription = '';
-    if (landmark) {
-      if (landmark.category === 'salud') {
-        landmarkDescription =
-          `🏥 **${landmark.name}**\n\n` +
-          `${landmark.description}\n\n` +
-          `📍 **Ubicación en el mapa:** He enfocado la cámara en sus coordenadas exactas y activado la visualización de puestos de salud.\n\n` +
-          `💡 *Recomendación:* Mantente hidratado y ubica los socorristas de Cruz Roja y Defensa Civil a lo largo de la Senda.`;
-      } else if (landmark.id === 'desfile_magno') {
-        landmarkDescription =
-          `🤍 **${landmark.name}**\n\n` +
-          `${landmark.description}\n\n` +
-          `🎉 **Día de Blancos:** Las majestuosas Carrozas Monumentales parten desde las 8:00 AM en la Normal Superior y avanzan por toda la Cra 27 hasta Champagnat.\n\n` +
-          `🗺️ *¡He enfocado la Senda completa en el mapa para que sigas el desfile de principio a fin!*`;
-      } else if (landmark.id === 'castaneda') {
-        landmarkDescription =
-          `🎭 **${landmark.name}**\n\n` +
-          `${landmark.description}\n\n` +
-          `🐎 **4 de Enero:** Carretas y jinetes recrean la bienvenida histórica de 1929 abriendo oficialmente el Carnaval en la Senda.\n\n` +
-          `🗺️ *¡He enfocado en el mapa el punto de partida en la Normal Superior!*`;
-      } else if (landmark.id === 'dia_negros') {
-        landmarkDescription =
-          `🖤 **${landmark.name}**\n\n` +
-          `${landmark.description}\n\n` +
-          `🎶 **5 de Enero:** Día de la fraternidad y el juego de la "pintica" con tablados de orquestas en vivo en la Plaza del Carnaval y Plaza de Nariño.\n\n` +
-          `🗺️ *¡Cámara enfocada en el corazón festivo de la Plaza del Carnaval!*`;
-      } else {
-        landmarkDescription =
-          `📍 **${landmark.name}**\n\n` +
-          `${landmark.description}\n\n` +
-          `🗺️ *¡He enfocado sus coordenadas en el mapa interactivo!*`;
-      }
-    }
-
-    const sendaDescription =
-      '¡Qué viva Pasto, carajo! 🎉 Aquí tienes el recorrido oficial de la Senda del Carnaval (~7 km de arte y emoción):\n\n' +
-      '• 🚩 Punto de partida: Inicia en la I.E. Normal Superior de Pasto y la Av. Santander / Boyacá.\n' +
-      '• 📍 Tramos principales: Recorre la Carrera 27 pasando por Bomboná, la Plaza del Carnaval y la Plaza de Nariño, avanzando por el Parque Infantil y la Av. Los Estudiantes.\n' +
-      '• 🏁 Llegada oficial: Culmina en la Glorieta / Salida Colegio Champagnat.\n\n' +
-      '🗺️ ¡He enfocado y resaltado la Senda del Carnaval en el mapa para que veas todo el trayecto!';
 
     try {
       const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
@@ -150,11 +212,12 @@ export function ChatBot({ onFocusSenda }: { onFocusSenda?: () => void } = {}) {
       let botResponse = data.response || data.reply || data.message;
 
       if (!botResponse) {
-        botResponse = landmarkDescription || (isSendaQuery ? sendaDescription : 'Sin respuesta');
-      } else if (landmarkDescription && !botResponse.toLowerCase().includes(landmark.name.toLowerCase().slice(0, 10))) {
-        botResponse = `${botResponse}\n\n${landmarkDescription}`;
-      } else if (isSendaQuery && !botResponse.toLowerCase().includes('normal')) {
-        botResponse = `${botResponse}\n\n${sendaDescription}`;
+        botResponse = conciseFallback || '¡Que viva Pasto, carajo! 🎉 Estoy lista para guiarte por la senda y eventos del Carnaval.';
+      } else {
+        // Asegurar que comience con el saludo cálido pastuso y sea conciso
+        if (!botResponse.toLowerCase().includes('pasto, carajo')) {
+          botResponse = `¡Que viva Pasto, carajo! 🎉 ${botResponse}`;
+        }
       }
 
       const botMsg = {
@@ -166,33 +229,14 @@ export function ChatBot({ onFocusSenda }: { onFocusSenda?: () => void } = {}) {
 
       setMessages((prev) => [...prev, botMsg]);
     } catch (error) {
-      console.error('Error al conectar con GuaneñaBot:', error);
-      if (landmarkDescription) {
-        const contextualMsg = {
-          id: Date.now() + 1,
-          sender: 'bot',
-          text: landmarkDescription,
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, contextualMsg]);
-      } else if (isSendaQuery) {
-        const sendaMsg = {
-          id: Date.now() + 1,
-          sender: 'bot',
-          text: sendaDescription,
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, sendaMsg]);
-      } else {
-        const errorMsg = {
-          id: Date.now() + 1,
-          sender: 'bot',
-          text: 'No se pudo conectar con GuaneñaBot. Verifica que el backend esté encendido.',
-          isError: true,
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, errorMsg]);
-      }
+      console.warn('Backend desconectado o error de red, respondiendo de forma contextual:', error);
+      const botMsg = {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: conciseFallback || '¡Que viva Pasto, carajo! 🎉 Aquí estoy para guiarte por el Carnaval de Negros y Blancos.',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, botMsg]);
     } finally {
       setLoading(false);
     }
@@ -203,7 +247,7 @@ export function ChatBot({ onFocusSenda }: { onFocusSenda?: () => void } = {}) {
       {
         id: Date.now(),
         sender: 'bot',
-        text: '¡Conversación reiniciada! ¿Qué deseas consultar sobre el Carnaval de Pasto, paisano?',
+        text: '¡Que viva Pasto, carajo! 🎉 Conversación reiniciada. ¿Qué deseas consultar sobre el Carnaval?',
         timestamp: new Date(),
       },
     ]);
@@ -238,10 +282,10 @@ export function ChatBot({ onFocusSenda }: { onFocusSenda?: () => void } = {}) {
         <div
           role="complementary"
           aria-label="Ventana de GuaneñaBot"
-          className="fixed bottom-20 right-6 z-[9999] pointer-events-auto w-[calc(100vw-2rem)] sm:w-[380px] h-[500px] max-h-[80vh] rounded-3xl bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 shadow-2xl shadow-black/60 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
+          className="fixed bottom-20 right-6 z-[9999] pointer-events-auto w-[calc(100vw-2rem)] sm:w-[380px] h-[520px] max-h-[82vh] rounded-3xl bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 shadow-2xl shadow-black/60 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
         >
           {/* Header con botón visible de cierre */}
-          <header className="px-4 py-3.5 border-b border-white/10 bg-slate-950/60 flex items-center justify-between gap-2 select-none">
+          <header className="px-4 py-3 border-b border-white/10 bg-slate-950/60 flex items-center justify-between gap-2 select-none">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-sm shrink-0 text-base">
                 🎭
@@ -339,18 +383,20 @@ export function ChatBot({ onFocusSenda }: { onFocusSenda?: () => void } = {}) {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Chips de preguntas rápidas (Quick Prompts) */}
-          <div className="px-3 py-2 bg-slate-950/60 border-t border-white/10">
+          {/* Quick Action Chips estilizados directamente sobre el input */}
+          <div className="px-3 py-2 bg-slate-950/75 border-t border-white/10">
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
-              {QUICK_PROMPTS.map((prompt, idx) => (
+              {QUICK_ACTION_CHIPS.map((chip) => (
                 <button
-                  key={idx}
+                  key={chip.id}
                   type="button"
-                  onClick={() => handleSendMessage(prompt)}
+                  onClick={() => handleQuickChip(chip)}
                   disabled={loading}
-                  className="px-2.5 py-1 rounded-xl bg-slate-800/80 hover:bg-slate-750 text-slate-300 hover:text-white border border-white/10 text-[11px] font-medium whitespace-nowrap active:scale-95 transition cursor-pointer disabled:opacity-50 shrink-0"
+                  className="px-2.5 py-1.5 rounded-full bg-slate-800/90 hover:bg-amber-500/20 text-slate-200 hover:text-amber-300 border border-white/10 hover:border-amber-400/40 text-[11px] font-semibold whitespace-nowrap active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 shadow-sm"
+                  title={`Preguntar por ${chip.label}`}
                 >
-                  {prompt}
+                  <span className="text-xs">{chip.icon}</span>
+                  <span>{chip.label}</span>
                 </button>
               ))}
             </div>
