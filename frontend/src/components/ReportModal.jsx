@@ -3,13 +3,13 @@ import { X, AlertTriangle, Send, Loader2, MapPin, Locate, CheckCircle2 } from 'l
 import { api } from '../services/api';
 import { submitIncidentReport } from '../services/reportService';
 
-// Opciones de tipo de reporte solicitadas
+// Opciones de tipo de reporte solicitadas con tarjetas visuales táctiles
 export const REPORT_TYPES = [
-  { value: 'Aglomeracion', label: 'Aglomeración severa', icon: '👥' },
-  { value: 'Calle_Bloqueada', label: 'Bloqueo de vía no autorizado', icon: '🚧' },
-  { value: 'Emergencia', label: 'Emergencia médica', icon: '🚑' },
-  { value: 'Objeto_Perdido', label: 'Objeto perdido', icon: '🎒' },
-  { value: 'Punto_Hidratacion', label: 'Punto de hidratación', icon: '💧' },
+  { value: 'Emergencia', label: 'Emergencia Médica / Salud', icon: '🚑', subtext: 'Cruz Roja y socorristas' },
+  { value: 'Calle_Bloqueada', label: 'Tráfico / Vía Bloqueada', icon: '🚧', subtext: 'Tránsito y desvíos' },
+  { value: 'Objeto_Perdido', label: 'Extravío / Objeto Perdido', icon: '🎒', subtext: 'Punto de información' },
+  { value: 'Aglomeracion', label: 'Aglomeración / Seguridad', icon: '👥', subtext: 'Concentración masiva' },
+  { value: 'Punto_Hidratacion', label: 'Punto de Hidratación', icon: '💧', subtext: 'Abastecimiento de agua' },
 ];
 
 // Tramos oficiales y sectores clave a lo largo de la Senda del Carnaval
@@ -33,7 +33,7 @@ export function ReportModal({
   onReportCreated,
   onShowToast,
 }) {
-  const [reportType, setReportType] = useState('Aglomeracion');
+  const [reportType, setReportType] = useState('Emergencia');
   const [selectedSector, setSelectedSector] = useState('plaza_carnaval');
   const [customLocationName, setCustomLocationName] = useState('');
   const [description, setDescription] = useState('');
@@ -195,26 +195,27 @@ export function ReportModal({
       aria-modal="true"
       className="fixed inset-0 z-[2500] flex items-center justify-center p-4 overflow-y-auto"
     >
-      {/* Fondo oscuro difuminado */}
+      {/* Fondo atenuado con backdrop-blur-sm bg-black/60 */}
       <div
-        className="fixed inset-0 bg-slate-950/60 dark:bg-slate-950/80 backdrop-blur-md transition-opacity duration-200 animate-in fade-in"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-200 animate-in fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Contenedor Modal Glassmorphic */}
-      <div className="relative w-full max-w-lg rounded-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/70 dark:border-slate-800/70 shadow-2xl text-slate-800 dark:text-slate-100 overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
+      {/* Contenedor Modal Glassmorphic Pulido */}
+      <div className="relative w-full max-w-lg rounded-3xl bg-slate-900/95 backdrop-blur-2xl border border-white/15 shadow-2xl shadow-rose-950/40 text-slate-100 overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
+        
         {/* Encabezado */}
-        <header className="px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60 flex items-center justify-between gap-3 bg-slate-50/70 dark:bg-slate-950/60">
+        <header className="px-6 py-4 border-b border-white/10 flex items-center justify-between gap-3 bg-slate-950/70">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-md shadow-orange-500/20">
+            <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-tr from-rose-600 via-pink-600 to-amber-500 text-white shadow-md shadow-rose-600/30 shrink-0">
               <AlertTriangle className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+              <h2 className="text-base sm:text-lg font-black text-white tracking-tight leading-tight">
                 Reportar Incidente en la Senda
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-400">
                 Logística y Seguridad • Carnaval de Negros y Blancos
               </p>
             </div>
@@ -223,7 +224,7 @@ export function ReportModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition cursor-pointer"
+            className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition cursor-pointer"
             aria-label="Cerrar modal de reporte"
           >
             <X className="w-5 h-5" />
@@ -231,7 +232,7 @@ export function ReportModal({
         </header>
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4.5 max-h-[82vh] overflow-y-auto">
           {error && (
             <div className="p-3.5 text-xs rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300">
               {error}
@@ -245,12 +246,12 @@ export function ReportModal({
             </div>
           )}
 
-          {/* 1. Selector de Tipo de Reporte */}
+          {/* 1. Selector de Categorías con Tarjetas Visuales Clickeables con Icono */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
               Tipo de Incidente
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {REPORT_TYPES.map((t) => {
                 const isSelected = reportType === t.value;
                 return (
@@ -258,14 +259,19 @@ export function ReportModal({
                     key={t.value}
                     type="button"
                     onClick={() => setReportType(t.value)}
-                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-2xl text-xs font-semibold border transition-all text-left cursor-pointer active:scale-95 ${
+                    className={`flex items-center gap-3 p-3 rounded-2xl border text-xs font-semibold transition-all duration-200 cursor-pointer text-left active:scale-[0.98] ${
                       isSelected
-                        ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/15 border-amber-500 text-amber-800 dark:text-amber-200 shadow-sm ring-1 ring-amber-500/40 font-bold'
-                        : 'bg-slate-50/80 dark:bg-slate-950/50 hover:bg-slate-100 dark:hover:bg-slate-800/60 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300'
+                        ? 'bg-gradient-to-r from-rose-500/25 to-amber-500/25 border-rose-500 text-white shadow-lg shadow-rose-950/40 ring-1 ring-rose-400/50 scale-[1.02]'
+                        : 'bg-slate-800/60 hover:bg-slate-800 border-white/10 text-slate-300 hover:text-white hover:border-white/20'
                     }`}
                   >
-                    <span className="text-base">{t.icon}</span>
-                    <span className="truncate">{t.label}</span>
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 ${isSelected ? 'bg-rose-500/30' : 'bg-slate-700/50'}`}>
+                      {t.icon}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold leading-tight truncate">{t.label}</div>
+                      <div className="text-[10px] text-slate-400 truncate mt-0.5">{t.subtext}</div>
+                    </div>
                   </button>
                 );
               })}
@@ -275,14 +281,14 @@ export function ReportModal({
           {/* 2. Selector de Ubicación / Tramo de la Senda */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
                 Ubicación en la Senda
               </label>
               <button
                 type="button"
                 onClick={handleUseCurrentLocation}
                 disabled={locatingGps}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-500 dark:hover:text-amber-300 transition cursor-pointer"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-400 hover:text-amber-300 transition cursor-pointer"
               >
                 <Locate className={`w-3.5 h-3.5 ${locatingGps ? 'animate-spin' : ''}`} />
                 <span>{locatingGps ? 'Obteniendo...' : 'Capturar mi GPS'}</span>
@@ -290,11 +296,11 @@ export function ReportModal({
             </div>
 
             <div className="relative">
-              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500 dark:text-amber-400 pointer-events-none" />
+              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400 pointer-events-none" />
               <select
                 value={selectedSector}
                 onChange={(e) => handleSectorChange(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50/80 dark:bg-slate-950/70 border border-slate-200 dark:border-white/10 rounded-2xl text-xs sm:text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/40 appearance-none cursor-pointer"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-950/70 border border-white/10 rounded-2xl text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/40 focus:border-rose-500/40 appearance-none cursor-pointer"
               >
                 {selectedSector === 'custom' && (
                   <option value="custom">📍 Punto seleccionado en el mapa</option>
@@ -310,15 +316,15 @@ export function ReportModal({
               </select>
             </div>
 
-            <div className="mt-1.5 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 px-1">
+            <div className="mt-1.5 flex items-center justify-between text-[11px] text-slate-400 px-1">
               <span>Coordenadas: {latitude.toFixed(4)}, {longitude.toFixed(4)}</span>
-              <span className="text-amber-600 dark:text-amber-400 font-medium">San Juan de Pasto</span>
+              <span className="text-amber-400 font-medium">San Juan de Pasto</span>
             </div>
           </div>
 
           {/* 3. Textarea de Descripción */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
               Descripción de lo ocurrido
             </label>
             <textarea
@@ -326,16 +332,16 @@ export function ReportModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe brevemente la situación observada (ej. aglomeración en la esquina, persona requiriendo asistencia, etc.)..."
-              className="w-full px-4 py-2.5 bg-slate-50/80 dark:bg-slate-950/70 border border-slate-200 dark:border-white/10 rounded-2xl text-xs sm:text-sm text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/40 transition resize-none"
+              className="w-full px-4 py-2.5 bg-slate-950/70 border border-white/10 rounded-2xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500/40 focus:border-rose-500/40 transition resize-none"
             />
           </div>
 
-          {/* Botón de Enviar con feedback de Toast */}
+          {/* Botón de Confirmación con micro-interacción al pasar el mouse */}
           <div className="pt-2">
             <button
               type="submit"
               disabled={loading || isSuccess}
-              className="w-full py-3 px-4 rounded-xl font-black text-sm text-white bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-400 hover:via-orange-400 hover:to-rose-400 shadow-md shadow-orange-500/20 active:scale-[0.99] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 px-4 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-rose-600/30 hover:shadow-rose-600/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
             >
               {loading ? (
                 <>
@@ -345,7 +351,7 @@ export function ReportModal({
               ) : isSuccess ? (
                 <>
                   <CheckCircle2 className="w-4 h-4 text-white" />
-                  <span>Reporte Registrado</span>
+                  <span>Reporte Registrado con Éxito</span>
                 </>
               ) : (
                 <>

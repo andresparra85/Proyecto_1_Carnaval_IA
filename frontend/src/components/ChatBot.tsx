@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Sparkles, RotateCcw } from 'lucide-react';
+import { X, Send, Sparkles, RotateCcw, MessageSquare } from 'lucide-react';
 import { findCarnavalLandmark, CARNAVAL_LANDMARKS } from '../data/carnavalKnowledge';
 
 export interface ChatBotProps {
@@ -106,7 +106,6 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
   const handleQuickChip = (chip: typeof QUICK_ACTION_CHIPS[number]) => {
     if (loading) return;
 
-    // Disparar acción de mapa inmediata
     if (chip.type === 'senda') {
       triggerCameraAction('senda');
     } else if (chip.type === 'landmark') {
@@ -171,7 +170,6 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
       q.includes('plaza narino') ||
       (landmark && landmark.category === 'plaza');
 
-    // 1. Activar cámara e interactividad según el tema consultado
     if (isSendaQuery) {
       triggerCameraAction('senda');
     } else if (isSaludQuery) {
@@ -182,7 +180,6 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
       triggerCameraAction('landmark', landmark.coords, landmark.name, landmark.category, landmark.category === 'salud' ? 18 : 17);
     }
 
-    // 2. Respuesta hiperconcisa (máximo 2 a 3 líneas) estilo pastuso
     let conciseFallback = '';
     if (isSendaQuery) {
       conciseFallback = '¡Que viva Pasto, carajo! 🎭 La Senda recorre 7 km desde la Normal Superior por la Cra 27 hasta Champagnat. ¡He enfocado la ruta en tu mapa!';
@@ -214,7 +211,6 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
       if (!botResponse) {
         botResponse = conciseFallback || '¡Que viva Pasto, carajo! 🎉 Estoy lista para guiarte por la senda y eventos del Carnaval.';
       } else {
-        // Asegurar que comience con el saludo cálido pastuso y sea conciso
         if (!botResponse.toLowerCase().includes('pasto, carajo')) {
           botResponse = `¡Que viva Pasto, carajo! 🎉 ${botResponse}`;
         }
@@ -255,49 +251,53 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
 
   return (
     <>
-      {/* 1. Botón Disparador Flotante con z-[9999] y pointer-events-auto */}
+      {/* 1. Botón Circular Flotante en la esquina inferior derecha con degradado pastuso y pulso sutil */}
       <button
         id="open-chat-fab"
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-[9999] pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-white font-bold text-xs sm:text-sm border border-white/20 shadow-xl shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 cursor-pointer group select-none"
+        className="fixed bottom-6 right-6 z-[9999] pointer-events-auto flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-rose-600 via-pink-600 to-amber-500 hover:scale-110 active:scale-95 text-white shadow-2xl shadow-rose-600/40 border-2 border-white/30 transition-all duration-300 cursor-pointer group select-none"
         aria-label="Abrir o cerrar chat con GuaneñaBot"
-        title="GuaneñaBot - Asistente IA del Carnaval de Pasto"
+        title="GuaneñaBot • Asistente del Carnaval de Negros y Blancos"
       >
-        <div className="relative flex items-center justify-center w-6 h-6 text-base">
-          🎭
-          <span className="absolute -top-1 -right-1 flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-          </span>
-        </div>
-        <span className="font-extrabold tracking-wide">
-          {isOpen ? 'Cerrar Chat' : 'GuaneñaBot'}
-        </span>
-        <Sparkles className="w-3.5 h-3.5 text-white/90 shrink-0" />
+        {/* Efecto de pulso sutil cuando está cerrado */}
+        {!isOpen && (
+          <span className="absolute inset-0 rounded-full bg-rose-500/35 animate-ping pointer-events-none" />
+        )}
+
+        {isOpen ? (
+          <X className="w-6 h-6 text-white stroke-[2.5]" />
+        ) : (
+          <div className="relative flex items-center justify-center text-2xl">
+            🎭
+          </div>
+        )}
       </button>
 
-      {/* 2. Ventana de Chat Flotante con z-[9999] ubicada sobre el botón */}
+      {/* 2. Ventana de Chat Flotante Desplegable */}
       {isOpen && (
         <div
           role="complementary"
           aria-label="Ventana de GuaneñaBot"
-          className="fixed bottom-20 right-6 z-[9999] pointer-events-auto w-[calc(100vw-2rem)] sm:w-[380px] h-[520px] max-h-[82vh] rounded-3xl bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 shadow-2xl shadow-black/60 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
+          className="fixed bottom-24 right-6 z-[9999] pointer-events-auto w-[calc(100vw-2.5rem)] sm:w-[390px] h-[520px] max-h-[80vh] rounded-3xl bg-slate-900/95 backdrop-blur-2xl border border-white/15 shadow-2xl shadow-rose-950/50 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300"
         >
-          {/* Header con botón visible de cierre */}
-          <header className="px-4 py-3 border-b border-white/10 bg-slate-950/60 flex items-center justify-between gap-2 select-none">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-sm shrink-0 text-base">
+          {/* Header Festivo: "GuaneñaBot • Asistente del Carnaval" e Indicador "En línea" */}
+          <header className="px-4 py-3.5 border-b border-white/10 bg-slate-950/70 flex items-center justify-between gap-2 select-none">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="relative flex items-center justify-center w-9 h-9 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 text-white shadow-md shadow-rose-600/30 shrink-0 text-lg">
                 🎭
-                <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-slate-900" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900 animate-pulse" />
               </div>
               <div className="min-w-0">
                 <h3 className="font-black text-xs sm:text-sm text-white tracking-tight leading-tight truncate">
-                  GuaneñaBot
+                  GuaneñaBot • Asistente del Carnaval
                 </h3>
-                <p className="text-[10px] text-slate-400 truncate">
-                  Tu guía en el Carnaval de Pasto
-                </p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="text-[10px] text-emerald-300 font-semibold">
+                    En línea • Pasto, Nariño
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -323,8 +323,8 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
             </div>
           </header>
 
-          {/* Body: Historial de mensajes */}
-          <div className="flex-1 overflow-y-auto p-3.5 space-y-3">
+          {/* Body: Historial de mensajes con burbujas diferenciadas */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
             {messages.map((msg) => {
               const isUser = msg.sender === 'user';
               return (
@@ -339,13 +339,14 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
                       </div>
                     )}
 
+                    {/* Burbujas diferenciadas: Usuario con acento festivo, Bot en gris oscuro pulido */}
                     <div
-                      className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-[13px] leading-relaxed shadow-sm ${
+                      className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-[13px] leading-relaxed shadow-md ${
                         isUser
-                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-br-sm'
+                          ? 'bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 text-white font-medium rounded-br-sm shadow-rose-600/20'
                           : (msg as any).isError
                             ? 'bg-rose-950/80 text-rose-200 border border-rose-500/50 rounded-bl-sm'
-                            : 'bg-slate-800/90 text-slate-100 border border-white/10 rounded-bl-sm'
+                            : 'bg-slate-800/90 text-slate-100 border border-white/10 rounded-bl-sm font-normal'
                       }`}
                     >
                       <div className="whitespace-pre-line">{msg.text}</div>
@@ -359,7 +360,7 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
               );
             })}
 
-            {/* Indicador de carga: 3 puntos animados */}
+            {/* Indicador de carga animado */}
             {loading && (
               <div className="flex flex-col items-start animate-in fade-in duration-200">
                 <div className="flex items-end gap-2 max-w-[85%]">
@@ -369,8 +370,8 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
                   <div className="px-3.5 py-2.5 rounded-2xl rounded-bl-sm bg-slate-800/90 border border-white/10 text-xs text-slate-300 flex items-center gap-2 shadow-sm">
                     <div className="flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
                     <span className="text-[11px] text-slate-400 font-medium">
                       GuaneñaBot está escribiendo...
@@ -383,8 +384,8 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick Action Chips estilizados directamente sobre el input */}
-          <div className="px-3 py-2 bg-slate-950/75 border-t border-white/10">
+          {/* Chips de sugerencias redondeados táctiles que invitan a hacer clic */}
+          <div className="px-3.5 py-2 bg-slate-950/80 border-t border-white/10">
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
               {QUICK_ACTION_CHIPS.map((chip) => (
                 <button
@@ -392,7 +393,7 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
                   type="button"
                   onClick={() => handleQuickChip(chip)}
                   disabled={loading}
-                  className="px-2.5 py-1.5 rounded-full bg-slate-800/90 hover:bg-amber-500/20 text-slate-200 hover:text-amber-300 border border-white/10 hover:border-amber-400/40 text-[11px] font-semibold whitespace-nowrap active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 shadow-sm"
+                  className="px-3 py-1.5 rounded-full bg-slate-800/90 hover:bg-rose-500/20 text-slate-200 hover:text-amber-300 border border-white/10 hover:border-amber-400/50 text-[11px] font-semibold whitespace-nowrap active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 shadow-sm"
                   title={`Preguntar por ${chip.label}`}
                 >
                   <span className="text-xs">{chip.icon}</span>
@@ -402,13 +403,13 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
             </div>
           </div>
 
-          {/* Footer / Input con ícono de avión de papel (Send) */}
+          {/* Footer / Input con ícono de Send */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
               handleSendMessage();
             }}
-            className="p-3 border-t border-white/10 bg-slate-950/90 flex items-center gap-2"
+            className="p-3 border-t border-white/10 bg-slate-950/95 flex items-center gap-2"
           >
             <input
               id="guanena-chat-input"
@@ -417,13 +418,13 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Pregúntale a GuaneñaBot..."
               disabled={loading}
-              className="flex-1 px-3.5 py-2 text-xs sm:text-sm bg-slate-900 border border-white/10 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/40 transition disabled:opacity-50"
+              className="flex-1 px-3.5 py-2.5 text-xs sm:text-sm bg-slate-900 border border-white/10 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500/40 focus:border-rose-500/40 transition disabled:opacity-50"
             />
             <button
               id="guanena-chat-send-btn"
               type="submit"
               disabled={!inputMessage.trim() || loading}
-              className="p-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-md shadow-orange-500/20 shrink-0"
+              className="p-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-bold active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-md shadow-rose-600/30 shrink-0"
               aria-label="Enviar mensaje a GuaneñaBot"
               title="Enviar mensaje"
             >
