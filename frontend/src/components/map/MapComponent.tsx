@@ -1,4 +1,13 @@
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Resuelve el error clásico de Leaflet con Vite donde las rutas de los iconos por defecto se rompen
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 /**
  * Generador de pines SVG modernos y festivos con resplandor para los Hitos de la Senda del Carnaval

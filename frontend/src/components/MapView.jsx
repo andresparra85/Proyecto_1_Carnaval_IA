@@ -10,6 +10,15 @@ import {
   useMap,
 } from 'react-leaflet';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Resuelve el error clásico de Leaflet con Vite donde las rutas de los iconos por defecto se rompen
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 import { CARNIVAL_ROUTES } from '../data/carnivalRoutes';
 import { SENDA_OFICIAL_COORDS, HITOS_SENDA } from '../data/sendaCoords';
 import { CarnavalDaySelector, DayCameraController } from './map/CarnavalDaySelector';
@@ -1123,6 +1132,7 @@ export function MapView({
         zoomControl={false}
         scrollWheelZoom={true}
         className="w-full h-full"
+        style={{ height: '100%', width: '100%' }}
       >
         {/* Controlador para centrar y animar la vista sobre la Senda del Carnaval */}
         <SendaController
