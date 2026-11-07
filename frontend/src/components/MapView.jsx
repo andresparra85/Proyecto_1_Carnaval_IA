@@ -44,8 +44,8 @@ import {
   X,
 } from 'lucide-react';
 
-// Coordenadas centrales de San Juan de Pasto (Plaza de Nariño / Corazón del Carnaval)
-const PASTO_CENTER = [1.2136, -77.2811];
+// Coordenadas centrales de San Juan de Pasto (Centro Histórico de Pasto / Plaza de Nariño)
+const PASTO_CENTER = [1.2140, -77.2820];
 
 // Trazado vial milimétrico y continuo de la Senda del Carnaval de Pasto
 export const SENDA_CARNAVAL_COORDS = SENDA_OFICIAL_COORDS;
@@ -1128,12 +1128,12 @@ export function MapView({
 
       {/* 3. Contenedor de Leaflet con Mosaicos de Calles Reales */}
       <MapContainer
-        center={PASTO_CENTER}
-        zoom={16}
+        center={[1.2140, -77.2820]}
+        zoom={15}
         zoomControl={false}
         scrollWheelZoom={true}
-        className="w-full h-full"
-        style={{ height: '100%', width: '100%' }}
+        className="h-[calc(100vh-4rem)] w-full relative z-0"
+        style={{ minHeight: '500px', width: '100%' }}
       >
         {/* Controlador para centrar y animar la vista sobre la Senda del Carnaval */}
         <SendaController

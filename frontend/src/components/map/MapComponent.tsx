@@ -11,6 +11,12 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+// Constantes visuales y de posicionamiento robusto de MapComponent
+export const DEFAULT_MAP_CENTER: [number, number] = [1.2140, -77.2820]; // Centro Histórico de Pasto
+export const DEFAULT_MAP_ZOOM = 15;
+export const DEFAULT_MAP_CONTAINER_CLASS = "h-[calc(100vh-4rem)] w-full relative z-0";
+export const DEFAULT_MAP_CONTAINER_STYLE: React.CSSProperties = { minHeight: '500px', width: '100%' };
+
 /**
  * Hook de geolocalización segura para MapComponent que garantiza orden de declaración hoisted
  */
