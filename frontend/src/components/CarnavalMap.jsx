@@ -599,12 +599,34 @@ export function CarnavalMap({
     window.dibujarSendaCarnaval = (nombreRuta) => {
       activarSendaPorDia('6');
     };
+    window.activarSendaDirecta = (directCoords = TRACK_SENDA_DIRECTO) => {
+      const validCoords = Array.isArray(directCoords) && directCoords.length > 0 ? directCoords : TRACK_SENDA_DIRECTO;
+      setActiveRouteCoords(validCoords);
+      setIsSendaActive(true);
+      setShowSendaDetails(true);
+      const activeMap = mapRef.current || mapInstance;
+      if (activeMap && typeof activeMap.fitBounds === 'function') {
+        try {
+          activeMap.fitBounds(validCoords, { padding: [40, 40], animate: true });
+        } catch (e) {
+          console.warn('Error al centrar con fitBounds en senda directa:', e);
+        }
+      }
+    };
+
+    const handleDirectDispatch = (e) => {
+      const coords = e?.detail?.coords || TRACK_SENDA_DIRECTO;
+      window.activarSendaDirecta(coords);
+    };
+    window.addEventListener('DIRECT_TRACK_DISPATCH', handleDirectDispatch);
 
     return () => {
       delete window.activarSendaPorDia;
       delete window.dibujarSendaCarnaval;
+      delete window.activarSendaDirecta;
+      window.removeEventListener('DIRECT_TRACK_DISPATCH', handleDirectDispatch);
     };
-  }, [activarSendaPorDia]);
+  }, [activarSendaPorDia, mapInstance]);
 
   // Disparador de navegación dinámica peatonal OSRM
   const handleTriggerNavigation = useCallback(async (targetCoords, targetName = 'Destino', originCoords = null) => {

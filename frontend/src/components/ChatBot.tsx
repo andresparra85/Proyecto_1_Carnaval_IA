@@ -4,6 +4,7 @@ import { findCarnavalLandmark, CARNAVAL_LANDMARKS } from '../data/carnavalKnowle
 import { searchPastoPOI, PASTO_POIS, PointOfInterest } from '../data/pastoPOIs';
 import { sendGuanenaMessage } from '../services/guanenaChatService';
 import { parseBotIntent, dispatchParadeIntent } from '../services/botIntentParser';
+import { TRACK_SENDA_DIRECTO } from '../data/carnavalDaysData';
 
 export interface ChatBotProps {
   onFocusSenda?: () => void;
@@ -123,7 +124,7 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
     {
       id: 1,
       sender: 'bot',
-      text: '¡Que viva Pasto, carajo! 🎉 Soy GuaneñaBot, tu guía en el Carnaval de Negros y Blancos. Pregúntame sobre la Senda, puntos de salud o los eventos clave.',
+      text: 'Soy GuaneñaBot. Pregúntame sobre desfiles, la Senda o servicios del Carnaval.',
       timestamp: new Date(),
     },
   ]);
@@ -262,10 +263,24 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
     setInputMessage('');
     setLoading(true);
 
-    // Detección determinista de fechas de Carnaval e inyección de ruta
-    const isParadeQuery = /senda|desfile|blancos|casta[ñn]eda|4 de enero|6 de enero|camino|ruta/i.test(userText);
-    if (isParadeQuery && typeof window !== 'undefined' && typeof (window as any).dibujarSendaCarnaval === 'function') {
-      (window as any).dibujarSendaCarnaval('senda_oficial');
+    // Detección directa de rutas o desfiles del Carnaval ('senda', '4 de enero', '6 de enero', 'desfile')
+    const isParadeQuery = /senda|desfile|blancos|casta[ñn]eda|4 de enero|6 de enero|3 de enero|2 de enero|camino|ruta/i.test(userText);
+    if (isParadeQuery && typeof window !== 'undefined') {
+      if (typeof (window as any).activarSendaDirecta === 'function') {
+        (window as any).activarSendaDirecta(TRACK_SENDA_DIRECTO);
+      } else if (typeof (window as any).activarSendaPorDia === 'function') {
+        const cleanDay = q.includes('4') ? '4' : q.includes('3') ? '3' : q.includes('2') ? '2' : '6';
+        (window as any).activarSendaPorDia(cleanDay);
+      }
+      if (typeof (window as any).dibujarSendaCarnaval === 'function') {
+        (window as any).dibujarSendaCarnaval('senda_oficial');
+      }
+
+      window.dispatchEvent(
+        new CustomEvent('DIRECT_TRACK_DISPATCH', {
+          detail: { coords: TRACK_SENDA_DIRECTO, fitBounds: true },
+        })
+      );
     }
 
     const paradeIntent = parseBotIntent(userText);
@@ -281,25 +296,25 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
       matchedDay = {
         dayId: '03-ene',
         name: 'Canto a la Tierra (3 de Enero)',
-        desc: 'Desfile de colectivos coreográficos en honor a la Madre Tierra por toda la Senda oficial.',
+        desc: 'Desfile de colectivos coreográficos en honor a la Madre Tierra.',
       };
     } else if (q.includes('4 de enero') || q.includes('cuatro de enero') || q.includes('castañeda') || q.includes('castaneda') || q.includes('familia')) {
       matchedDay = {
         dayId: '04-ene',
         name: 'Llegada de la Familia Castañeda (4 de Enero)',
-        desc: 'Apertura tradicional de la fiesta con estampas costumbristas y bienvenida al Carnaval.',
+        desc: 'Recorrido trazado en el mapa de Sur (Champagnat) a Norte (Av. Estudiantes).',
       };
     } else if (q.includes('5 de enero') || q.includes('cinco de enero') || q.includes('día de negros') || q.includes('dia de negros') || q.includes('negros') || q.includes('pintica') || q.includes('cosmético') || q.includes('cosmetico')) {
       matchedDay = {
         dayId: '05-ene',
         name: 'Día de Negros (5 de Enero)',
-        desc: '¡Una pintica por favor! Tablados principales con orquestas en Plaza del Carnaval y Plaza de Nariño.',
+        desc: 'Juego de identidad en Plaza de Nariño y Plaza del Carnaval.',
       };
     } else if (q.includes('6 de enero') || q.includes('seis de enero') || q.includes('desfile magno') || q.includes('magno') || q.includes('blancos') || q.includes('carrozas') || q.includes('carroza')) {
       matchedDay = {
         dayId: '06-ene',
-        name: 'Desfile Magno (6 de Enero)',
-        desc: 'El día cumbre del Carnaval: 7 km de derroche artístico desde la Normal Superior por la Cra 27 hasta Champagnat.',
+        name: 'Desfile Magno de Blancos (6 de Enero)',
+        desc: 'Carrozas Gigantes y senda oficial trazada en el mapa.',
       };
     }
 
@@ -317,7 +332,7 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
         window.dispatchEvent(new CustomEvent('focus-senda', { detail: { show: true } }));
       }
       if (onFocusSenda) onFocusSenda();
-      conciseFallback = `¡Que viva Pasto, carajo! 🎭 He activado el ${matchedDay.name}: ${matchedDay.desc} ¡Senda y evento oficial enfocados en tu mapa!`;
+      conciseFallback = `${matchedDay.name}: ${matchedDay.desc} Ruta oficial trazada en el mapa.`;
     } else if (poiMatch) {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('show-poi-category', { detail: { category: poiMatch.category } }));
@@ -342,17 +357,13 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
         );
       }
       if (onFocusLandmark) onFocusLandmark(poiMatch.coords, poiMatch.name);
-
-      const emoji = poiMatch.category === 'bano' ? '🚻' : poiMatch.category === 'cai' ? '👮' : poiMatch.category === 'salud' ? '🚨' : '🍽️';
-      const addressStr = poiMatch.address ? ` (${poiMatch.address})` : '';
-      const scheduleStr = poiMatch.schedule ? ` • Horario: ${poiMatch.schedule}` : '';
-      conciseFallback = `¡Que viva Pasto, carajo! ${emoji} He ubicado **${poiMatch.name}**${addressStr}${scheduleStr}. ${poiMatch.description} ¡He activado la capa en el mapa y trazado la ruta a pie más rápida con OSRM!`;
+      conciseFallback = `Ubicación encontrada: ${poiMatch.name}. Marcadores y ruta ubicados en el mapa.`;
     } else if (landmark) {
       triggerCameraAction('landmark', landmark.coords, landmark.name, landmark.category, landmark.category === 'salud' ? 18 : 17);
-      conciseFallback = `¡Que viva Pasto, carajo! 📍 ${landmark.name}: ${landmark.description.slice(0, 110)}... ¡He enfocado sus coordenadas en el mapa!`;
+      conciseFallback = `${landmark.name}. Coordenadas enfocadas en el mapa.`;
     } else if (q.includes('senda') || q.includes('recorrido') || q.includes('ruta')) {
       triggerCameraAction('senda');
-      conciseFallback = '¡Que viva Pasto, carajo! 🎭 La Senda oficial del Carnaval recorre 7 km desde la Normal Superior por la Cra 27 hasta Champagnat. ¡He enfocado la ruta en tu mapa!';
+      conciseFallback = 'Ruta oficial de la Senda del Carnaval trazada de Sur (Champagnat) a Norte (Av. Estudiantes).';
     }
 
     try {
@@ -389,21 +400,16 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
         }
       }
 
-      if (!botResponse) {
-        botResponse = conciseFallback || '¡Que viva Pasto, carajo! 🎉 Estoy lista para guiarte por la senda y eventos del Carnaval.';
-      } else {
-        if (!botResponse.toLowerCase().includes('pasto, carajo')) {
-          botResponse = `¡Que viva Pasto, carajo! 🎉 ${botResponse}`;
-        }
-        if (conciseFallback && (matchedDay || poiMatch)) {
-          botResponse = `${botResponse}\n\n${conciseFallback}`;
-        }
+      let finalResponse = botResponse || conciseFallback || 'Ruta y marcadores oficiales ubicados en el mapa.';
+      finalResponse = finalResponse.replace(/¡?Que viva Pasto,?\s*carajo!?[^.\n]*[.\n]*/gi, '').trim();
+      if (!finalResponse) {
+        finalResponse = conciseFallback || 'Ruta y marcadores oficiales ubicados en el mapa.';
       }
 
       const botMsg = {
         id: Date.now() + 1,
         sender: 'bot',
-        text: botResponse,
+        text: finalResponse,
         timestamp: new Date(),
       };
 
@@ -413,7 +419,7 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
       const botMsg = {
         id: Date.now() + 1,
         sender: 'bot',
-        text: conciseFallback || '¡Que viva Pasto, carajo! 🎉 Aquí estoy para guiarte por el Carnaval de Negros y Blancos.',
+        text: conciseFallback || 'Ruta y marcadores oficiales ubicados en el mapa.',
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, botMsg]);
