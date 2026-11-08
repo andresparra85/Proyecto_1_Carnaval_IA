@@ -122,8 +122,67 @@ export function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+/**
+ * Realiza el map-matching con la API de OSRM Match para ceñir los waypoints
+ * con precisión milimétrica al asfalto de las vías de Pasto.
+ * @param {[number, number][]} coordinates Array de coordenadas [lat, lng]
+ * @returns {Promise<[number, number][]>} Array de coordenadas ajustadas a la calzada [lat, lng]
+ */
+export async function getSnappedSendaRoute(coordinates) {
+  if (!Array.isArray(coordinates) || coordinates.length < 2) {
+    return coordinates || [];
+  }
+
+  // Prepara la cadena de coordenadas en formato lng,lat requerida por OSRM
+  const coordsString = coordinates
+    .map(([lat, lng]) => `${lng.toFixed(5)},${lat.toFixed(5)}`)
+    .join(';');
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    const url = `https://router.project-osrm.org/match/v1/driving/${coordsString}?overview=full&geometries=geojson`;
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'Accept': 'application/json' },
+    });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      console.warn(`OSRM Match falló con status ${response.status}, usando fallback denso.`);
+      return coordinates;
+    }
+
+    const data = await response.json();
+
+    if (data && data.matchings && data.matchings.length > 0) {
+      // Combina las geometrías de todos los segmentos encontrados
+      const allSnapped = [];
+      data.matchings.forEach((match) => {
+        if (match.geometry && Array.isArray(match.geometry.coordinates)) {
+          // OSRM entrega [lng, lat]; Leaflet requiere [lat, lng]
+          const mapped = match.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+          allSnapped.push(...mapped);
+        }
+      });
+
+      if (allSnapped.length >= 2) {
+        return allSnapped;
+      }
+    }
+
+    return coordinates;
+  } catch (err) {
+    console.warn('Aviso OSRM Match (usando trazado denso de respaldo):', err?.message);
+    return coordinates;
+  }
+}
+
 export default {
   getWalkingRouteToSenda,
   findNearestPointOnSenda,
-  calculateHaversineDistance
+  calculateHaversineDistance,
+  getSnappedSendaRoute,
 };
