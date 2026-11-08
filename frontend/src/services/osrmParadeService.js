@@ -7,7 +7,40 @@
 const routeCache = new Map();
 
 /**
+ * Genera una geometría de alta densidad interpolando puntos intermedios
+ * entre cada par consecutivo de waypoints para evitar cortes diagonales o polilíneas secas
+ * en caso de indisponibilidad de red o error de OSRM.
+ * @param {[number, number][]} waypoints Array en formato [longitud, latitud]
+ * @param {number} pointsPerSegment Cantidad de puntos interpolados por segmento
+ * @returns {[number, number][]} Array denso en formato Leaflet [latitud, longitud]
+ */
+export function generateDenseFallbackGeometry(waypoints, pointsPerSegment = 15) {
+  if (!Array.isArray(waypoints) || waypoints.length === 0) return [];
+  if (waypoints.length === 1) return [[waypoints[0][1], waypoints[0][0]]];
+
+  const denseCoordinates = [];
+
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    const [startLng, startLat] = waypoints[i];
+    const [endLng, endLat] = waypoints[i + 1];
+
+    for (let step = 0; step < pointsPerSegment; step++) {
+      const factor = step / pointsPerSegment;
+      const lat = startLat + (endLat - startLat) * factor;
+      const lng = startLng + (endLng - startLng) * factor;
+      denseCoordinates.push([lat, lng]);
+    }
+  }
+
+  const lastWaypoint = waypoints[waypoints.length - 1];
+  denseCoordinates.push([lastWaypoint[1], lastWaypoint[0]]);
+
+  return denseCoordinates;
+}
+
+/**
  * Consulta la geometría vial continua y exacta a OSRM para conectar los hitos de paso obligatorio.
+ * Si la consulta falla (red, timeout o error 5xx), recurre a generateDenseFallbackGeometry.
  * @param {[number, number][]} waypoints Array de hitos en formato [longitud, latitud]
  * @returns {Promise<[number, number][]>} Array denso de coordenadas viales en formato Leaflet [latitud, longitud]
  */
@@ -57,13 +90,13 @@ export async function getExactStreetParadeRoute(waypoints) {
 
     throw new Error('Geometría no disponible en la respuesta de OSRM');
   } catch (err) {
-    console.warn('Aviso: Falló consulta OSRM en tiempo real, usando waypoints base:', err?.message);
-    // Fallback inicial: convierte [lng, lat] a [lat, lng]
-    const fallbackCoords = waypoints.map(([lng, lat]) => [lat, lng]);
+    console.warn('Aviso: Falló consulta OSRM en tiempo real, activando fallback geométrico de alta densidad:', err?.message);
+    const fallbackCoords = generateDenseFallbackGeometry(waypoints, 15);
     return fallbackCoords;
   }
 }
 
 export default {
   getExactStreetParadeRoute,
+  generateDenseFallbackGeometry,
 };
