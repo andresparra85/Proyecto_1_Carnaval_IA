@@ -65,7 +65,7 @@ export function App() {
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
   // Estado para la capa y foco de la Senda del Carnaval
-  const [showSenda, setShowSenda] = useState(true);
+  const [showSenda, setShowSenda] = useState(false);
   const [focusSendaTrigger, setFocusSendaTrigger] = useState(0);
 
   const handleFocusSenda = useCallback(() => {

@@ -1171,51 +1171,24 @@ export function CarnavalMap({
             </Marker>
           ))}
 
-        {/* 7. Polilínea peatonal calculada por OSRM hacia el punto de interés */}
-        {walkingRoute && walkingRoute.coordinates && walkingRoute.coordinates.length > 1 && (
-          <Polyline
-            positions={walkingRoute.coordinates}
-            pathOptions={{
-              color: '#3b82f6',
-              weight: 6,
-              dashArray: '8, 8',
-              opacity: 0.95,
-            }}
-          />
-        )}
-
-        {/* 8. Ruta peatonal guiada dinámica de GuaneñaBot (Línea punteada cian animada) */}
-        {activeNavRoute && activeNavRoute.length > 0 && (
-          <>
-            <Polyline
-              positions={activeNavRoute}
-              pathOptions={{
-                color: '#06b6d4',
-                weight: 6,
-                dashArray: '8, 8',
-                lineCap: 'round',
-                opacity: 0.95,
-              }}
-            />
-            {navDestinationInfo?.coords && (
-              <Marker
-                position={navDestinationInfo.coords}
-                icon={createDestinationFlagIcon(navDestinationInfo.name)}
-              >
-                <Popup className="custom-popup">
-                  <div className="p-2 min-w-[200px] bg-slate-900 text-white rounded-xl text-xs font-sans">
-                    <div className="font-bold text-cyan-400 mb-1 flex items-center gap-1.5">
-                      <span>🏁</span>
-                      <span>{navDestinationInfo.name}</span>
-                    </div>
-                    <div className="text-[11px] text-slate-300">
-                      {navDestinationInfo.distance ? `${navDestinationInfo.distance} m` : ''} • ~{navDestinationInfo.eta || 1} min a pie
-                    </div>
-                  </div>
-                </Popup>
-              </Marker>
-            )}
-          </>
+        {/* Destino interactivo de navegación */}
+        {activeNavRoute && activeNavRoute.length > 0 && navDestinationInfo?.coords && (
+          <Marker
+            position={navDestinationInfo.coords}
+            icon={createDestinationFlagIcon(navDestinationInfo.name)}
+          >
+            <Popup className="custom-popup">
+              <div className="p-2 min-w-[200px] bg-slate-900 text-white rounded-xl text-xs font-sans">
+                <div className="font-bold text-cyan-400 mb-1 flex items-center gap-1.5">
+                  <span>🏁</span>
+                  <span>{navDestinationInfo.name}</span>
+                </div>
+                <div className="text-[11px] text-slate-300">
+                  {navDestinationInfo.distance ? `${navDestinationInfo.distance} m` : ''} • ~{navDestinationInfo.eta || 1} min a pie
+                </div>
+              </div>
+            </Popup>
+          </Marker>
         )}
       </MapContainer>
 

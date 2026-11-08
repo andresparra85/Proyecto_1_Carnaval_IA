@@ -1263,54 +1263,9 @@ export function MapView({
           );
         })()}
 
-        {/* Capa Oficial Visible y Destacada de la Senda del Carnaval con Efecto Neón Festivo */}
+        {/* Capa Oficial de la Senda protegida contra trazados estáticos obsoletos */}
         {showSenda && (
           <>
-            {/* 1. Halo exterior ultra-amplio de Neón con efecto de resplandor festivo */}
-            <Polyline
-              positions={SENDA_CARNAVAL_COORDS}
-              pathOptions={{
-                color: dayRouteColor,
-                weight: 18,
-                opacity: 0.28,
-                lineCap: 'round',
-                lineJoin: 'round',
-                className: 'senda-glow-path',
-              }}
-            />
-            {/* 2. Trazo intermedio de resplandor saturado */}
-            <Polyline
-              positions={SENDA_CARNAVAL_COORDS}
-              pathOptions={{
-                color: dayRouteColor,
-                weight: 8,
-                opacity: 0.75,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
-            />
-            {/* 3. Núcleo de neón sólido y nítido */}
-            <Polyline
-              positions={SENDA_CARNAVAL_COORDS}
-              pathOptions={{
-                color: dayRouteColor,
-                weight: 4.5,
-                opacity: 1,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
-            />
-            {/* 4. Eje central láser blanco de alta precisión */}
-            <Polyline
-              positions={SENDA_CARNAVAL_COORDS}
-              pathOptions={{
-                color: '#ffffff',
-                weight: 2,
-                opacity: 0.95,
-                dashArray: '8, 12',
-              }}
-            />
-
             {/* Zonas de Tablados y Juego destacadas para el Día de Negros (5 de Enero) */}
             {selectedDay === '05-ene' && (
               <>
@@ -1386,57 +1341,6 @@ export function MapView({
                 </Popup>
               </Marker>
             ))}
-          </>
-        )}
-
-        {/* Polilínea Dinámica: Trazado oficial del día seleccionado (protegida bajo showSenda) */}
-        {showSenda && currentEvent && currentEvent.route && currentEvent.route.length > 1 && (
-          <>
-            {/* Resplandor exterior de la ruta del día */}
-            <Polyline
-              positions={currentEvent.route}
-              pathOptions={{
-                color: currentEvent.color,
-                weight: 12,
-                opacity: 0.3,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
-            />
-            {/* Polilínea principal requerida */}
-            <Polyline
-              positions={currentEvent.route}
-              color={currentEvent.color}
-              weight={6}
-              opacity={0.85}
-              pathOptions={{
-                color: currentEvent.color,
-                weight: 6,
-                opacity: 0.85,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
-            >
-              <Popup>
-                <div className="p-1 min-w-[210px] font-sans">
-                  <div className="flex items-center gap-2 border-b border-white/10 pb-1 mb-1.5">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full"
-                      style={{ backgroundColor: currentEvent.color }}
-                    />
-                    <strong className="text-xs font-black text-white">
-                      {currentEvent.name}
-                    </strong>
-                  </div>
-                  <p className="text-xs text-slate-300 mb-1 leading-snug">
-                    {currentEvent.description}
-                  </p>
-                  <div className="text-[11px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-md inline-block">
-                    Horario de Desfile: {currentEvent.hours}
-                  </div>
-                </div>
-              </Popup>
-            </Polyline>
           </>
         )}
 
