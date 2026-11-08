@@ -4,6 +4,12 @@
  * y despacha acciones sobre el mapa interactivo de CarnavalIA.
  */
 import axios from 'axios';
+import {
+  CARNAVAL_DAYS_AGENDA,
+  OFF_TOPIC_RESPONSE,
+  isCarnavalRelatedQuery,
+  findCarnavalDayAgenda,
+} from '../data/carnavalKnowledgeBase';
 
 const BASE_URL = (
   (import.meta.env && (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL)) ||
@@ -20,6 +26,34 @@ const GUANENA_ENDPOINT = `${BASE_URL.endsWith('/api/v1') ? BASE_URL : `${BASE_UR
  * @returns {Promise<{ reply: string, map_action: any }>}
  */
 export async function sendGuanenaMessage(message, userLat, userLng) {
+  // 1. Regla de contención temática exclusiva del Carnaval de Pasto
+  if (!isCarnavalRelatedQuery(message)) {
+    return {
+      reply: OFF_TOPIC_RESPONSE,
+      crowdNotice: null,
+      actionButton: null,
+      map_action: null,
+    };
+  }
+
+  // 2. Evaluación determinista sobre días y eventos de la Agenda Oficial del Carnaval
+  const dayMatch = findCarnavalDayAgenda(message);
+  if (dayMatch) {
+    const isPlazaDay = dayMatch.routeKey === '5' || dayMatch.routeKey === '7';
+    return {
+      reply: `${dayMatch.title} (${dayMatch.date}): ${dayMatch.description}`,
+      crowdNotice: dayMatch.crowdNotice,
+      actionButton: {
+        label: isPlazaDay ? '📍 Ver puntos de encuentro en el mapa' : '📍 Mirar la senda del carnaval para este día',
+        dayKey: dayMatch.routeKey,
+      },
+      map_action: {
+        action_type: isPlazaDay ? 'DRAW_DAY_ROUTE' : 'ROUTE_TO_EVENT_START',
+        day_id: dayMatch.routeKey,
+      },
+    };
+  }
+
   const payload = {
     message: message || '',
     user_lat: typeof userLat === 'number' ? userLat : 1.2168,
@@ -40,12 +74,16 @@ export async function sendGuanenaMessage(message, userLat, userLng) {
       rawReply = rawReply.replace(/¡?Que viva Pasto,?\s*carajo!?[^.\n]*[.\n]*/gi, '').trim();
       return {
         reply: rawReply || 'Consulta procesada en el mapa.',
+        crowdNotice: data.crowd_notice || data.crowdNotice || null,
+        actionButton: data.action_button || data.actionButton || null,
         map_action: data.map_action || null,
       };
     }
 
     return {
       reply: 'Consulta procesada en el mapa.',
+      crowdNotice: null,
+      actionButton: null,
       map_action: null,
     };
   } catch (error) {
@@ -55,47 +93,12 @@ export async function sendGuanenaMessage(message, userLat, userLng) {
     const lower = (message || '').toLowerCase();
     let mapAction = null;
     let reply = 'Consulta procesada. Revisa los marcadores y trazados en el mapa.';
+    let crowdNotice = null;
+    let actionButton = null;
 
-    if (lower.includes('4 de enero') || lower.includes('familia castañeda') || lower.includes('castaneda') || lower.includes('donde empieza') || lower.includes('dónde empieza')) {
-      reply = 'El 4 de enero es la Llegada de la Familia Castañeda. Recorrido trazado en el mapa de Sur (Champagnat) a Norte (Av. Estudiantes).';
-      mapAction = {
-        action_type: 'ROUTE_TO_EVENT_START',
-        target_coords: [1.2030, -77.2798],
-        target_name: 'Partida: Champagnat / Parque Bolívar',
-        day_id: '4',
-      };
-    } else if (lower.includes('6 de enero') || lower.includes('desfile magno') || lower.includes('blancos') || lower.includes('carroza')) {
-      reply = 'El 6 de enero es el Desfile Magno de Blancos con Carrozas Gigantes. Ruta oficial trazada en el mapa.';
-      mapAction = {
-        action_type: 'ROUTE_TO_EVENT_START',
-        target_coords: [1.2030, -77.2798],
-        target_name: 'Partida Oficial Champagnat',
-        day_id: '6',
-      };
-    } else if (lower.includes('3 de enero') || lower.includes('canto a la tierra') || lower.includes('colectivo')) {
-      reply = 'El 3 de enero es Canto a la Tierra con colectivos coreográficos. Recorrido trazado en el mapa hacia el Estadio Libertad.';
-      mapAction = {
-        action_type: 'ROUTE_TO_EVENT_START',
-        target_coords: [1.2030, -77.2798],
-        target_name: 'Partida: Champagnat / Colectivos',
-        day_id: '3',
-      };
-    } else if (lower.includes('2 de enero') || lower.includes('carnavalito')) {
-      reply = 'El 2 de enero es el Carnavalito. Desfile infantil trazado desde Rumipamba hasta el Estadio Libertad.';
-      mapAction = {
-        action_type: 'ROUTE_TO_EVENT_START',
-        target_coords: [1.2225, -77.2795],
-        target_name: 'Partida: Parque Rumipamba',
-        day_id: '2',
-      };
-    } else if (lower.includes('5 de enero') || lower.includes('negros') || lower.includes('pintica')) {
-      reply = 'El 5 de enero es el Día de Negros. Plazas y tablados principales activos en el mapa.';
-      mapAction = {
-        action_type: 'DRAW_DAY_ROUTE',
-        day_id: '5',
-      };
-    } else if (lower.includes('baño') || lower.includes('sanitario')) {
+    if (lower.includes('baño') || lower.includes('sanitario')) {
       reply = 'Baterías sanitarias activas en Plaza del Carnaval y Plaza de Nariño. Marcadores ubicados en el mapa.';
+      crowdNotice = '⚠️ Zona más concurrida: Costado sur de la Plaza del Carnaval.';
       mapAction = {
         action_type: 'DRAW_ROUTE',
         target_coords: [1.2138, -77.2782],
@@ -103,13 +106,24 @@ export async function sendGuanenaMessage(message, userLat, userLng) {
       };
     } else if (lower.includes('cuy') || lower.includes('comer') || lower.includes('restaurante') || lower.includes('comida') || lower.includes('almuerzo')) {
       reply = 'Encuentras cuy típico en el sector de Bombona y en el Parque Bolívar. Marcadores ubicados en el mapa.';
+      crowdNotice = '⚠️ Zona más llena: Corregimientos de Catambuco y Obonuco.';
+      actionButton = {
+        label: '📍 Ver puntos de encuentro en el mapa',
+        dayKey: '7',
+      };
       mapAction = {
         action_type: 'DRAW_ROUTE',
         target_coords: [1.2132, -77.2798],
         target_name: 'Restaurante Tradicional Pastuso',
+        day_id: '7',
       };
     } else if (lower.includes('senda') || lower.includes('recorrido') || lower.includes('ruta') || lower.includes('desfile')) {
       reply = 'Ruta oficial de la Senda del Carnaval trazada de Sur a Norte (Champagnat a Fuente de la Transparencia).';
+      crowdNotice = '⚠️ Zona más llena: Carrera 27 y Plaza del Carnaval.';
+      actionButton = {
+        label: '📍 Mirar la senda del carnaval para este día',
+        dayKey: '6',
+      };
       mapAction = {
         action_type: 'ROUTE_TO_EVENT_START',
         target_coords: [1.2030, -77.2798],
@@ -120,6 +134,8 @@ export async function sendGuanenaMessage(message, userLat, userLng) {
 
     return {
       reply,
+      crowdNotice,
+      actionButton,
       map_action: mapAction,
     };
   }
