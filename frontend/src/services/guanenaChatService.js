@@ -36,61 +36,85 @@ export async function sendGuanenaMessage(message, userLat, userLng) {
 
     const data = response?.data;
     if (data && typeof data === 'object') {
+      let rawReply = data.reply || data.message || 'Consulta procesada en el mapa.';
+      rawReply = rawReply.replace(/¡?Que viva Pasto,?\s*carajo!?[^.\n]*[.\n]*/gi, '').trim();
       return {
-        reply: data.reply || data.message || '¡Que viva Pasto, carajo! 🎭 ¿En qué más te puedo colaborar?',
+        reply: rawReply || 'Consulta procesada en el mapa.',
         map_action: data.map_action || null,
       };
     }
 
     return {
-      reply: '¡Que viva Pasto, carajo! 🎭 Recibí tu mensaje, paisano.',
+      reply: 'Consulta procesada en el mapa.',
       map_action: null,
     };
   } catch (error) {
     console.warn('Aviso: Backend de GuaneñaBot no disponible en', GUANENA_ENDPOINT, error?.message);
 
-    // Fallback conversacional nariñense en caso de que el backend local esté apagado
+    // Fallback conversacional ultra concreto (máximo 2 líneas, sin relleno ni introducciones largas)
     const lower = (message || '').toLowerCase();
     let mapAction = null;
-    let reply = '¡Que viva Pasto, carajo! 🎭 Estoy lista para guiarte por toda la Senda del Carnaval.';
+    let reply = 'Consulta procesada. Revisa los marcadores y trazados en el mapa.';
 
-    if (lower.includes('4 de enero') || lower.includes('familia castañeda') || lower.includes('donde empieza') || lower.includes('dónde empieza')) {
-      reply = '¡A la voz de una, paisano! 👨‍👩‍👦 El desfile de la Familia Castañeda del 4 de Enero inicia en la Av. Champagnat con Parque Bolívar y culmina en la Fuente de la Transparencia.\n¡Te he trazado la ruta peatonal vial exacta hacia el punto de partida en Champagnat!';
+    if (lower.includes('4 de enero') || lower.includes('familia castañeda') || lower.includes('castaneda') || lower.includes('donde empieza') || lower.includes('dónde empieza')) {
+      reply = 'El 4 de enero es la Llegada de la Familia Castañeda. Recorrido trazado en el mapa de Sur (Champagnat) a Norte (Av. Estudiantes).';
       mapAction = {
         action_type: 'ROUTE_TO_EVENT_START',
-        target_coords: [1.2052, -77.2796],
+        target_coords: [1.2030, -77.2798],
         target_name: 'Partida: Champagnat / Parque Bolívar',
-        day_id: '04-ene',
+        day_id: '4',
       };
-    } else if (lower.includes('6 de enero') || lower.includes('desfile magno')) {
-      reply = '¡Que viva Pasto, carajo! 👑 El Desfile Magno del 6 de Enero concentra las monumentales carrozas en la Av. Champagnat.\n¡Ruta peatonal trazada directamente al punto de salida para que no te perdás nada!';
+    } else if (lower.includes('6 de enero') || lower.includes('desfile magno') || lower.includes('blancos') || lower.includes('carroza')) {
+      reply = 'El 6 de enero es el Desfile Magno de Blancos con Carrozas Gigantes. Ruta oficial trazada en el mapa.';
       mapAction = {
         action_type: 'ROUTE_TO_EVENT_START',
-        target_coords: [1.2052, -77.2796],
+        target_coords: [1.2030, -77.2798],
         target_name: 'Partida Oficial Champagnat',
-        day_id: '06-ene',
+        day_id: '6',
       };
-    } else if (lower.includes('3 de enero') || lower.includes('canto a la tierra')) {
-      reply = '¡Que viva la tierra, carajo! 🌿 El Desfile de Colectivos Coreográficos del 3 de Enero sale desde Champagnat rumbo a la Plaza del Carnaval.\n¡Ruta hacia la concentración inicial trazada en el mapa!';
+    } else if (lower.includes('3 de enero') || lower.includes('canto a la tierra') || lower.includes('colectivo')) {
+      reply = 'El 3 de enero es Canto a la Tierra con colectivos coreográficos. Recorrido trazado en el mapa hacia el Estadio Libertad.';
       mapAction = {
         action_type: 'ROUTE_TO_EVENT_START',
-        target_coords: [1.2052, -77.2796],
+        target_coords: [1.2030, -77.2798],
         target_name: 'Partida: Champagnat / Colectivos',
-        day_id: '03-ene',
+        day_id: '3',
+      };
+    } else if (lower.includes('2 de enero') || lower.includes('carnavalito')) {
+      reply = 'El 2 de enero es el Carnavalito. Desfile infantil trazado desde Rumipamba hasta el Estadio Libertad.';
+      mapAction = {
+        action_type: 'ROUTE_TO_EVENT_START',
+        target_coords: [1.2225, -77.2795],
+        target_name: 'Partida: Parque Rumipamba',
+        day_id: '2',
+      };
+    } else if (lower.includes('5 de enero') || lower.includes('negros') || lower.includes('pintica')) {
+      reply = 'El 5 de enero es el Día de Negros. Plazas y tablados principales activos en el mapa.';
+      mapAction = {
+        action_type: 'DRAW_DAY_ROUTE',
+        day_id: '5',
       };
     } else if (lower.includes('baño') || lower.includes('sanitario')) {
-      reply = '¡De una, paisano! 🚻 Las baterías sanitarias principales están habilitadas en la Plaza del Carnaval y en la Plaza de Nariño.\n¡Te he marcado la ruta a pie hacia los baños de la Plaza del Carnaval!';
+      reply = 'Baterías sanitarias activas en Plaza del Carnaval y Plaza de Nariño. Marcadores ubicados en el mapa.';
       mapAction = {
         action_type: 'DRAW_ROUTE',
         target_coords: [1.2138, -77.2782],
         target_name: 'Baterías Sanitarias Plaza del Carnaval',
       };
-    } else if (lower.includes('cuy') || lower.includes('comer') || lower.includes('restaurante')) {
-      reply = '¡A comer sabroso en Pasto! 🍽️ Andá al sector del Centro y Plaza del Carnaval a probar cuy asado y empanadas de añejo.\n¡Ruta gastronómica peatonal trazada en el mapa!';
+    } else if (lower.includes('cuy') || lower.includes('comer') || lower.includes('restaurante') || lower.includes('comida') || lower.includes('almuerzo')) {
+      reply = 'Encuentras cuy típico en el sector de Bombona y en el Parque Bolívar. Marcadores ubicados en el mapa.';
       mapAction = {
         action_type: 'DRAW_ROUTE',
         target_coords: [1.2132, -77.2798],
         target_name: 'Restaurante Tradicional Pastuso',
+      };
+    } else if (lower.includes('senda') || lower.includes('recorrido') || lower.includes('ruta') || lower.includes('desfile')) {
+      reply = 'Ruta oficial de la Senda del Carnaval trazada de Sur a Norte (Champagnat a Fuente de la Transparencia).';
+      mapAction = {
+        action_type: 'ROUTE_TO_EVENT_START',
+        target_coords: [1.2030, -77.2798],
+        target_name: 'Salida Champagnat',
+        day_id: '6',
       };
     }
 

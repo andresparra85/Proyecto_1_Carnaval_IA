@@ -93,7 +93,7 @@ export function parseBotIntent(
           name: track.name,
         },
       },
-      feedbackText: `¡Que viva Pasto, carajo! 🎭 Para el ${track.date} (${track.name}):\n\n${track.description}\n\n📍 Recorrido: ${track.direction} (${track.lengthKm} km). ¡He dibujado la senda exacta sobre el asfalto en tu mapa!`,
+      feedbackText: `Para el ${track.date} (${track.name}): ${track.direction} (${track.lengthKm} km). Ruta trazada en el mapa.`,
     };
   }
 
@@ -123,7 +123,7 @@ export function parseBotIntent(
           name: 'Restaurante Rancho Grande / Gastronomía Nariñense',
         },
       },
-      feedbackText: `¡Que viva el buen sabor pastuso! 🍽️ En Pasto no podés dejar de probar el tradicional cuy asado a la brasa, el frito pastuso con papas criollas o las empanadas de añejo con ají de maní.\n\nTe recomiendo el Restaurante Rancho Grande (Calle 18 # 25-30 Centro) o el sector de La Merced junto a la Plaza del Carnaval. ¡He activado los restaurantes en el mapa y enfocado la cámara!`,
+      feedbackText: `Encuentras cuy típico en el sector de Bombona y en el Parque Bolívar. Marcadores ubicados en el mapa.`,
     };
   }
 
@@ -148,7 +148,7 @@ export function parseBotIntent(
           name: 'Batería Sanitaria Plaza del Carnaval',
         },
       },
-      feedbackText: `¡A la voz de una, paisano! 🚻 Para tu comodidad, la Alcaldía y Corpocarnaval han dispuesto baterías sanitarias públicas habilitadas 24 horas en el andén sur de la Plaza del Carnaval y en la Plaza de Nariño.\n\n¡He encendido los módulos sanitarios en el mapa para que llegues de inmediato!`,
+      feedbackText: `Baterías sanitarias activas en Plaza del Carnaval y Plaza de Nariño. Marcadores ubicados en el mapa.`,
     };
   }
 
@@ -176,7 +176,7 @@ export function parseBotIntent(
           name: 'Puesto de Salud Cruz Roja Plaza del Carnaval',
         },
       },
-      feedbackText: `¡Atención prioritaria de socorro! 🚨 La Cruz Roja y Defensa Civil cuentan con carpas de atención prehospitalaria, triage y ambulancias medicalizadas en la Plaza del Carnaval (Costado Sur) y Plaza de Nariño.\n\n¡He marcado y enfocado los puestos de salud en el mapa para ti!`,
+      feedbackText: `Puestos de primeros auxilios y triage de la Cruz Roja ubicados en Plaza del Carnaval y Plaza de Nariño.`,
     };
   }
 
@@ -203,7 +203,7 @@ export function parseBotIntent(
           name: 'CAI Plaza del Carnaval Policía Nacional',
         },
       },
-      feedbackText: `¡Seguridad ciudadana activa! 👮 Tienes a tu disposición el CAI Plaza del Carnaval y el CAI Parque Nariño con cuadrantes reforzados y atención ciudadana.\n\n¡He enfocado los puestos de control policial en el mapa!`,
+      feedbackText: `CAI de Policía Nacional disponible en Plaza del Carnaval y Parque Nariño. Marcadores ubicados en el mapa.`,
     };
   }
 
