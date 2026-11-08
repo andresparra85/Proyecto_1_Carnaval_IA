@@ -1050,10 +1050,11 @@ export function MapView({
                 key={f.id}
                 type="button"
                 onClick={() => setActiveFilter(f.id)}
-                className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-sm ${isActive
-                    ? 'bg-slate-900 dark:bg-gradient-to-r dark:from-amber-500 dark:to-orange-500 text-white shadow-md font-semibold'
-                    : 'bg-white/90 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
-                  }`}
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md ${
+                  isActive
+                    ? 'bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white shadow-md andean-glow-crimson font-bold ring-1 ring-white/20'
+                    : 'bg-slate-900/60 backdrop-blur-md border border-white/5 text-slate-300 hover:text-white hover:bg-slate-800/80'
+                }`}
               >
                 <span className="text-sm">{f.icon}</span>
                 <span>{f.label}</span>

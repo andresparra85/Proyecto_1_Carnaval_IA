@@ -908,10 +908,10 @@ export function CarnavalMap({
             id="btn-senda-carnaval-toggle"
             aria-pressed={isSendaActive}
             onClick={handleToggleSenda}
-            className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-sm ${
+            className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md ${
               isSendaActive
-                ? 'bg-amber-500 hover:bg-amber-400 text-white shadow-md ring-2 ring-amber-400/50'
-                : 'bg-white/90 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                ? 'bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white shadow-md andean-glow-crimson ring-1 ring-white/20'
+                : 'bg-slate-900/60 backdrop-blur-md border border-white/5 text-slate-300 hover:text-white hover:bg-slate-800/80'
             }`}
             title={isSendaActive ? 'Ocultar Senda del Carnaval' : 'Mostrar Senda del Carnaval'}
           >
@@ -937,16 +937,46 @@ export function CarnavalMap({
                 key={day.id}
                 type="button"
                 onClick={() => handleDaySelect(day.id)}
-                className={`rounded-full px-3 py-1.5 text-xs font-bold transition whitespace-nowrap active:scale-95 cursor-pointer ${
+                className={`rounded-full px-3 py-1.5 text-xs font-bold transition whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md ${
                   isSelected
-                    ? 'bg-gradient-to-r from-emerald-500 to-amber-500 text-slate-950 shadow-lg font-black'
-                    : 'bg-white/90 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                    ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-amber-400 text-white shadow-md andean-glow-gold font-black ring-1 ring-white/20'
+                    : 'bg-slate-900/60 backdrop-blur-md border border-white/5 text-slate-300 hover:text-white hover:bg-slate-800/80'
                 }`}
                 title={day.label}
               >
                 <span>{day.icon}</span>
                 <span className="hidden sm:inline">{day.label}</span>
                 <span className="inline sm:hidden">{day.short}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Chips de Filtro de Categorías con Neón Andina y Glassmorphism */}
+        <div className="pointer-events-auto flex items-center gap-1.5 max-w-full overflow-x-auto no-scrollbar py-0.5">
+          {[
+            { id: 'all', label: 'Todos', icon: '✨', activeGrad: 'bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white shadow-md andean-glow-crimson' },
+            { id: 'salud', label: 'Salud', icon: '🏥', activeGrad: 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-md' },
+            { id: 'bano', label: 'Baños', icon: '🚻', activeGrad: 'bg-gradient-to-r from-cyan-600 to-blue-500 text-white shadow-md andean-glow-cyan' },
+            { id: 'graderia', label: 'Graderías', icon: '🎪', activeGrad: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md andean-glow-gold' },
+            { id: 'juego', label: 'Juego', icon: '🎨', activeGrad: 'bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white shadow-md' },
+            { id: 'turismo', label: 'Turismo', icon: '🏛️', activeGrad: 'bg-gradient-to-r from-indigo-600 to-purple-500 text-white shadow-md' },
+          ].map((cat) => {
+            const isCatActive = activeCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setActiveCategory(isCatActive ? 'none' : cat.id)}
+                className={`rounded-full px-3 py-1 text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md ${
+                  isCatActive
+                    ? `${cat.activeGrad} font-bold ring-1 ring-white/20`
+                    : 'bg-slate-900/60 backdrop-blur-md border border-white/5 text-slate-300 hover:text-white hover:bg-slate-800/80'
+                }`}
+                title={`Filtrar puntos de interés: ${cat.label}`}
+              >
+                <span>{cat.icon}</span>
+                <span>{cat.label}</span>
               </button>
             );
           })}
