@@ -967,12 +967,12 @@ export function CarnavalMap({
           />
         )}
 
-        {/* Marcadores dinámicos exclusivos de Inicio y Llegada anclados a la ruta activa */}
-        {activeRouteTrack && activeRouteTrack.length > 0 && (
+        {/* Marcadores temáticos dinámicos de Inicio y Fin según el día activo */}
+        {activeRouteCoords && activeRouteCoords.length > 0 && (
           <>
-            {/* Marcador Verde (🚩 Salida) en activeRouteTrack[0] */}
+            {/* Pin Verde en el primer punto: Salida oficial */}
             <Marker
-              position={activeRouteTrack[0]}
+              position={activeRouteCoords[0]}
               icon={createTerminalStartIcon()}
             >
               <Popup className="custom-popup">
@@ -980,22 +980,22 @@ export function CarnavalMap({
                   <div className="flex items-center gap-1.5 text-emerald-400 font-black border-b border-white/10 pb-1 mb-1">
                     <span>🚩</span>
                     <span className="uppercase text-[11px]">
-                      Salida: {activeEventInfo?.start || 'Punto de Inicio'}
+                      Salida oficial: {activeDayConfig?.startName || activeEventInfo?.start || 'Punto de Inicio'}
                     </span>
                   </div>
                   <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Punto de concentración y partida oficial{activeEventInfo?.name ? ` para ${activeEventInfo.name}` : ''}.
+                    Punto de concentración y partida oficial{activeDayConfig?.name ? ` para ${activeDayConfig.name}` : ''}.
                   </p>
                   <div className="mt-1.5 text-[10px] text-emerald-300 font-mono">
-                    {activeEventInfo?.name || 'Carnaval de Pasto'} • Salida
+                    {activeDayConfig?.name || 'Carnaval de Pasto'} • Salida
                   </div>
                 </div>
               </Popup>
             </Marker>
 
-            {/* Marcador Rojo (🏁 Llegada) en activeRouteTrack[activeRouteTrack.length - 1] */}
+            {/* Pin Rojo en el último punto: Llegada oficial */}
             <Marker
-              position={activeRouteTrack[activeRouteTrack.length - 1]}
+              position={activeRouteCoords[activeRouteCoords.length - 1]}
               icon={createTerminalEndIcon()}
             >
               <Popup className="custom-popup">
@@ -1003,14 +1003,14 @@ export function CarnavalMap({
                   <div className="flex items-center gap-1.5 text-rose-400 font-black border-b border-white/10 pb-1 mb-1">
                     <span>🏁</span>
                     <span className="uppercase text-[11px]">
-                      Llegada: {activeEventInfo?.end || 'Punto de Culminación'}
+                      Llegada oficial: {activeDayConfig?.endName || activeEventInfo?.end || 'Punto de Culminación'}
                     </span>
                   </div>
                   <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Punto de culminación y desconcentración{activeEventInfo?.name ? ` de ${activeEventInfo.name}` : ''}.
+                    Punto de culminación y desconcentración{activeDayConfig?.name ? ` de ${activeDayConfig.name}` : ''}.
                   </p>
                   <div className="mt-1.5 text-[10px] text-rose-300 font-mono">
-                    {activeEventInfo?.name || 'Carnaval de Pasto'} • Llegada
+                    {activeDayConfig?.name || 'Carnaval de Pasto'} • Llegada
                   </div>
                 </div>
               </Popup>
