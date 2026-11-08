@@ -362,12 +362,21 @@ export function CarnavalMap({
   zones = [],
 }) {
   // Estado inicial limpio y reactivo gobernado por GuaneñaBot (Chat-Driven UI)
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [isSendaVisible, setIsSendaVisible] = useState(false);
+  const [isSendaActive, setIsSendaActive] = useState(false);
+  const [activeEvent, setActiveEvent] = useState(null);
   const [activeRouteCoords, setActiveRouteCoords] = useState([]);
   const [activeCategory, setActiveCategory] = useState('none');
   const [showRiskZones, setShowRiskZones] = useState(false);
   const [currentDay, setCurrentDay] = useState(propSelectedDay || null);
+
+  // Aliases de compatibilidad
+  const isSendaVisible = isSendaActive;
+  const setIsSendaVisible = setIsSendaActive;
+  const showSenda = isSendaActive;
+  const setShowSenda = setIsSendaActive;
+
+  const selectedEvent = activeEvent;
+  const setSelectedEvent = setActiveEvent;
 
   const activePoiCategory = activeCategory;
   const setActivePoiCategory = setActiveCategory;
@@ -389,8 +398,8 @@ export function CarnavalMap({
         ) ||
         CARNAVAL_DAILY_TRACKS.jan_06;
       if (track) {
-        setSelectedEvent(track);
-        setIsSendaVisible(true);
+        setActiveEvent(track);
+        setIsSendaActive(true);
         setActiveRouteCoords(track.coords || []);
         setCurrentDay(track.id || dayKey);
         if (mapInstance && track.coords) {
@@ -403,12 +412,12 @@ export function CarnavalMap({
     const handleFilterPois = (e) => {
       const detail = e?.detail;
       const category = typeof detail === 'object' ? (detail?.category || detail?.name) : detail;
-      setActiveCategory(category || null);
+      setActiveCategory(category || 'none');
     };
 
     const handleCleanMap = () => {
-      setSelectedEvent(null);
-      setIsSendaVisible(false);
+      setActiveEvent(null);
+      setIsSendaActive(false);
       setActiveRouteCoords([]);
       setActiveCategory('none');
       setShowRiskZones(false);
@@ -433,8 +442,8 @@ export function CarnavalMap({
       setCurrentDay(propSelectedDay);
       const track = CARNAVAL_DAILY_TRACKS[propSelectedDay] || CARNAVAL_DAYS_TRACKS[propSelectedDay];
       if (track) {
-        setSelectedEvent(track);
-        setIsSendaVisible(true);
+        setActiveEvent(track);
+        setIsSendaActive(true);
         setActiveRouteCoords(track.coords || []);
       }
     }
@@ -442,8 +451,8 @@ export function CarnavalMap({
 
   const handleDaySelect = (dayId) => {
     if (!dayId) {
-      setSelectedEvent(null);
-      setIsSendaVisible(false);
+      setActiveEvent(null);
+      setIsSendaActive(false);
       setActiveRouteCoords([]);
       setCurrentDay(null);
       return;
@@ -458,12 +467,12 @@ export function CarnavalMap({
       ) ||
       null;
     if (track) {
-      setSelectedEvent(track);
-      setIsSendaVisible(true);
+      setActiveEvent(track);
+      setIsSendaActive(true);
       setActiveRouteCoords(track.coords || []);
     } else {
-      setSelectedEvent(null);
-      setIsSendaVisible(false);
+      setActiveEvent(null);
+      setIsSendaActive(false);
       setActiveRouteCoords([]);
     }
     if (onSelectDay) {
@@ -472,27 +481,27 @@ export function CarnavalMap({
   };
 
   // Compatibilidad y enlaces directos
-  const activeSendaTrack = selectedEvent;
+  const activeSendaTrack = activeEvent;
   const setActiveSendaTrack = (track) => {
-    setSelectedEvent(track);
+    setActiveEvent(track);
     if (track) {
-      setIsSendaVisible(true);
+      setIsSendaActive(true);
       setActiveRouteCoords(track.coords || []);
     } else {
-      setIsSendaVisible(false);
+      setIsSendaActive(false);
       setActiveRouteCoords([]);
     }
   };
-  const currentTrack = selectedEvent;
-  const routeCoords = isSendaVisible ? activeRouteCoords : [];
+  const currentTrack = activeEvent;
+  const routeCoords = isSendaActive ? activeRouteCoords : [];
 
   // Ajuste de cámara inteligente (Fit Bounds) para encuadrar la Senda completa
   const handleFitSendaBounds = useCallback(() => {
     const coordsToFit = activeRouteCoords.length > 0 ? activeRouteCoords : SENDA_OFICIAL_COORDS;
-    if (!selectedEvent) {
+    if (!activeEvent) {
       const defaultTrack = CARNAVAL_DAILY_TRACKS.jan_06;
-      setSelectedEvent(defaultTrack);
-      setIsSendaVisible(true);
+      setActiveEvent(defaultTrack);
+      setIsSendaActive(true);
       setActiveRouteCoords(defaultTrack.coords || []);
     }
     if (mapInstance && typeof mapInstance.fitBounds === 'function') {
@@ -507,7 +516,7 @@ export function CarnavalMap({
       }
     }
     setFocusTrigger((prev) => prev + 1);
-  }, [mapInstance, selectedEvent, activeRouteCoords]);
+  }, [mapInstance, activeEvent, activeRouteCoords]);
 
   // Soporte para despachos directos de GuaneñaBot (focus-senda)
   useEffect(() => {
@@ -616,15 +625,55 @@ export function CarnavalMap({
           <span>¡Estás sobre la Senda del Carnaval! 🎉</span>
         </div>
       )}
-      {/* Selector dinámico de trazado por día del evento (Glassmorphic) */}
-      <div className="absolute top-4 left-4 z-[900] max-w-[95vw] sm:max-w-2xl bg-slate-900/90 backdrop-blur-md p-2 rounded-2xl border border-white/10 shadow-2xl">
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+      {/* 1. Contenedor Superior Fijo: Banner de Evento Activo y Chips de Controles */}
+      <div className="absolute top-4 left-4 right-4 z-[900] flex flex-col gap-2 pointer-events-none max-w-2xl">
+        {/* Banner Superior Dinámico de Evento Oficial controlado por GuaneñaBot */}
+        <div className="pointer-events-auto flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/60 shadow-sm text-xs w-fit max-w-full">
+          <div className="flex items-center gap-2 min-w-0">
+            <span
+              className={`w-2 h-2 rounded-full shrink-0 ${activeEvent ? 'bg-amber-500' : 'bg-slate-500'}`}
+            />
+            <div className="truncate text-slate-600 dark:text-slate-300">
+              <span className="hidden sm:inline text-slate-400">Evento Activo: </span>
+              <strong className="font-bold text-slate-900 dark:text-white">
+                {activeEvent ? (activeEvent.name || 'Ninguno') : 'Ninguno'}
+              </strong>
+            </div>
+          </div>
+          <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-amber-500 dark:text-amber-400">
+            🎭 GuaneñaBot AI
+          </span>
+        </div>
+
+        {/* Barra de Controles y Selector Dinámico de Días */}
+        <div className="pointer-events-auto flex items-center gap-1.5 max-w-full overflow-x-auto no-scrollbar py-0.5">
+          {/* Botón directo de activación / desactivación de la Senda del Carnaval */}
+          <button
+            type="button"
+            id="btn-senda-carnaval-toggle"
+            onClick={() => setIsSendaActive((prev) => !prev)}
+            className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-sm ${
+              isSendaActive
+                ? 'bg-amber-500 hover:bg-amber-400 text-white shadow-md ring-2 ring-amber-400/50'
+                : 'bg-white/90 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+            }`}
+            title={isSendaActive ? 'Ocultar Senda del Carnaval' : 'Mostrar Senda del Carnaval'}
+          >
+            <span className="text-sm">🎭</span>
+            <span>Senda del Carnaval</span>
+            <span
+              className={`w-2 h-2 rounded-full transition-all ${
+                isSendaActive ? 'bg-white shadow-sm' : 'bg-slate-400'
+              }`}
+            />
+          </button>
+
           {AVAILABLE_CARNAVAL_DAYS.map((day) => {
             const isSelected = Boolean(
-              selectedEvent && (
+              activeEvent && (
                 (day.id || '').toLowerCase() === (currentDay || '').toLowerCase() ||
-                (day.id || '').toLowerCase() === (selectedEvent?.id || '').toLowerCase() ||
-                (day.label || '').toLowerCase().includes((selectedEvent?.name || '').toLowerCase())
+                (day.id || '').toLowerCase() === (activeEvent?.id || '').toLowerCase() ||
+                (day.label || '').toLowerCase().includes((activeEvent?.name || '').toLowerCase())
               )
             );
             return (
@@ -632,10 +681,10 @@ export function CarnavalMap({
                 key={day.id}
                 type="button"
                 onClick={() => handleDaySelect(day.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap active:scale-95 cursor-pointer ${
+                className={`rounded-full px-3 py-1.5 text-xs font-bold transition whitespace-nowrap active:scale-95 cursor-pointer ${
                   isSelected
                     ? 'bg-gradient-to-r from-emerald-500 to-amber-500 text-slate-950 shadow-lg font-black'
-                    : 'text-slate-300 hover:text-white hover:bg-white/10'
+                    : 'bg-white/90 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
                 title={day.label}
               >
@@ -646,16 +695,17 @@ export function CarnavalMap({
             );
           })}
         </div>
+
         {/* Metadatos en vivo del día seleccionado */}
-        {selectedEvent && (
-          <div className="mt-1.5 pt-1.5 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-300 px-1">
+        {activeEvent && (
+          <div className="pointer-events-auto mt-0.5 py-1 px-3 rounded-xl bg-slate-900/80 backdrop-blur-md border border-white/10 flex items-center justify-between text-[11px] text-slate-300 w-fit">
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-amber-400">{selectedEvent?.name || ''}</span>
+              <span className="font-extrabold text-amber-400">{activeEvent?.name || ''}</span>
               <span>•</span>
-              <span className="text-emerald-400 font-mono">{selectedEvent?.lengthKm || 0} km</span>
+              <span className="text-emerald-400 font-mono">{activeEvent?.lengthKm || 0} km</span>
             </div>
-            <span className="text-[10px] text-slate-400 hidden md:inline font-mono">
-              {selectedEvent?.direction || ''}
+            <span className="text-[10px] text-slate-400 hidden md:inline font-mono ml-3">
+              {activeEvent?.direction || ''}
             </span>
           </div>
         )}
