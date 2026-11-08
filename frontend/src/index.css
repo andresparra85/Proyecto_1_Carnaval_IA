@@ -203,3 +203,37 @@ body {
 .neon-glow {
   animation: neon-pulse 3s infinite ease-in-out;
 }
+
+/* Glassmorphism de Alto Contraste y Paleta Festiva Andina para ChatDrawer y Exteriores */
+.andean-glass-drawer {
+  background: rgba(11, 17, 32, 0.92) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-left: 1px solid rgba(245, 158, 11, 0.3) !important;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 35px -5px rgba(225, 29, 72, 0.25) !important;
+}
+
+.andean-border-gold {
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.andean-crimson-accent {
+  color: #e11d48 !important;
+}
+
+.andean-crimson-bg {
+  background-color: #e11d48 !important;
+}
+
+.active-walking-route-path {
+  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.8));
+  stroke-dashoffset: 0;
+  animation: walking-dash 1.5s linear infinite;
+}
+
+@keyframes walking-dash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
