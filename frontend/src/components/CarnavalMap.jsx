@@ -11,6 +11,7 @@ import {
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { SENDA_OFICIAL_COORDS } from '../data/sendaOficialTrack.js';
+import { CARNAVAL_DAYS_MAP, TRACK_SENDA_MAGNA } from '../data/carnavalOfficialTracks';
 import {
   CARNAVAL_DAYS_TRACKS,
   CARNAVAL_DAILY_TRACKS,
@@ -434,6 +435,8 @@ export function CarnavalMap({
   const [isSendaActive, setIsSendaActive] = useState(false);
   const [activeEvent, setActiveEvent] = useState(null);
   const [activeRouteCoords, setActiveRouteCoords] = useState([]);
+  const [activeRouteTrack, setActiveRouteTrack] = useState([]);
+  const [activeEventInfo, setActiveEventInfo] = useState(null);
   const [activeCategory, setActiveCategory] = useState('none');
   const [showRiskZones, setShowRiskZones] = useState(false);
   const [currentDay, setCurrentDay] = useState(propSelectedDay || null);
@@ -515,15 +518,40 @@ export function CarnavalMap({
 
     const handleCleanMap = () => {
       setActiveEvent(null);
+      setActiveEventInfo(null);
       setIsSendaActive(false);
       setShowSendaDetails(false);
       setActiveRouteCoords([]);
+      setActiveRouteTrack([]);
       setActiveCategory('none');
       setShowRiskZones(false);
       setActiveNavRoute(null);
       setNavDestinationInfo(null);
       if (mapInstance) {
         mapInstance.flyTo([1.2168, -77.2805], 15, { duration: 1.2 });
+      }
+    };
+
+    const handleDrawDayRoute = (e) => {
+      const detail = e?.detail;
+      const rawDay = (typeof detail === 'object' ? (detail?.day || detail?.dayKey || detail?.dayId) : detail) || '6';
+      const cleanDay = String(rawDay).replace(/[^0-9]/g, '') || '6';
+      const selected = CARNAVAL_DAYS_MAP[cleanDay] || CARNAVAL_DAYS_MAP['6'];
+      if (selected) {
+        setActiveRouteTrack(selected.track);
+        setActiveRouteCoords(selected.track);
+        setActiveEventInfo({
+          name: selected.name,
+          start: selected.startName,
+          end: selected.endName,
+        });
+        setIsSendaActive(true);
+        setShowSendaDetails(true);
+        setCurrentDay(cleanDay);
+        if (mapInstance && selected.track) {
+          const bounds = L.latLngBounds(selected.track);
+          mapInstance.fitBounds(bounds, { padding: [50, 50], animate: true });
+        }
       }
     };
 
@@ -536,6 +564,7 @@ export function CarnavalMap({
       handleTriggerNavigation(targetCoords, targetName, originCoords);
     };
 
+    window.addEventListener('DRAW_DAY_ROUTE', handleDrawDayRoute);
     window.addEventListener('DRAW_SENDA', handleDrawSenda);
     window.addEventListener('FILTER_POIS', handleFilterPois);
     window.addEventListener('SHOW_ALL_CLEAN', handleCleanMap);
@@ -545,6 +574,7 @@ export function CarnavalMap({
     window.addEventListener('ROUTE_TO_EVENT_START', handleTriggerNavEvent);
 
     return () => {
+      window.removeEventListener('DRAW_DAY_ROUTE', handleDrawDayRoute);
       window.removeEventListener('DRAW_SENDA', handleDrawSenda);
       window.removeEventListener('FILTER_POIS', handleFilterPois);
       window.removeEventListener('SHOW_ALL_CLEAN', handleCleanMap);
@@ -565,12 +595,28 @@ export function CarnavalMap({
   const handleDaySelect = (dayId) => {
     if (!dayId) {
       setActiveEvent(null);
+      setActiveEventInfo(null);
+      setActiveRouteTrack([]);
       setIsSendaActive(false);
+      setShowSendaDetails(false);
       setActiveRouteCoords([]);
       setCurrentDay(null);
       return;
     }
     setCurrentDay(dayId);
+    const cleanDay = String(dayId).replace(/[^0-9]/g, '') || '6';
+    const selected = CARNAVAL_DAYS_MAP[cleanDay] || CARNAVAL_DAYS_MAP['6'];
+    if (selected) {
+      setActiveRouteTrack(selected.track);
+      setActiveRouteCoords(selected.track);
+      setActiveEventInfo({
+        name: selected.name,
+        start: selected.startName,
+        end: selected.endName,
+      });
+      setIsSendaActive(true);
+      setShowSendaDetails(true);
+    }
     const normDayId = (dayId || '').toLowerCase();
     const track = CARNAVAL_DAILY_TRACKS[dayId] ||
       CARNAVAL_DAYS_TRACKS[dayId] ||
@@ -581,12 +627,6 @@ export function CarnavalMap({
       null;
     if (track) {
       setActiveEvent(track);
-      setIsSendaActive(true);
-      setActiveRouteCoords(track.coords || []);
-    } else {
-      setActiveEvent(null);
-      setIsSendaActive(false);
-      setActiveRouteCoords([]);
     }
     if (onSelectDay) {
       onSelectDay(dayId);
@@ -614,19 +654,28 @@ export function CarnavalMap({
     setIsSendaActive((prev) => {
       const nextState = !prev;
       if (nextState) {
+        const selected = CARNAVAL_DAYS_MAP['6'];
+        setActiveRouteTrack(selected.track);
+        setActiveRouteCoords(selected.track);
+        setActiveEventInfo({
+          name: selected.name,
+          start: selected.startName,
+          end: selected.endName,
+        });
         if (!activeEvent) {
           setActiveEvent(CARNAVAL_DAILY_TRACKS.jan_06);
-          setActiveRouteCoords(SENDA_OFICIAL_COORDS);
         }
         if (mapInstance && typeof mapInstance.fitBounds === 'function') {
           try {
-            mapInstance.fitBounds(SENDA_OFICIAL_COORDS, { padding: [40, 40] });
+            mapInstance.fitBounds(selected.track, { padding: [40, 40] });
           } catch (err) {
             console.warn('Error al ajustar límites de la Senda:', err);
           }
         }
       } else {
         setActiveEvent(null);
+        setActiveEventInfo(null);
+        setActiveRouteTrack([]);
         setActiveRouteCoords([]);
         if (mapInstance && typeof mapInstance.flyTo === 'function') {
           mapInstance.flyTo([1.2168, -77.2805], 15, { duration: 1.2 });
@@ -868,18 +917,30 @@ export function CarnavalMap({
           className="w-full h-full"
         />
 
-        {/* Capa de la Senda Oficial - Renderizado condicional reactivo bajo petición de GuaneñaBot */}
-        {Boolean(isSendaActive && activeRouteCoords && activeRouteCoords.length > 0) && (
-          <Polyline
-            positions={activeRouteCoords}
-            pathOptions={{
-              color: '#e11d48',
-              weight: 6,
-              opacity: 0.9,
-              lineCap: 'round',
-              lineJoin: 'round',
-            }}
-          />
+        {/* Capa de la Senda Oficial con efecto resplandor bicolor (Dual-Tone) */}
+        {activeRouteTrack && activeRouteTrack.length > 0 && (
+          <>
+            <Polyline
+              positions={activeRouteTrack}
+              pathOptions={{
+                color: '#fb7185',
+                weight: 12,
+                opacity: 0.3,
+                lineJoin: 'round',
+                lineCap: 'round',
+              }}
+            />
+            <Polyline
+              positions={activeRouteTrack}
+              pathOptions={{
+                color: '#e11d48',
+                weight: 6,
+                opacity: 0.95,
+                lineJoin: 'round',
+                lineCap: 'round',
+              }}
+            />
+          </>
         )}
 
         {/* Marcadores de terminales (Inicio/Fin), hitos y cierres viales encapsulados bajo showSendaDetails e isSendaActive */}
