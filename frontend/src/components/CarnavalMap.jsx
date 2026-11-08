@@ -427,6 +427,7 @@ export function CarnavalMap({
   zones = [],
 }) {
   // Estado inicial limpio y reactivo gobernado por GuaneñaBot (Chat-Driven UI)
+  const [showSendaDetails, setShowSendaDetails] = useState(false);
   const [isSendaActive, setIsSendaActive] = useState(false);
   const [activeEvent, setActiveEvent] = useState(null);
   const [activeRouteCoords, setActiveRouteCoords] = useState([]);
@@ -512,6 +513,7 @@ export function CarnavalMap({
     const handleCleanMap = () => {
       setActiveEvent(null);
       setIsSendaActive(false);
+      setShowSendaDetails(false);
       setActiveRouteCoords([]);
       setActiveCategory('none');
       setShowRiskZones(false);
@@ -610,6 +612,7 @@ export function CarnavalMap({
 
   // Toggle interactivo para el botón 'Senda del Carnaval' con ajuste dinámico de cámara
   const handleToggleSenda = useCallback(() => {
+    setShowSendaDetails((prev) => !prev);
     setIsSendaActive((prev) => {
       const nextState = !prev;
       if (nextState) {
@@ -880,8 +883,8 @@ export function CarnavalMap({
           />
         )}
 
-        {/* Marcadores de terminales (Inicio/Fin), hitos y cierres viales encapsulados bajo isSendaActive */}
-        {isSendaActive && (
+        {/* Marcadores de terminales (Inicio/Fin), hitos y cierres viales encapsulados bajo showSendaDetails e isSendaActive */}
+        {showSendaDetails && isSendaActive && (
           <>
             {/* Marcador contextual de Inicio oficial de la Senda activa (Verde) */}
             <Marker

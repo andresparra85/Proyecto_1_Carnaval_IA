@@ -700,11 +700,13 @@ export function MapView({
   const [isLocating, setIsLocating] = useState(false);
   const originPoint = userGps ? [userGps.lat || userGps[0], userGps.lng || userGps[1]] : [1.2138, -77.2818]; // Fallback al Parque Nariño si no hay GPS activo
 
-  // Estado local para activar o desactivar la capa de la Senda del Carnaval
-  const [internalShowSenda, setInternalShowSenda] = useState(true);
+  // Estado local para activar o desactivar la capa de la Senda del Carnaval (inicia estrictamente en false)
+  const [showSendaDetails, setShowSendaDetails] = useState(false);
+  const [internalShowSenda, setInternalShowSenda] = useState(false);
   const [sendaFocusCounter, setSendaFocusCounter] = useState(0);
-  const showSenda = propShowSenda !== undefined ? propShowSenda : internalShowSenda;
+  const showSenda = Boolean(showSendaDetails && (propShowSenda !== undefined ? propShowSenda : internalShowSenda));
   const toggleSenda = () => {
+    setShowSendaDetails((prev) => !prev);
     if (propOnToggleSenda) {
       propOnToggleSenda();
     } else {
@@ -1473,77 +1475,82 @@ export function MapView({
           </Marker>
         )}
 
-        {/* Marcador Salida: Pin verde con ícono "🏁 Inicio" */}
-        {currentEvent.startPoint && (
-          <Marker
-            position={[currentEvent.startPoint.lat, currentEvent.startPoint.lng]}
-            icon={createStartPointIcon()}
-          >
-            <Popup>
-              <div className="p-1 min-w-[210px] font-sans">
-                <div className="flex items-center gap-1.5 text-emerald-400 font-black text-xs border-b border-emerald-500/20 pb-1 mb-1.5">
-                  <span>🏁</span>
-                  <span>Punto de Inicio / Salida</span>
-                </div>
-                <p className="text-xs font-bold text-white mb-1">
-                  {currentEvent.startPoint.label}
-                </p>
-                <p className="text-[11px] text-slate-300">
-                  Hora programada: {currentEvent.hours.split('-')[0].trim()}
-                </p>
-              </div>
-            </Popup>
-          </Marker>
-        )}
-
-        {/* Marcador Llegada: Pin a cuadros o rojo con ícono "🏆 Fin" */}
-        {currentEvent.endPoint && (
-          <Marker
-            position={[currentEvent.endPoint.lat, currentEvent.endPoint.lng]}
-            icon={createEndPointIcon()}
-          >
-            <Popup>
-              <div className="p-1 min-w-[210px] font-sans">
-                <div className="flex items-center gap-1.5 text-rose-400 font-black text-xs border-b border-rose-500/20 pb-1 mb-1.5">
-                  <span>🏆</span>
-                  <span>Punto de Llegada / Fin</span>
-                </div>
-                <p className="text-xs font-bold text-white mb-1">
-                  {currentEvent.endPoint.label}
-                </p>
-                <p className="text-[11px] text-slate-300">
-                  Desconcentración: {currentEvent.hours.split('-')[1]?.trim() || currentEvent.hours}
-                </p>
-              </div>
-            </Popup>
-          </Marker>
-        )}
-
-        {/* Marcadores de Cierre Vial: Pines circulares rojos con símbolo "⛔" */}
-        {currentEvent.closedPoints &&
-          currentEvent.closedPoints.map((cp, idx) => (
-            <Marker
-              key={`closed-${selectedDay}-${idx}`}
-              position={[cp.lat, cp.lng]}
-              icon={createRoadClosureIcon()}
-            >
-              <Popup>
-                <div className="p-1 min-w-[210px] font-sans">
-                  <div className="flex items-center gap-1.5 text-rose-400 font-black text-xs border-b border-rose-500/25 pb-1 mb-1.5">
-                    <span>⛔</span>
-                    <span>Cierre Vial por Desfile</span>
+        {/* Capa de Marcadores de Salida, Llegada y Cierres Viales: protegida bajo showSendaDetails y showSenda */}
+        {showSendaDetails && showSenda && currentEvent && (
+          <>
+            {/* Marcador Salida: Pin verde con ícono "🏁 Inicio" */}
+            {currentEvent.startPoint && (
+              <Marker
+                position={[currentEvent.startPoint.lat, currentEvent.startPoint.lng]}
+                icon={createStartPointIcon()}
+              >
+                <Popup>
+                  <div className="p-1 min-w-[210px] font-sans">
+                    <div className="flex items-center gap-1.5 text-emerald-400 font-black text-xs border-b border-emerald-500/20 pb-1 mb-1.5">
+                      <span>🏁</span>
+                      <span>Punto de Inicio / Salida</span>
+                    </div>
+                    <p className="text-xs font-bold text-white mb-1">
+                      {currentEvent.startPoint.label}
+                    </p>
+                    <p className="text-[11px] text-slate-300">
+                      Hora programada: {currentEvent.hours.split('-')[0].trim()}
+                    </p>
                   </div>
-                  <p className="text-xs font-bold text-white mb-1.5">{cp.label}</p>
-                  <div className="text-xs text-rose-300 bg-rose-500/20 px-2.5 py-1.5 rounded-lg border border-rose-500/30 font-semibold mb-1">
-                    Vía cerrada por desfile: {currentEvent.hours}
+                </Popup>
+              </Marker>
+            )}
+
+            {/* Marcador Llegada: Pin a cuadros o rojo con ícono "🏆 Fin" */}
+            {currentEvent.endPoint && (
+              <Marker
+                position={[currentEvent.endPoint.lat, currentEvent.endPoint.lng]}
+                icon={createEndPointIcon()}
+              >
+                <Popup>
+                  <div className="p-1 min-w-[210px] font-sans">
+                    <div className="flex items-center gap-1.5 text-rose-400 font-black text-xs border-b border-rose-500/20 pb-1 mb-1.5">
+                      <span>🏆</span>
+                      <span>Punto de Llegada / Fin</span>
+                    </div>
+                    <p className="text-xs font-bold text-white mb-1">
+                      {currentEvent.endPoint.label}
+                    </p>
+                    <p className="text-[11px] text-slate-300">
+                      Desconcentración: {currentEvent.hours.split('-')[1]?.trim() || currentEvent.hours}
+                    </p>
                   </div>
-                  <p className="text-[10px] text-slate-400">
-                    {currentEvent.name}
-                  </p>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+                </Popup>
+              </Marker>
+            )}
+
+            {/* Marcadores de Cierre Vial: Pines circulares rojos con símbolo "⛔" */}
+            {currentEvent.closedPoints &&
+              currentEvent.closedPoints.map((cp, idx) => (
+                <Marker
+                  key={`closed-${selectedDay}-${idx}`}
+                  position={[cp.lat, cp.lng]}
+                  icon={createRoadClosureIcon()}
+                >
+                  <Popup>
+                    <div className="p-1 min-w-[210px] font-sans">
+                      <div className="flex items-center gap-1.5 text-rose-400 font-black text-xs border-b border-rose-500/25 pb-1 mb-1.5">
+                        <span>⛔</span>
+                        <span>Cierre Vial por Desfile</span>
+                      </div>
+                      <p className="text-xs font-bold text-white mb-1.5">{cp.label}</p>
+                      <div className="text-xs text-rose-300 bg-rose-500/20 px-2.5 py-1.5 rounded-lg border border-rose-500/30 font-semibold mb-1">
+                        Vía cerrada por desfile: {currentEvent.hours}
+                      </div>
+                      <p className="text-[10px] text-slate-400">
+                        {currentEvent.name}
+                      </p>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+          </>
+        )}
 
         {/* 4. Zonas de Congestión / Riesgo (Áreas translúcidas) */}
         {showZones &&
