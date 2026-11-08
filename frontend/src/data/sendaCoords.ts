@@ -22,17 +22,19 @@ export const SENDA_OFICIAL_COORDS: [number, number][] = [
 
 export interface HitoSenda {
   id: string;
-  nombre: string;
-  coords: LatLngTuple;
-  tipo: 'inicio' | 'intermedio' | 'fin';
-  desc: string;
+  name: string;
+  nombre?: string;
+  coords: [number, number];
+  tipo?: 'inicio' | 'intermedio' | 'fin';
+  type?: 'inicio' | 'intermedio' | 'fin';
+  desc?: string;
 }
 
-export const HITOS_SENDA: HitoSenda[] = [
-  { id: 'salida', nombre: 'PUNTO DE SALIDA: I.E. Normal Superior', coords: [1.21852, -77.26941], tipo: 'inicio', desc: 'Concentración de carrozas gigantes, murgas y comparsas.' },
-  { id: 'narino', nombre: 'HITO HISTÓRICO: Plaza de Nariño', coords: [1.21380, -77.28180], tipo: 'intermedio', desc: 'Paso por el centro de la ciudad y tarimas de transmisión.' },
-  { id: 'plaza_carnaval', nombre: 'EPICENTRO: Plaza del Carnaval', coords: [1.21540, -77.28410], tipo: 'intermedio', desc: 'Tarima principal de jurados y graderías.' },
-  { id: 'llegada', nombre: 'PUNTO DE LLEGADA: Champagnat / Bomboná', coords: [1.20780, -77.29130], tipo: 'fin', desc: 'Desmonte y finalización oficial del desfile.' }
+export const HITOS_SENDA = [
+  { id: '1', name: 'Salida: Normal Superior', nombre: 'Salida: Normal Superior', coords: [1.21852, -77.26941] as [number, number], tipo: 'inicio' as const, type: 'inicio' as const, desc: 'Concentración de carrozas gigantes, murgas y comparsas.' },
+  { id: '2', name: 'Plaza de Nariño', nombre: 'Plaza de Nariño', coords: [1.21380, -77.28180] as [number, number], tipo: 'intermedio' as const, type: 'intermedio' as const, desc: 'Paso por el centro de la ciudad y tarimas de transmisión.' },
+  { id: '3', name: 'Plaza del Carnaval', nombre: 'Plaza del Carnaval', coords: [1.21540, -77.28410] as [number, number], tipo: 'intermedio' as const, type: 'intermedio' as const, desc: 'Tarima principal de jurados y graderías.' },
+  { id: '4', name: 'Llegada: Champagnat', nombre: 'Llegada: Champagnat', coords: [1.20780, -77.29130] as [number, number], tipo: 'fin' as const, type: 'fin' as const, desc: 'Desmonte y finalización oficial del desfile.' }
 ];
 
 // Aliases para retrocompatibilidad
