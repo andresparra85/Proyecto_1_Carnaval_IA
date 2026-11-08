@@ -512,28 +512,38 @@ export function CarnavalMap({
   const currentTrack = activeEvent;
   const routeCoords = isSendaActive ? activeRouteCoords : [];
 
+  // Toggle interactivo para el botón 'Senda del Carnaval' con ajuste dinámico de cámara
+  const handleToggleSenda = useCallback(() => {
+    setIsSendaActive((prev) => {
+      const nextState = !prev;
+      if (nextState) {
+        if (!activeEvent) {
+          setActiveEvent(CARNAVAL_DAILY_TRACKS.jan_06);
+          setActiveRouteCoords(SENDA_OFICIAL_COORDS);
+        }
+        if (mapInstance && typeof mapInstance.fitBounds === 'function') {
+          try {
+            mapInstance.fitBounds(SENDA_OFICIAL_COORDS, { padding: [40, 40] });
+          } catch (err) {
+            console.warn('Error al ajustar límites de la Senda:', err);
+          }
+        }
+      } else {
+        setActiveEvent(null);
+        setActiveRouteCoords([]);
+        if (mapInstance && typeof mapInstance.flyTo === 'function') {
+          mapInstance.flyTo([1.2168, -77.2805], 15, { duration: 1.2 });
+        }
+      }
+      return nextState;
+    });
+    setFocusTrigger((prev) => prev + 1);
+  }, [mapInstance, activeEvent]);
+
   // Ajuste de cámara inteligente (Fit Bounds) para encuadrar la Senda completa
   const handleFitSendaBounds = useCallback(() => {
-    const coordsToFit = activeRouteCoords.length > 0 ? activeRouteCoords : SENDA_OFICIAL_COORDS;
-    if (!activeEvent) {
-      const defaultTrack = CARNAVAL_DAILY_TRACKS.jan_06;
-      setActiveEvent(defaultTrack);
-      setIsSendaActive(true);
-      setActiveRouteCoords(defaultTrack.coords || []);
-    }
-    if (mapInstance && typeof mapInstance.fitBounds === 'function') {
-      try {
-        const bounds = L.latLngBounds(coordsToFit);
-        mapInstance.fitBounds(bounds, {
-          padding: [50, 50],
-          animate: true,
-        });
-      } catch (err) {
-        console.warn('Error al ajustar límites de la Senda:', err);
-      }
-    }
-    setFocusTrigger((prev) => prev + 1);
-  }, [mapInstance, activeEvent, activeRouteCoords]);
+    handleToggleSenda();
+  }, [handleToggleSenda]);
 
   // Soporte para despachos directos de GuaneñaBot (focus-senda)
   useEffect(() => {
@@ -668,7 +678,7 @@ export function CarnavalMap({
           <button
             type="button"
             id="btn-senda-carnaval-toggle"
-            onClick={() => setIsSendaActive((prev) => !prev)}
+            onClick={handleToggleSenda}
             className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-sm ${
               isSendaActive
                 ? 'bg-amber-500 hover:bg-amber-400 text-white shadow-md ring-2 ring-amber-400/50'
