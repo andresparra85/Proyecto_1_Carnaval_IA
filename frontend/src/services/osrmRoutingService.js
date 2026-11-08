@@ -66,6 +66,8 @@ export async function getWalkingRouteToSenda(userLat, userLng, targetLat, target
 
       return {
         coordinates: decodedCoordinates,
+        distance: route.distance || fallback.distanceMeters,
+        duration: route.duration || (fallback.durationMinutes * 60),
         distanceMeters: Math.round(route.distance || fallback.distanceMeters),
         durationMinutes: Math.max(1, Math.round((route.duration || 0) / 60))
       };
@@ -184,19 +186,77 @@ export async function getSnappedSendaRoute(coordinates) {
  * Consulta la ruta peatonal OSRM entre dos pares de coordenadas [lat, lng].
  * @param {[number, number]} startCoords Coordenadas de origen [lat, lng]
  * @param {[number, number]} endCoords Coordenadas de destino [lat, lng]
- * @returns {Promise<{ coordinates: [number, number][], distanceMeters: number, durationMinutes: number }>}
+ * @returns {Promise<{ coordinates: [number, number][], distance: number, duration: number, distanceMeters: number, durationMinutes: number }>}
  */
 export async function fetchFootRoute(startCoords, endCoords) {
   if (!Array.isArray(startCoords) || !Array.isArray(endCoords) || startCoords.length < 2 || endCoords.length < 2) {
     console.warn('fetchFootRoute: coordenadas de inicio o fin inválidas', { startCoords, endCoords });
-    return { coordinates: [], distanceMeters: 0, durationMinutes: 0 };
+    return { coordinates: [], distance: 0, duration: 0, distanceMeters: 0, durationMinutes: 0 };
   }
-  return getWalkingRouteToSenda(startCoords[0], startCoords[1], endCoords[0], endCoords[1]);
+
+  // startCoords = [lat, lng], endCoords = [lat, lng]
+  const startLat = startCoords[0];
+  const startLng = startCoords[1];
+  const endLat = endCoords[0];
+  const endLng = endCoords[1];
+
+  // OSRM REQUIERE: {lng},{lat};{lng},{lat}
+  const url = `https://router.project-osrm.org/route/v1/foot/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+
+  const fallback = {
+    coordinates: [
+      [startLat, startLng],
+      [endLat, endLng],
+    ],
+    distance: Math.round(calculateHaversineDistance(startLat, startLng, endLat, endLng) * 1000),
+    duration: Math.round((calculateHaversineDistance(startLat, startLng, endLat, endLng) / 4.5) * 3600),
+    distanceMeters: Math.round(calculateHaversineDistance(startLat, startLng, endLat, endLng) * 1000),
+    durationMinutes: Math.max(1, Math.round((calculateHaversineDistance(startLat, startLng, endLat, endLng) / 4.5) * 60)),
+  };
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4500);
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      console.warn(`Respuesta fallida de OSRM (${response.status}) en fetchFootRoute.`);
+      return fallback;
+    }
+
+    const data = await response.json();
+    if (data?.routes?.[0]?.geometry?.coordinates && Array.isArray(data.routes[0].geometry.coordinates)) {
+      // OSRM entrega pares [lng, lat]. Mapea de vuelta para Leaflet a [lat, lng]:
+      const leafletCoords = data.routes[0].geometry.coordinates.map((coord) => [coord[1], coord[0]]);
+      return {
+        coordinates: leafletCoords,
+        distance: data.routes[0].distance,
+        duration: data.routes[0].duration,
+        distanceMeters: Math.round(data.routes[0].distance || fallback.distanceMeters),
+        durationMinutes: Math.max(1, Math.round((data.routes[0].duration || 0) / 60)),
+      };
+    }
+
+    return fallback;
+  } catch (error) {
+    console.warn('Error al calcular ruta peatonal OSRM en fetchFootRoute:', error);
+    return fallback;
+  }
 }
+
+export const getRoute = fetchFootRoute;
 
 export default {
   getWalkingRouteToSenda,
   fetchFootRoute,
+  getRoute,
   findNearestPointOnSenda,
   calculateHaversineDistance,
   getSnappedSendaRoute,
