@@ -324,10 +324,12 @@ export function CarnavalMap({
   zones = [],
 }) {
   // Estado inicial limpio y reactivo gobernado por GuaneñaBot (Chat-Driven UI)
-  const [activeSendaTrack, setActiveSendaTrack] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isSendaVisible, setIsSendaVisible] = useState(false);
+  const [activeRouteCoords, setActiveRouteCoords] = useState([]);
   const [activePoiCategory, setActivePoiCategory] = useState(null);
   const [showRiskZones, setShowRiskZones] = useState(false);
-  const [currentDay, setCurrentDay] = useState(propSelectedDay);
+  const [currentDay, setCurrentDay] = useState(propSelectedDay || null);
 
   const [mapInstance, setMapInstance] = useState(null);
   const [focusTrigger, setFocusTrigger] = useState(0);
@@ -339,7 +341,9 @@ export function CarnavalMap({
       const dayKey = (typeof detail === 'object' ? (detail?.dayKey || detail?.dayId) : detail) || 'jan_06';
       const track = CARNAVAL_DAILY_TRACKS[dayKey] || CARNAVAL_DAYS_TRACKS[dayKey] || CARNAVAL_DAILY_TRACKS.jan_06;
       if (track) {
-        setActiveSendaTrack(track);
+        setSelectedEvent(track);
+        setIsSendaVisible(true);
+        setActiveRouteCoords(track.coords || []);
         setCurrentDay(dayKey);
         if (mapInstance && track.coords) {
           const bounds = L.latLngBounds(track.coords);
@@ -355,7 +359,9 @@ export function CarnavalMap({
     };
 
     const handleCleanMap = () => {
-      setActiveSendaTrack(null);
+      setSelectedEvent(null);
+      setIsSendaVisible(false);
+      setActiveRouteCoords([]);
       setActivePoiCategory(null);
       setShowRiskZones(false);
       if (mapInstance) {
@@ -379,7 +385,9 @@ export function CarnavalMap({
       setCurrentDay(propSelectedDay);
       const track = CARNAVAL_DAILY_TRACKS[propSelectedDay] || CARNAVAL_DAYS_TRACKS[propSelectedDay];
       if (track) {
-        setActiveSendaTrack(track);
+        setSelectedEvent(track);
+        setIsSendaVisible(true);
+        setActiveRouteCoords(track.coords || []);
       }
     }
   }, [propSelectedDay]);
@@ -387,20 +395,43 @@ export function CarnavalMap({
   const handleDaySelect = (dayId) => {
     setCurrentDay(dayId);
     const track = CARNAVAL_DAILY_TRACKS[dayId] || CARNAVAL_DAYS_TRACKS[dayId];
-    setActiveSendaTrack(track || null);
+    if (track) {
+      setSelectedEvent(track);
+      setIsSendaVisible(true);
+      setActiveRouteCoords(track.coords || []);
+    } else {
+      setSelectedEvent(null);
+      setIsSendaVisible(false);
+      setActiveRouteCoords([]);
+    }
     if (onSelectDay) {
       onSelectDay(dayId);
     }
   };
 
-  const currentTrack = activeSendaTrack || CARNAVAL_DAILY_TRACKS.jan_06;
-  const routeCoords = activeSendaTrack ? activeSendaTrack.coords : SENDA_OFICIAL_COORDS;
+  // Compatibilidad y enlaces directos
+  const activeSendaTrack = selectedEvent;
+  const setActiveSendaTrack = (track) => {
+    setSelectedEvent(track);
+    if (track) {
+      setIsSendaVisible(true);
+      setActiveRouteCoords(track.coords || []);
+    } else {
+      setIsSendaVisible(false);
+      setActiveRouteCoords([]);
+    }
+  };
+  const currentTrack = selectedEvent;
+  const routeCoords = isSendaVisible ? activeRouteCoords : [];
 
   // Ajuste de cámara inteligente (Fit Bounds) para encuadrar la Senda completa
   const handleFitSendaBounds = useCallback(() => {
-    const coordsToFit = activeSendaTrack?.coords || SENDA_OFICIAL_COORDS;
-    if (!activeSendaTrack) {
-      setActiveSendaTrack(CARNAVAL_DAILY_TRACKS.jan_06);
+    const coordsToFit = activeRouteCoords.length > 0 ? activeRouteCoords : SENDA_OFICIAL_COORDS;
+    if (!selectedEvent) {
+      const defaultTrack = CARNAVAL_DAILY_TRACKS.jan_06;
+      setSelectedEvent(defaultTrack);
+      setIsSendaVisible(true);
+      setActiveRouteCoords(defaultTrack.coords || []);
     }
     if (mapInstance && typeof mapInstance.fitBounds === 'function') {
       try {
@@ -414,7 +445,7 @@ export function CarnavalMap({
       }
     }
     setFocusTrigger((prev) => prev + 1);
-  }, [mapInstance, activeSendaTrack]);
+  }, [mapInstance, selectedEvent, activeRouteCoords]);
 
   // Soporte para despachos directos de GuaneñaBot (focus-senda)
   useEffect(() => {
@@ -427,11 +458,9 @@ export function CarnavalMap({
     };
   }, [handleFitSendaBounds]);
 
-
-
   // Puntos terminales: Salida y Llegada
-  const startPoint = currentTrack.startPoint;
-  const endPoint = currentTrack.endPoint;
+  const startPoint = currentTrack?.startPoint;
+  const endPoint = currentTrack?.endPoint;
 
   // Rastreo GPS en tiempo real del espectador con watchPosition
   const [userPosition, setUserPosition] = useState(null);
@@ -535,16 +564,18 @@ export function CarnavalMap({
           })}
         </div>
         {/* Metadatos en vivo del día seleccionado */}
-        <div className="mt-1.5 pt-1.5 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-300 px-1">
-          <div className="flex items-center gap-2">
-            <span className="font-extrabold text-amber-400">{currentTrack.name}</span>
-            <span>•</span>
-            <span className="text-emerald-400 font-mono">{currentTrack.lengthKm} km</span>
+        {currentTrack && (
+          <div className="mt-1.5 pt-1.5 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-300 px-1">
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-amber-400">{currentTrack.name}</span>
+              <span>•</span>
+              <span className="text-emerald-400 font-mono">{currentTrack.lengthKm} km</span>
+            </div>
+            <span className="text-[10px] text-slate-400 hidden md:inline font-mono">
+              {currentTrack.direction}
+            </span>
           </div>
-          <span className="text-[10px] text-slate-400 hidden md:inline font-mono">
-            {currentTrack.direction}
-          </span>
-        </div>
+        )}
       </div>
 
       {/* Botón flotante para encuadrar la Senda Completa (Champagnat a Fuente de la Transparencia) */}
