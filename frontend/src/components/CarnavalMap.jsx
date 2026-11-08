@@ -560,6 +560,14 @@ export function CarnavalMap({
     });
     setFocusedPoints([]);
 
+    if (activeMap && syncTrack && syncTrack.length > 0 && typeof activeMap.fitBounds === 'function') {
+      try {
+        activeMap.fitBounds(syncTrack, { padding: [40, 40], animate: true });
+      } catch (err) {
+        console.warn('Error al ajustar límites de la senda activa:', err);
+      }
+    }
+
     // Si el día tiene waypoints, intenta optimizar asíncronamente con OSRM
     if (Array.isArray(dayConfig.waypoints) && dayConfig.waypoints.length >= 2) {
       try {
