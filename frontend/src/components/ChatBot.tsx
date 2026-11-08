@@ -118,9 +118,22 @@ export async function getTouristGpsCoords(): Promise<[number, number]> {
   });
 }
 
+export interface ChatMessageItem {
+  id: number | string;
+  sender: 'user' | 'bot';
+  text: string;
+  crowdNotice?: string | null;
+  actionButton?: {
+    label: string;
+    dayKey: string;
+  } | null;
+  timestamp: Date;
+  isError?: boolean;
+}
+
 export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<ChatMessageItem[]>([
     {
       id: 1,
       sender: 'bot',
@@ -131,6 +144,14 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Despacho inicial de acción para botón de ruta
+  const handleTriggerDayRoute = (dayKey?: string) => {
+    if (!dayKey) return;
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('focus-carnival-day', { detail: { dayId: dayKey } }));
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -406,10 +427,12 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
         finalResponse = conciseFallback || 'Ruta y marcadores oficiales ubicados en el mapa.';
       }
 
-      const botMsg = {
+      const botMsg: ChatMessageItem = {
         id: Date.now() + 1,
         sender: 'bot',
         text: finalResponse,
+        crowdNotice: guanenaResult?.crowdNotice || null,
+        actionButton: guanenaResult?.actionButton || null,
         timestamp: new Date(),
       };
 
@@ -540,6 +563,22 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
                       }`}
                     >
                       <div className="whitespace-pre-line">{msg.text}</div>
+
+                      {msg.crowdNotice && (
+                        <div className="mt-2 bg-amber-500/10 text-amber-400 text-xs px-2 py-1 rounded border border-amber-500/20 font-medium">
+                          {msg.crowdNotice}
+                        </div>
+                      )}
+
+                      {msg.actionButton && (
+                        <button
+                          type="button"
+                          onClick={() => handleTriggerDayRoute(msg.actionButton?.dayKey)}
+                          className="mt-2 w-full py-2 px-3 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white text-xs font-semibold rounded-lg shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                        >
+                          {msg.actionButton.label}
+                        </button>
+                      )}
                     </div>
                   </div>
 
