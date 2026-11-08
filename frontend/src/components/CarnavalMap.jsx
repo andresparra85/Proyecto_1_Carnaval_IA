@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -281,23 +281,32 @@ export function createPoiIcon(poi) {
 }
 
 // Controlador de cámara para animar suavemente a los límites de la Senda seleccionada
-function DynamicRouteCameraController({ routeCoords }) {
+function DynamicRouteCameraController({ routeCoords, focusTrigger }) {
   const map = useMap();
   useEffect(() => {
     if (map && routeCoords && routeCoords.length > 0) {
       try {
         const bounds = L.latLngBounds(routeCoords);
         map.fitBounds(bounds, {
-          padding: [60, 60],
-          maxZoom: 16,
+          padding: [40, 40],
           animate: true,
-          duration: 1.2,
         });
       } catch (err) {
         console.warn('Error al ajustar límites de la ruta:', err);
       }
     }
-  }, [map, routeCoords]);
+  }, [map, routeCoords, focusTrigger]);
+  return null;
+}
+
+// Puente para exponer la instancia activa del mapa a controles externos
+function MapInstanceBridge({ onMapReady }) {
+  const map = useMap();
+  useEffect(() => {
+    if (map && onMapReady) {
+      onMapReady(map);
+    }
+  }, [map, onMapReady]);
   return null;
 }
 
@@ -332,6 +341,38 @@ export function CarnavalMap({
 
   // Ruta procesada por el servicio de map-matching OSRM para ceñirse milimétricamente al asfalto
   const [snappedRoute, setSnappedRoute] = useState(routeCoords);
+  const [mapInstance, setMapInstance] = useState(null);
+  const [focusTrigger, setFocusTrigger] = useState(0);
+
+  // Ajuste de cámara inteligente (Fit Bounds) para encuadrar la Senda completa
+  const handleFitSendaBounds = useCallback(() => {
+    const targetCoords = (snappedRoute && snappedRoute.length > 0) ? snappedRoute : routeCoords;
+    if (targetCoords && targetCoords.length > 0) {
+      if (mapInstance && typeof mapInstance.fitBounds === 'function') {
+        try {
+          const bounds = L.latLngBounds(targetCoords);
+          mapInstance.fitBounds(bounds, {
+            padding: [40, 40],
+            animate: true,
+          });
+        } catch (err) {
+          console.warn('Error al ajustar límites de la Senda:', err);
+        }
+      }
+      setFocusTrigger((prev) => prev + 1);
+    }
+  }, [mapInstance, snappedRoute, routeCoords]);
+
+  // Soporte para despachos directos de GuaneñaBot (focus-senda)
+  useEffect(() => {
+    const handleSendaEvent = () => {
+      handleFitSendaBounds();
+    };
+    window.addEventListener('focus-senda', handleSendaEvent);
+    return () => {
+      window.removeEventListener('focus-senda', handleSendaEvent);
+    };
+  }, [handleFitSendaBounds]);
 
   useEffect(() => {
     let isMounted = true;
@@ -470,6 +511,18 @@ export function CarnavalMap({
         </div>
       </div>
 
+      {/* Botón flotante para encuadrar la Senda Completa (Champagnat a Fuente de la Transparencia) */}
+      <button
+        type="button"
+        id="btn-ver-senda-completa"
+        onClick={handleFitSendaBounds}
+        className="absolute top-4 right-4 z-[900] flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-black text-xs shadow-2xl hover:scale-105 active:scale-95 transition-all border border-white/20 backdrop-blur-md cursor-pointer group"
+        title="Encuadrar Senda Completa (Champagnat a Fuente de la Transparencia)"
+      >
+        <span className="text-base group-hover:rotate-12 transition-transform">🎭</span>
+        <span className="font-extrabold tracking-wide uppercase">Senda</span>
+      </button>
+
       <MapContainer
         center={[1.2140, -77.2820]}
         zoom={15}
@@ -478,7 +531,8 @@ export function CarnavalMap({
         zoomControl={false}
         scrollWheelZoom={true}
       >
-        <DynamicRouteCameraController routeCoords={snappedRoute} />
+        <MapInstanceBridge onMapReady={setMapInstance} />
+        <DynamicRouteCameraController routeCoords={snappedRoute} focusTrigger={focusTrigger} />
 
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -382,15 +382,7 @@ function SendaController({ onSendaFocus, focusTrigger }) {
     if (!map) return;
     try {
       const bounds = L.latLngBounds(SENDA_CARNAVAL_COORDS);
-      if (typeof map.flyToBounds === 'function') {
-        map.flyToBounds(bounds, {
-          padding: [50, 50],
-          maxZoom: 16,
-          duration: 1.5,
-        });
-      } else if (typeof map.fitBounds === 'function') {
-        map.fitBounds(bounds, { padding: [50, 50] });
-      }
+      map.fitBounds(bounds, { padding: [40, 40], animate: true });
     } catch (err) {
       console.warn('Error al enfocar la Senda:', err);
     }
@@ -710,6 +702,7 @@ export function MapView({
 
   // Estado local para activar o desactivar la capa de la Senda del Carnaval
   const [internalShowSenda, setInternalShowSenda] = useState(true);
+  const [sendaFocusCounter, setSendaFocusCounter] = useState(0);
   const showSenda = propShowSenda !== undefined ? propShowSenda : internalShowSenda;
   const toggleSenda = () => {
     if (propOnToggleSenda) {
@@ -717,6 +710,7 @@ export function MapView({
     } else {
       setInternalShowSenda((prev) => !prev);
     }
+    setSendaFocusCounter((c) => c + 1);
   };
 
   // Sincronización y carga de reportes activos desde Supabase / caché local
@@ -1176,7 +1170,7 @@ export function MapView({
       >
         {/* Controlador para centrar y animar la vista sobre la Senda del Carnaval */}
         <SendaController
-          focusTrigger={focusSendaTrigger}
+          focusTrigger={focusSendaTrigger || sendaFocusCounter}
           onSendaFocus={() => {
             if (!showSenda) toggleSenda();
           }}
