@@ -1004,30 +1004,18 @@ export function CarnavalMap({
           className="w-full h-full"
         />
 
-        {/* Capa de la Senda Oficial con efecto resplandor bicolor (Dual-Tone) */}
+        {/* Capa de la Senda Oficial calculada por OSRM */}
         {activeRouteTrack && activeRouteTrack.length > 0 && (
-          <>
-            <Polyline
-              positions={activeRouteTrack}
-              pathOptions={{
-                color: '#fb7185',
-                weight: 12,
-                opacity: 0.3,
-                lineJoin: 'round',
-                lineCap: 'round',
-              }}
-            />
-            <Polyline
-              positions={activeRouteTrack}
-              pathOptions={{
-                color: '#e11d48',
-                weight: 6,
-                opacity: 0.95,
-                lineJoin: 'round',
-                lineCap: 'round',
-              }}
-            />
-          </>
+          <Polyline
+            positions={activeRouteTrack}
+            pathOptions={{
+              color: '#e11d48',
+              weight: 6,
+              opacity: 0.95,
+              lineJoin: 'round',
+              lineCap: 'round',
+            }}
+          />
         )}
 
         {/* Marcadores dinámicos de Inicio y Llegada según el Desfile */}
