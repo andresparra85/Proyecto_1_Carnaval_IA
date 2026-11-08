@@ -860,13 +860,7 @@ export function CarnavalMap({
     const startLng = userPosition ? userPosition.lng : -77.2818;
 
     try {
-      const result = await getWalkingRouteToSenda(startLat, startLng, poi.coords[0], poi.coords[1]);
-      setWalkingRoute({
-        coordinates: result.coordinates,
-        targetName: poi.name,
-        distanceMeters: result.distanceMeters,
-        durationMinutes: result.durationMinutes,
-      });
+      await handleTriggerNavigation(poi.coords, poi.name, [startLat, startLng]);
     } catch (err) {
       console.warn('Error calculando ruta a pie hacia POI:', err);
     } finally {
@@ -1047,6 +1041,36 @@ export function CarnavalMap({
               opacity: 0.95,
               lineCap: 'round',
               lineJoin: 'round',
+            }}
+          />
+        )}
+
+        {/* Polilínea de navegación peatonal activa por calles reales con OSRM */}
+        {Array.isArray(activeNavRoute) && activeNavRoute.length > 1 && (
+          <Polyline
+            key={`nav-route-${activeNavRoute.length}-${activeNavRoute[0]?.[0]}-${activeNavRoute[0]?.[1]}`}
+            positions={activeNavRoute}
+            pathOptions={{
+              color: '#2563eb',
+              weight: 6,
+              opacity: 0.95,
+              lineJoin: 'round',
+              lineCap: 'round',
+            }}
+          />
+        )}
+
+        {/* Polilínea de respaldo para ruta a pie de punto de interés */}
+        {Array.isArray(walkingRoute?.coordinates) && walkingRoute.coordinates.length > 1 && !activeNavRoute && (
+          <Polyline
+            key={`walking-route-${walkingRoute.coordinates.length}`}
+            positions={walkingRoute.coordinates}
+            pathOptions={{
+              color: '#2563eb',
+              weight: 6,
+              opacity: 0.95,
+              lineJoin: 'round',
+              lineCap: 'round',
             }}
           />
         )}
