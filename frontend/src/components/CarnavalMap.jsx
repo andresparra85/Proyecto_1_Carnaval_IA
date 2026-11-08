@@ -25,7 +25,7 @@ import {
 } from '../services/osrmRoutingService';
 import { getExactStreetParadeRoute } from '../services/osrmParadeService';
 import { fetchSnappedStreetRoute } from '../services/osrmService';
-import { CARNAVAL_DAYS_CONFIG } from '../data/carnavalDaysData';
+import { CARNAVAL_DAYS_CONFIG, TRACK_SENDA_OFICIAL_CALLES } from '../data/carnavalDaysData';
 import { SENDAS_DATA } from '../data/sendasCarnaval';
 import {
   WAYPOINTS_SENDA_MAGNA,
@@ -550,9 +550,18 @@ export function CarnavalMap({
       return;
     }
 
-    // Si el día tiene waypoints, llama a fetchSnappedStreetRoute(dayConfig.waypoints)
+    // Inyección síncrona inmediata desde dataset verificado
+    const syncTrack = dayConfig.track || TRACK_SENDA_OFICIAL_CALLES;
+    setActiveRouteCoords(syncTrack);
+    setActiveEventInfo({
+      name: dayConfig.name,
+      start: dayConfig.startName || '',
+      end: dayConfig.endName || '',
+    });
+    setFocusedPoints([]);
+
+    // Si el día tiene waypoints, intenta optimizar asíncronamente con OSRM
     if (Array.isArray(dayConfig.waypoints) && dayConfig.waypoints.length >= 2) {
-      setFocusedPoints([]);
       try {
         const streetCoords = await fetchSnappedStreetRoute(dayConfig.waypoints);
         if (streetCoords && streetCoords.length > 0) {
