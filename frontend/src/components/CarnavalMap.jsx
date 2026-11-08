@@ -460,8 +460,7 @@ export function CarnavalMap({
   const [showSendaDetails, setShowSendaDetails] = useState(false);
   const [isSendaActive, setIsSendaActive] = useState(false);
   const [activeEvent, setActiveEvent] = useState(null);
-  const [activeRouteCoords, setActiveRouteCoords] = useState([]);
-  const [activeRouteTrack, setActiveRouteTrack] = useState([]);
+  const [activeTrack, setActiveTrack] = useState(null);
   const [activeEventInfo, setActiveEventInfo] = useState(null);
   const [activeCategory, setActiveCategory] = useState('none');
   const [showRiskZones, setShowRiskZones] = useState(false);
@@ -473,6 +472,11 @@ export function CarnavalMap({
   const [navDestinationInfo, setNavDestinationInfo] = useState(null); // { name, eta, distance, coords }
 
   // Aliases de compatibilidad
+  const activeRouteTrack = activeTrack;
+  const setActiveRouteTrack = (coords) => setActiveTrack(coords ? (Array.isArray(coords) && coords.length > 0 ? coords : null) : null);
+  const activeRouteCoords = activeTrack || [];
+  const setActiveRouteCoords = (coords) => setActiveTrack(coords ? (Array.isArray(coords) && coords.length > 0 ? coords : null) : null);
+
   const isSendaVisible = isSendaActive;
   const setIsSendaVisible = setIsSendaActive;
   const showSenda = isSendaActive;
@@ -571,8 +575,7 @@ export function CarnavalMap({
       setActiveEventInfo(null);
       setIsSendaActive(false);
       setShowSendaDetails(false);
-      setActiveRouteCoords([]);
-      setActiveRouteTrack([]);
+      setActiveTrack(null);
       setActiveCategory('none');
       setShowRiskZones(false);
       setActiveNavRoute(null);
@@ -1004,10 +1007,10 @@ export function CarnavalMap({
           className="w-full h-full"
         />
 
-        {/* Capa de la Senda Oficial calculada por OSRM */}
-        {activeRouteTrack && activeRouteTrack.length > 0 && (
+        {/* Única polilínea del mapa vinculada al estado dinámico activeTrack */}
+        {activeTrack && activeTrack.length > 0 && (
           <Polyline
-            positions={activeRouteTrack}
+            positions={activeTrack}
             pathOptions={{
               color: '#e11d48',
               weight: 6,
