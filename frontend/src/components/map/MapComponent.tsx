@@ -239,6 +239,23 @@ export * from './CarnavalDaySelector';
 export { default as CarnavalDaySelector } from './CarnavalDaySelector';
 
 /**
+ * Controlador para enfocar los límites de la Senda con fitBounds
+ */
+function SendaBoundsFitter({ coords }: { coords: [number, number][] }) {
+  const map = useMap();
+  useEffect(() => {
+    if (map && coords && coords.length > 0) {
+      try {
+        map.fitBounds(coords as any, { padding: [40, 40] });
+      } catch (err) {
+        console.warn('Error al ajustar límites de la Senda:', err);
+      }
+    }
+  }, [map, coords]);
+  return null;
+}
+
+/**
  * Componente principal MapComponent con la Senda Oficial del Carnaval
  */
 export function MapComponent({
@@ -249,11 +266,13 @@ export function MapComponent({
     <MapContainer
       center={DEFAULT_MAP_CENTER}
       zoom={DEFAULT_MAP_ZOOM}
+      bounds={SENDA_OFICIAL_COORDS}
       className={DEFAULT_MAP_CONTAINER_CLASS}
       style={DEFAULT_MAP_CONTAINER_STYLE}
       zoomControl={false}
       scrollWheelZoom={true}
     >
+      <SendaBoundsFitter coords={SENDA_OFICIAL_COORDS} />
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
