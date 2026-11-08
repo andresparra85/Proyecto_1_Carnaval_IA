@@ -3,6 +3,7 @@ import { X, Send, Sparkles, RotateCcw, MessageSquare, MapPin, Navigation } from 
 import { findCarnavalLandmark, CARNAVAL_LANDMARKS } from '../../data/carnavalKnowledge';
 import { searchPastoPOI, PASTO_POIS, PointOfInterest, dispatchGuanenaAction } from '../../data/pastoPOIs';
 import { getStreetRoute } from '../../services/routingService';
+import { sendGuanenaMessage } from '../../services/guanenaChatService';
 
 export interface GuanenaBotProps {
   onFocusSenda?: () => void;
@@ -231,15 +232,35 @@ export function GuanenaBot({ onFocusSenda, onFocusLandmark }: GuanenaBotProps = 
 
     if (!actionTriggered) {
       try {
-        const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
-        const res = await fetch(`${baseUrl}/api/chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: userText }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          botReply = data.response || data.reply || data.message;
+        const guanenaResult = await sendGuanenaMessage(userText, 1.2168, -77.2805);
+        botReply = guanenaResult.reply;
+
+        if (guanenaResult.map_action) {
+          const action = guanenaResult.map_action;
+          if (
+            action.action_type === 'ROUTE_TO_EVENT_START' ||
+            action.action_type === 'DRAW_ROUTE' ||
+            action.action_type === 'ROUTE_TO_POI'
+          ) {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(
+                new CustomEvent('TRIGGER_NAVIGATION', {
+                  detail: {
+                    targetCoords: action.target_coords,
+                    targetName: action.target_name || 'Destino',
+                    originCoords: [1.2168, -77.2805],
+                  },
+                })
+              );
+              if (action.day_id) {
+                window.dispatchEvent(
+                  new CustomEvent('DRAW_SENDA', {
+                    detail: { dayKey: action.day_id },
+                  })
+                );
+              }
+            }
+          }
         }
       } catch (err) {
         console.warn('Chat backend fallback:', err);

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Sparkles, RotateCcw, MessageSquare } from 'lucide-react';
 import { findCarnavalLandmark, CARNAVAL_LANDMARKS } from '../data/carnavalKnowledge';
 import { searchPastoPOI, PASTO_POIS, PointOfInterest } from '../data/pastoPOIs';
+import { sendGuanenaMessage } from '../services/guanenaChatService';
 
 export interface ChatBotProps {
   onFocusSenda?: () => void;
@@ -313,21 +314,37 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
     }
 
     try {
-      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
-      const response = await fetch(`${baseUrl}/api/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message: userText }),
-      });
+      const guanenaResult = await sendGuanenaMessage(userText, 1.2168, -77.2805);
+      let botResponse = guanenaResult.reply;
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // Interpretación y enlace de acciones del mapa devueltas por la IA (map_action)
+      if (guanenaResult.map_action) {
+        const action = guanenaResult.map_action;
+        if (
+          action.action_type === 'ROUTE_TO_EVENT_START' ||
+          action.action_type === 'DRAW_ROUTE' ||
+          action.action_type === 'ROUTE_TO_POI'
+        ) {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('TRIGGER_NAVIGATION', {
+                detail: {
+                  targetCoords: action.target_coords,
+                  targetName: action.target_name || 'Destino',
+                  originCoords: [1.2168, -77.2805],
+                },
+              })
+            );
+            if (action.day_id) {
+              window.dispatchEvent(
+                new CustomEvent('DRAW_SENDA', {
+                  detail: { dayKey: action.day_id },
+                })
+              );
+            }
+          }
+        }
       }
-
-      const data = await response.json();
-      let botResponse = data.response || data.reply || data.message;
 
       if (!botResponse) {
         botResponse = conciseFallback || '¡Que viva Pasto, carajo! 🎉 Estoy lista para guiarte por la senda y eventos del Carnaval.';
