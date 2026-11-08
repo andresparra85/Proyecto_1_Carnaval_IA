@@ -555,15 +555,10 @@ export function CarnavalMap({
     };
   }, [mapInstance, handleTriggerNavigation]);
 
+  // Neutralización de efectos colaterales: no activar la senda ni dibujar rutas automáticamente en montaje
   useEffect(() => {
     if (propSelectedDay) {
       setCurrentDay(propSelectedDay);
-      const track = CARNAVAL_DAILY_TRACKS[propSelectedDay] || CARNAVAL_DAYS_TRACKS[propSelectedDay];
-      if (track) {
-        setActiveEvent(track);
-        setIsSendaActive(true);
-        setActiveRouteCoords(track.coords || []);
-      }
     }
   }, [propSelectedDay]);
 
