@@ -646,16 +646,16 @@ export function CarnavalMap({
     try {
       const res = await fetchFootRoute(origin, targetCoords);
       if (res && res.coordinates && res.coordinates.length > 0) {
-        setActiveNavRoute(res.coordinates);
+        const leafletCoords = res.coordinates;
+        setActiveNavRoute(leafletCoords);
         setNavDestinationInfo({
           name: targetName,
-          eta: res.durationMinutes || 1,
-          distance: res.distanceMeters || 0,
+          eta: res.durationMinutes || Math.max(1, Math.round((res.duration || 0) / 60)) || 1,
+          distance: res.distanceMeters || res.distance || 0,
           coords: targetCoords,
         });
         if (mapInstance && typeof mapInstance.fitBounds === 'function') {
-          const bounds = L.latLngBounds([origin, targetCoords, ...(res.coordinates || [])]);
-          mapInstance.fitBounds(bounds, { padding: [60, 60], animate: true });
+          mapInstance.fitBounds(leafletCoords, { padding: [60, 60], animate: true });
         }
       }
     } catch (err) {
@@ -1337,25 +1337,33 @@ export function CarnavalMap({
         </div>
       )}
 
-      {/* Floating HUD navigation banner con ETA y dismissal de ruta activa */}
+      {/* Floating HUD navigation banner con ETA y distancia en km en la parte inferior */}
       {activeNavRoute && navDestinationInfo && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[950] w-[92vw] max-w-lg bg-slate-900/95 backdrop-blur-md px-4 py-3 rounded-2xl border border-cyan-500/50 shadow-2xl shadow-cyan-950/40 flex items-center justify-between gap-3 text-white">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[950] w-[95vw] sm:max-w-xl rounded-2xl bg-slate-950/85 backdrop-blur-xl border border-cyan-500/40 shadow-2xl shadow-cyan-950/50 px-4 py-3 flex items-center justify-between gap-3 text-white">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-300 text-lg shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-300 text-lg shrink-0 shadow-lg shadow-cyan-500/20">
               🚶‍♂️
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping shrink-0" />
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-400" />
+                </span>
                 <span className="text-[10px] font-black uppercase tracking-wider text-cyan-400">
                   Ruta Peatonal Activa • OSRM
                 </span>
               </div>
-              <h4 className="text-xs sm:text-sm font-bold text-white truncate leading-tight">
+              <h4 className="font-bold text-white truncate leading-tight text-xs sm:text-sm">
                 Ruta hacia: {navDestinationInfo.name}
               </h4>
-              <p className="text-[11px] text-cyan-200 font-mono mt-0.5">
-                {navDestinationInfo.distance ? `${navDestinationInfo.distance} m` : ''} • ~{navDestinationInfo.eta || 1} min a pie
+              <p className="text-slate-400 text-xs font-mono mt-0.5">
+                <span className="text-cyan-300 font-bold">
+                  {navDestinationInfo.distance >= 1000
+                    ? `${(navDestinationInfo.distance / 1000).toFixed(2)} km`
+                    : `${(navDestinationInfo.distance / 1000).toFixed(2)} km (${navDestinationInfo.distance} m)`}
+                </span>{' '}
+                • <span className="text-amber-400 font-bold">~{navDestinationInfo.eta || 1} min a pie</span>
               </p>
             </div>
           </div>
@@ -1365,11 +1373,11 @@ export function CarnavalMap({
               setActiveNavRoute(null);
               setNavDestinationInfo(null);
             }}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-rose-500/30 text-cyan-300 hover:text-rose-300 text-xs font-bold border border-cyan-400/40 hover:border-rose-400/50 transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-rose-500/30 text-slate-300 hover:text-rose-300 text-xs font-bold border border-white/10 hover:border-rose-400/50 transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
             title="Finalizar y cerrar ruta"
           >
             <span>✕</span>
-            <span>Finalizar Ruta</span>
+            <span>Finalizar</span>
           </button>
         </div>
       )}
