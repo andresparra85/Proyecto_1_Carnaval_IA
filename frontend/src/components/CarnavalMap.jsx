@@ -682,7 +682,7 @@ export function CarnavalMap({
         scrollWheelZoom={true}
       >
         <MapInstanceBridge onMapReady={setMapInstance} />
-        {isSendaVisible && activeRouteCoords && activeRouteCoords.length > 0 && (
+        {Array.isArray(activeRouteCoords) && activeRouteCoords.length > 0 && isSendaVisible && (
           <DynamicRouteCameraController
             routeCoords={activeRouteCoords}
             focusTrigger={focusTrigger}
@@ -696,7 +696,7 @@ export function CarnavalMap({
         />
 
         {/* Capa de la Senda Oficial - Renderizado condicional reactivo bajo petición de GuaneñaBot */}
-        {isSendaVisible && activeRouteCoords && activeRouteCoords.length > 0 && (
+        {Array.isArray(activeRouteCoords) && activeRouteCoords.length > 0 && isSendaVisible && (
           <>
             {/* 1. Capa vectorial principal oficial ceñida a la calzada vial */}
             <Polyline
