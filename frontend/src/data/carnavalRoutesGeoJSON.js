@@ -216,6 +216,117 @@ export const CARNAVAL_DAYS_TRACKS = {
   }
 };
 
+// Puntos de Interés a lo largo de la Senda del Carnaval (Salud, Graderías, Zonas de Juego, Información)
+export const SENDA_POINTS_OF_INTEREST = [
+  // 1. Puestos de Salud de la Cruz Roja y Defensa Civil
+  {
+    id: 'poi-salud-1',
+    name: 'Puesto de Salud Cruz Roja - Plaza del Carnaval',
+    category: 'salud',
+    icon: '🚨',
+    coords: [1.2151, -77.2845],
+    address: 'Plaza del Carnaval y la Cultura (Costado Sur)',
+    description: 'Atención de primeros auxilios, rehidratación, paramédicos y ambulancia medicalizada.',
+    badgeColor: '#ef4444'
+  },
+  {
+    id: 'poi-salud-2',
+    name: 'Puesto Asistencial Cruz Roja - Parque Nariño',
+    category: 'salud',
+    icon: '🚨',
+    coords: [1.2140, -77.2819],
+    address: 'Plaza de Nariño (Costado Oriental)',
+    description: 'Triage de emergencias leves, curaciones y personal de socorro en zona central.',
+    badgeColor: '#ef4444'
+  },
+  {
+    id: 'poi-salud-3',
+    name: 'Punto Médico Bomboná / Champagnat',
+    category: 'salud',
+    icon: '🚨',
+    coords: [1.2092, -77.2899],
+    address: 'Sector Bomboná con Carrera 25',
+    description: 'Punto de socorro para atención inmediata en el sector de llegada del desfile.',
+    badgeColor: '#ef4444'
+  },
+
+  // 2. Graderías Oficiales
+  {
+    id: 'poi-grad-1',
+    name: 'Graderías Oficiales Plaza del Carnaval',
+    category: 'graderia',
+    icon: '🏟️',
+    coords: [1.2156, -77.2838],
+    address: 'Carrera 20 frente a Tarima de Jurados',
+    description: 'Sector A y B con boletería y vista privilegiada al paso de carrozas monumentales.',
+    badgeColor: '#f59e0b'
+  },
+  {
+    id: 'poi-grad-2',
+    name: 'Graderías Carrera 27 (Sector San Andrés)',
+    category: 'graderia',
+    icon: '🏟️',
+    coords: [1.2144, -77.2769],
+    address: 'Carrera 27 entre Calles 14 y 15',
+    description: 'Graderías de acceso general con excelente visibilidad de murgas y comparsas.',
+    badgeColor: '#f59e0b'
+  },
+  {
+    id: 'poi-grad-3',
+    name: 'Graderías VIP Plaza de Nariño',
+    category: 'graderia',
+    icon: '🏟️',
+    coords: [1.2135, -77.2810],
+    address: 'Calle 18 con Carrera 25',
+    description: 'Graderías para invitados, transmisión televisiva y prensa nacional.',
+    badgeColor: '#f59e0b'
+  },
+
+  // 3. Zonas de Juego (Talco y Cosmético Tradicional)
+  {
+    id: 'poi-juego-1',
+    name: 'Zona de Juego y Pintica - Plaza del Carnaval',
+    category: 'juego',
+    icon: '🎭',
+    coords: [1.2152, -77.2842],
+    address: 'Costado Norte Plaza del Carnaval',
+    description: 'Área habilitada para el juego con cosmético, talco perfumado y espuma reglamentaria.',
+    badgeColor: '#8b5cf6'
+  },
+  {
+    id: 'poi-juego-2',
+    name: 'Zona de Juego Tradicional - Plaza de Nariño',
+    category: 'juego',
+    icon: '🎭',
+    coords: [1.2139, -77.2815],
+    address: 'Plaza de Nariño (Centro)',
+    description: '¡Una pintica por favor! Área masiva de celebración popular y juego limpio.',
+    badgeColor: '#8b5cf6'
+  },
+
+  // 4. Puntos de Información Turística
+  {
+    id: 'poi-tur-1',
+    name: 'Punto de Información Turística Corpocarnaval',
+    category: 'turismo',
+    icon: 'ℹ️',
+    coords: [1.2136, -77.2825],
+    address: 'Calle 19 # 24-40 Centro',
+    description: 'Guías oficiales, mapas impresos, programación oficial y atención en varios idiomas.',
+    badgeColor: '#10b981'
+  },
+  {
+    id: 'poi-tur-2',
+    name: 'Módulo Turístico Normal Superior',
+    category: 'turismo',
+    icon: 'ℹ️',
+    coords: [1.2188, -77.2690],
+    address: 'Av. Santander frente a I.E. Normal Superior',
+    description: 'Punto de orientación a visitantes en el inicio del recorrido de la Senda.',
+    badgeColor: '#10b981'
+  }
+];
+
 // GeoJSON FeatureCollection completo
 export const CARNAVAL_GEOJSON_COLLECTION = {
   type: 'FeatureCollection',

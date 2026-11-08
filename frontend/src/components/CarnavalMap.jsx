@@ -13,8 +13,12 @@ import 'leaflet/dist/leaflet.css';
 import {
   SENDA_OFICIAL_STREET_COORDS,
   CARNAVAL_DAYS_TRACKS,
+  SENDA_POINTS_OF_INTEREST,
 } from '../data/carnavalRoutesGeoJSON';
-import { calculateHaversineDistance } from '../services/osrmRoutingService';
+import {
+  calculateHaversineDistance,
+  getWalkingRouteToSenda,
+} from '../services/osrmRoutingService';
 
 // Solución clásica de iconos rotos de Leaflet en Vite
 delete L.Icon.Default.prototype._getIconUrl;
@@ -151,6 +155,38 @@ export function createSpectatorGpsIcon() {
   });
 }
 
+// Icono personalizado para Puntos de Interés a lo largo de la Senda
+export function createPoiIcon(poi) {
+  const bg = poi.badgeColor || '#f59e0b';
+  const html = `
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -100%);">
+      <div style="
+        width: 36px;
+        height: 36px;
+        border-radius: 50% 50% 50% 0;
+        background: ${bg};
+        transform: rotate(-45deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #ffffff;
+        box-shadow: 0 0 16px ${bg}88, 0 4px 10px rgba(0,0,0,0.5);
+      ">
+        <div style="transform: rotate(45deg); font-size: 16px;">
+          ${poi.icon || '📍'}
+        </div>
+      </div>
+    </div>
+  `;
+  return L.divIcon({
+    className: `custom-senda-poi-icon-${poi.id}`,
+    html,
+    iconSize: [36, 46],
+    iconAnchor: [18, 46],
+    popupAnchor: [0, -48],
+  });
+}
+
 // Controlador de cámara para animar suavemente a los límites de la Senda seleccionada
 function DynamicRouteCameraController({ routeCoords }) {
   const map = useMap();
@@ -248,6 +284,30 @@ export function CarnavalMap({
   }, [userPosition, routeCoords]);
 
   const isNearSenda = distanceToSendaMeters <= 50;
+
+  // Estado para la ruta peatonal calculada por OSRM
+  const [walkingRoute, setWalkingRoute] = useState(null);
+  const [isRouting, setIsRouting] = useState(false);
+
+  const handleRouteToPoi = async (poi) => {
+    setIsRouting(true);
+    const startLat = userPosition ? userPosition.lat : 1.2138;
+    const startLng = userPosition ? userPosition.lng : -77.2818;
+
+    try {
+      const result = await getWalkingRouteToSenda(startLat, startLng, poi.coords[0], poi.coords[1]);
+      setWalkingRoute({
+        coordinates: result.coordinates,
+        targetName: poi.name,
+        distanceMeters: result.distanceMeters,
+        durationMinutes: result.durationMinutes,
+      });
+    } catch (err) {
+      console.warn('Error calculando ruta a pie hacia POI:', err);
+    } finally {
+      setIsRouting(false);
+    }
+  };
 
   return (
     <div className="relative w-full h-full min-h-[500px]">
@@ -411,7 +471,80 @@ export function CarnavalMap({
             </Marker>
           </>
         )}
+
+        {/* 6. Puntos de Interés interactivos a lo largo de la Senda */}
+        {SENDA_POINTS_OF_INTEREST.map((poi) => (
+          <Marker
+            key={poi.id}
+            position={poi.coords}
+            icon={createPoiIcon(poi)}
+          >
+            <Popup className="custom-popup">
+              <div className="p-2.5 min-w-[220px] max-w-[270px] font-sans text-xs bg-slate-900 text-white rounded-xl">
+                <div className="flex items-center gap-1.5 font-bold border-b border-white/10 pb-1 mb-1.5 text-amber-400">
+                  <span className="text-base">{poi.icon}</span>
+                  <span className="leading-tight">{poi.name}</span>
+                </div>
+                <p className="text-slate-300 text-[11px] leading-relaxed mb-2">
+                  {poi.description}
+                </p>
+                <div className="text-[10px] text-slate-400 mb-2 font-mono">
+                  📍 {poi.address}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRouteToPoi(poi)}
+                  disabled={isRouting}
+                  className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs shadow-md transition active:scale-95 cursor-pointer disabled:opacity-50"
+                >
+                  <span>🚶‍♂️</span>
+                  <span>{isRouting ? 'Calculando ruta...' : 'Cómo llegar a pie'}</span>
+                </button>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+
+        {/* 7. Polilínea peatonal calculada por OSRM hacia el punto de interés */}
+        {walkingRoute && walkingRoute.coordinates && walkingRoute.coordinates.length > 1 && (
+          <Polyline
+            positions={walkingRoute.coordinates}
+            pathOptions={{
+              color: '#3b82f6',
+              weight: 6,
+              dashArray: '8, 8',
+              opacity: 0.95,
+            }}
+          />
+        )}
       </MapContainer>
+
+      {/* Tarjeta flotante de navegación peatonal OSRM activa */}
+      {walkingRoute && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[950] max-w-[90vw] sm:max-w-md bg-slate-900/95 backdrop-blur-md p-3 rounded-2xl border border-blue-500/40 shadow-2xl flex items-center justify-between gap-3 text-white">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-600/30 border border-blue-400 flex items-center justify-center text-blue-400 text-lg">
+              🚶‍♂️
+            </div>
+            <div>
+              <div className="text-xs font-black text-white leading-tight">
+                Hacia: {walkingRoute.targetName}
+              </div>
+              <div className="text-[11px] text-blue-300 font-mono">
+                {walkingRoute.distanceMeters} m • ~{walkingRoute.durationMinutes} min a pie
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setWalkingRoute(null)}
+            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition text-xs font-bold"
+            title="Cerrar ruta peatonal"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   );
 }
