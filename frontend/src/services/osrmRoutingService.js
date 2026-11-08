@@ -180,8 +180,23 @@ export async function getSnappedSendaRoute(coordinates) {
   }
 }
 
+/**
+ * Consulta la ruta peatonal OSRM entre dos pares de coordenadas [lat, lng].
+ * @param {[number, number]} startCoords Coordenadas de origen [lat, lng]
+ * @param {[number, number]} endCoords Coordenadas de destino [lat, lng]
+ * @returns {Promise<{ coordinates: [number, number][], distanceMeters: number, durationMinutes: number }>}
+ */
+export async function fetchFootRoute(startCoords, endCoords) {
+  if (!Array.isArray(startCoords) || !Array.isArray(endCoords) || startCoords.length < 2 || endCoords.length < 2) {
+    console.warn('fetchFootRoute: coordenadas de inicio o fin inválidas', { startCoords, endCoords });
+    return { coordinates: [], distanceMeters: 0, durationMinutes: 0 };
+  }
+  return getWalkingRouteToSenda(startCoords[0], startCoords[1], endCoords[0], endCoords[1]);
+}
+
 export default {
   getWalkingRouteToSenda,
+  fetchFootRoute,
   findNearestPointOnSenda,
   calculateHaversineDistance,
   getSnappedSendaRoute,
