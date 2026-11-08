@@ -102,8 +102,8 @@ export const CARNAVAL_DAYS_TRACKS = {
       { id: 'evac-4', name: 'Evacuación Champagnat', coords: [1.2065, -77.2920], street: 'Salida a Catambuco' }
     ],
     healthPoints: [
-      { id: 'health-1', name: 'Cruz Roja Plaza del Carnaval', coords: [1.2151, -77.2845], phone: '132' },
-      { id: 'health-2', name: 'Defensa Civil Plaza de Nariño', coords: [1.2140, -77.2819], phone: '144' },
+      { id: 'health-1', name: 'Cruz Roja Plaza del Carnaval', coords: [1.2158, -77.2835], phone: '132' },
+      { id: 'health-2', name: 'Defensa Civil Plaza de Nariño', coords: [1.2170, -77.2812], phone: '144' },
       { id: 'health-3', name: 'Hospital Civil de Pasto', coords: [1.2105, -77.2750], phone: '123' }
     ],
     coords: SENDA_OFICIAL_STREET_COORDS
@@ -134,7 +134,7 @@ export const CARNAVAL_DAYS_TRACKS = {
       { id: 'evac-3-2', name: 'Evacuación Plaza del Carnaval', coords: [1.2160, -77.2845], street: 'Cra 20' }
     ],
     healthPoints: [
-      { id: 'health-3-1', name: 'Cruz Roja Plaza del Carnaval', coords: [1.2151, -77.2845], phone: '132' },
+      { id: 'health-3-1', name: 'Cruz Roja Plaza del Carnaval', coords: [1.2158, -77.2835], phone: '132' },
       { id: 'health-3-2', name: 'Punto de Hidratación Cra 27', coords: [1.2155, -77.2753], phone: '132' }
     ],
     coords: SENDA_OFICIAL_STREET_COORDS
@@ -165,7 +165,7 @@ export const CARNAVAL_DAYS_TRACKS = {
       { id: 'evac-4-2', name: 'Evacuación Champagnat', coords: [1.2065, -77.2920], street: 'Cra 25' }
     ],
     healthPoints: [
-      { id: 'health-4-1', name: 'Puesto Médico Plaza de Nariño', coords: [1.2140, -77.2819], phone: '144' },
+      { id: 'health-4-1', name: 'Puesto Médico Plaza de Nariño', coords: [1.2170, -77.2812], phone: '144' },
       { id: 'health-4-2', name: 'Puesto Asistencial Bomboná', coords: [1.2092, -77.2899], phone: '132' }
     ],
     coords: SENDA_OFICIAL_STREET_COORDS
@@ -197,7 +197,7 @@ export const CARNAVAL_DAYS_TRACKS = {
     ],
     healthPoints: [
       { id: 'health-5-1', name: 'Hospital Civil de Pasto', coords: [1.2105, -77.2750], phone: '123' },
-      { id: 'health-5-2', name: 'Cruz Roja Plaza del Carnaval', coords: [1.2151, -77.2845], phone: '132' }
+      { id: 'health-5-2', name: 'Cruz Roja Plaza del Carnaval', coords: [1.2158, -77.2835], phone: '132' }
     ],
     coords: [
       [1.21380, -77.28180],
@@ -211,7 +211,8 @@ export const CARNAVAL_DAYS_TRACKS = {
   }
 };
 
-// Puntos de Interés a lo largo de la Senda del Carnaval (Salud, Graderías, Zonas de Juego, Información)
+// Puntos de Interés a lo largo de la Senda del Carnaval (Salud, Graderías, Zonas de Juego, Información, Baños)
+// Calibrados para ubicarse fuera del asfalto (en andenes, aceras y plazas aledañas)
 export const SENDA_POINTS_OF_INTEREST = [
   // 1. Puestos de Salud de la Cruz Roja y Defensa Civil
   {
@@ -219,8 +220,8 @@ export const SENDA_POINTS_OF_INTEREST = [
     name: 'Puesto de Salud Cruz Roja - Plaza del Carnaval',
     category: 'salud',
     icon: '🚨',
-    coords: [1.2151, -77.2845],
-    address: 'Plaza del Carnaval y la Cultura (Costado Sur)',
+    coords: [1.2158, -77.2835], // sidewalk plaza
+    address: 'Plaza del Carnaval y la Cultura (Costado Sur / Andén)',
     description: 'Atención de primeros auxilios, rehidratación, paramédicos y ambulancia medicalizada.',
     badgeColor: '#ef4444'
   },
@@ -229,8 +230,8 @@ export const SENDA_POINTS_OF_INTEREST = [
     name: 'Puesto Asistencial Cruz Roja - Parque Nariño',
     category: 'salud',
     icon: '🚨',
-    coords: [1.2140, -77.2819],
-    address: 'Plaza de Nariño (Costado Oriental)',
+    coords: [1.2170, -77.2812], // plazoleta este
+    address: 'Plaza de Nariño (Plazoleta Este / Andén)',
     description: 'Triage de emergencias leves, curaciones y personal de socorro en zona central.',
     badgeColor: '#ef4444'
   },
@@ -245,7 +246,19 @@ export const SENDA_POINTS_OF_INTEREST = [
     badgeColor: '#ef4444'
   },
 
-  // 2. Graderías Oficiales
+  // 2. Baños Públicos y Baterías Sanitarias
+  {
+    id: 'poi-bano-1',
+    name: 'Baños Públicos Plaza del Carnaval',
+    category: 'bano',
+    icon: '🚻',
+    coords: [1.2145, -77.2845], // costado sur
+    address: 'Plaza del Carnaval (Costado Sur)',
+    description: 'Batería sanitaria pública habilitada en el andén sur fuera de la calzada del desfile.',
+    badgeColor: '#06b6d4'
+  },
+
+  // 3. Graderías Oficiales
   {
     id: 'poi-grad-1',
     name: 'Graderías Oficiales Plaza del Carnaval',
@@ -258,12 +271,12 @@ export const SENDA_POINTS_OF_INTEREST = [
   },
   {
     id: 'poi-grad-2',
-    name: 'Graderías Carrera 27 (Sector San Andrés)',
+    name: 'Graderías Carrera 27 (Acera Oriental)',
     category: 'graderia',
     icon: '🏟️',
-    coords: [1.2144, -77.2769],
-    address: 'Carrera 27 entre Calles 14 y 15',
-    description: 'Graderías de acceso general con excelente visibilidad de murgas y comparsas.',
+    coords: [1.2122, -77.2782], // acera oriental
+    address: 'Carrera 27 (Acera Oriental entre Calles 14 y 15)',
+    description: 'Graderías sobre el andén oriental con excelente visibilidad sin obstruir calzada.',
     badgeColor: '#f59e0b'
   },
   {
@@ -277,7 +290,7 @@ export const SENDA_POINTS_OF_INTEREST = [
     badgeColor: '#f59e0b'
   },
 
-  // 3. Zonas de Juego (Talco y Cosmético Tradicional)
+  // 4. Zonas de Juego (Talco y Cosmético Tradicional)
   {
     id: 'poi-juego-1',
     name: 'Zona de Juego y Pintica - Plaza del Carnaval',
