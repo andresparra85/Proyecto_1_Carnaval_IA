@@ -154,10 +154,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
       {isOpen && (
         <div className="fixed inset-y-0 right-0 z-[1000] w-full sm:w-[420px] max-w-full bg-slate-950/92 backdrop-blur-md border-l border-amber-500/30 shadow-2xl flex flex-col transition-all duration-300 text-slate-100">
           {/* Cabecera del Drawer */}
-          <div className="flex items-center justify-between p-4 border-b border-amber-500/20 bg-slate-900/80">
+          <div className="flex items-center justify-between p-4 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center text-white text-xl shadow-lg border border-amber-400/40">
+              <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-white text-xl shadow-lg border border-white/10">
                 🎭
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-emerald-500/40 animate-pulse" />
               </div>
               <div>
                 <h3 className="font-black text-base tracking-wide text-white flex items-center gap-2">
@@ -166,9 +167,12 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                     AI Chat-Driven
                   </span>
                 </h3>
-                <p className="text-xs text-amber-300/80 font-medium">
-                  Copiloto Oficial Carnaval de Pasto
-                </p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="text-[10px] text-emerald-300 font-semibold">
+                    En línea • Pasto, Nariño
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -176,7 +180,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               <button
                 type="button"
                 onClick={handleClearHistory}
-                className="p-2 rounded-xl text-slate-400 hover:text-amber-400 hover:bg-white/10 transition active:scale-95 cursor-pointer"
+                className="p-2 rounded-full text-slate-400 hover:text-amber-400 hover:bg-white/10 transition active:scale-95 cursor-pointer"
                 title="Limpiar conversación"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -184,7 +188,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               <button
                 type="button"
                 onClick={handleToggle}
-                className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-white/10 transition active:scale-95 cursor-pointer"
+                className="p-2 rounded-full text-slate-400 hover:text-rose-400 hover:bg-white/10 transition active:scale-95 cursor-pointer"
                 title="Cerrar GuaneñaBot"
               >
                 <X className="w-5 h-5" />
@@ -228,10 +232,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
                   <div className={`max-w-[82%] flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
                     <div
-                      className={`p-3 rounded-2xl text-xs sm:text-[13px] leading-relaxed shadow-lg ${
+                      className={`p-3 rounded-2xl text-xs sm:text-[13px] leading-relaxed shadow-md ${
                         isUser
-                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-tr-none'
-                          : 'bg-slate-900/90 text-slate-100 border border-amber-500/25 rounded-tl-none backdrop-blur-md'
+                          ? 'bg-gradient-to-r from-rose-600 to-rose-700 text-white rounded-2xl rounded-tr-none shadow-md font-medium'
+                          : 'bg-slate-900/80 backdrop-blur-md border border-white/10 text-slate-100 rounded-2xl rounded-tl-none font-normal'
                       }`}
                     >
                       <p className="whitespace-pre-line">{msg.text}</p>
@@ -262,8 +266,8 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input de Mensaje */}
-          <div className="p-3 bg-slate-900/90 border-t border-amber-500/20 backdrop-blur-md">
+          {/* Input de Mensaje en Píldora con botón circular */}
+          <div className="p-3 bg-slate-950/95 border-t border-white/10 backdrop-blur-md">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -276,12 +280,12 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 placeholder="Pregúntale a GuaneñaBot (ej. ¿Cómo llego a la Plaza?)..."
-                className="flex-1 bg-slate-950/80 border border-amber-500/30 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/50 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition"
+                className="flex-1 bg-slate-900/80 border border-white/10 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/50 rounded-full px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition"
               />
               <button
                 type="submit"
                 disabled={!inputMessage.trim() || isTyping}
-                className="p-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition active:scale-95 cursor-pointer shrink-0"
+                className="w-10 h-10 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white shadow-lg shadow-rose-600/30 disabled:opacity-40 disabled:cursor-not-allowed transition active:scale-95 cursor-pointer flex items-center justify-center shrink-0"
                 title="Enviar mensaje"
               >
                 <Send className="w-4 h-4" />

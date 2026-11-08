@@ -529,11 +529,11 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
           className="fixed bottom-24 right-6 z-[9999] pointer-events-auto w-[calc(100vw-2.5rem)] sm:w-[390px] h-[520px] max-h-[80vh] rounded-3xl bg-slate-900/95 backdrop-blur-2xl border border-white/15 shadow-2xl shadow-rose-950/50 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300"
         >
           {/* Header Festivo: "GuaneñaBot • Asistente del Carnaval" e Indicador "En línea" */}
-          <header className="px-4 py-3.5 border-b border-white/10 bg-slate-950/70 flex items-center justify-between gap-2 select-none">
+          <header className="px-4 py-3.5 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl flex items-center justify-between gap-2 select-none">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="relative flex items-center justify-center w-9 h-9 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 text-white shadow-md shadow-rose-600/30 shrink-0 text-lg">
+              <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 text-white shadow-md shadow-rose-600/30 shrink-0 text-lg">
                 🎭
-                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900 animate-pulse" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-emerald-500/40 animate-pulse" />
               </div>
               <div className="min-w-0">
                 <h3 className="font-black text-xs sm:text-sm text-white tracking-tight leading-tight truncate">
@@ -552,7 +552,7 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
               <button
                 type="button"
                 onClick={handleResetChat}
-                className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition cursor-pointer"
                 title="Reiniciar chat"
                 aria-label="Reiniciar chat"
               >
@@ -561,7 +561,7 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition cursor-pointer"
                 title="Cerrar chat"
                 aria-label="Cerrar chat"
               >
@@ -588,12 +588,12 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
 
                     {/* Burbujas diferenciadas: Usuario con acento festivo, Bot en gris oscuro pulido */}
                     <div
-                      className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-[13px] leading-relaxed shadow-md ${
+                      className={`px-3.5 py-2.5 text-xs sm:text-[13px] leading-relaxed shadow-md ${
                         isUser
-                          ? 'bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 text-white font-medium rounded-br-sm shadow-rose-600/20'
+                          ? 'bg-gradient-to-r from-rose-600 to-rose-700 text-white font-medium rounded-2xl rounded-tr-none shadow-md'
                           : (msg as any).isError
-                            ? 'bg-rose-950/80 text-rose-200 border border-rose-500/50 rounded-bl-sm'
-                            : 'bg-slate-800/90 text-slate-100 border border-white/10 rounded-bl-sm font-normal'
+                            ? 'bg-rose-950/80 text-rose-200 border border-rose-500/50 rounded-2xl rounded-tl-none'
+                            : 'bg-slate-900/80 backdrop-blur-md border border-white/10 text-slate-100 rounded-2xl rounded-tl-none font-normal'
                       }`}
                     >
                       <div className="whitespace-pre-line">{msg.text}</div>
@@ -630,7 +630,7 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
                   <div className="w-6 h-6 rounded-xl bg-slate-800/80 border border-white/10 flex items-center justify-center text-xs shrink-0 mb-1">
                     🎭
                   </div>
-                  <div className="px-3.5 py-2.5 rounded-2xl rounded-bl-sm bg-slate-800/90 border border-white/10 text-xs text-slate-300 flex items-center gap-2 shadow-sm">
+                  <div className="px-3.5 py-2.5 rounded-2xl rounded-tl-none bg-slate-900/80 backdrop-blur-md border border-white/10 text-xs text-slate-300 flex items-center gap-2 shadow-sm">
                     <div className="flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '0ms' }} />
                       <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -666,7 +666,7 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
             </div>
           </div>
 
-          {/* Footer / Input con ícono de Send */}
+          {/* Footer / Input con diseño de píldora y botón de envío circular con gradiente */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -681,13 +681,13 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Pregúntale a GuaneñaBot..."
               disabled={loading}
-              className="flex-1 px-3.5 py-2.5 text-xs sm:text-sm bg-slate-900 border border-white/10 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500/40 focus:border-rose-500/40 transition disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 text-xs sm:text-sm bg-slate-900/80 border border-white/10 rounded-full text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500/50 transition disabled:opacity-50"
             />
             <button
               id="guanena-chat-send-btn"
               type="submit"
               disabled={!inputMessage.trim() || loading}
-              className="p-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-bold active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-md shadow-rose-600/30 shrink-0"
+              className="w-10 h-10 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-bold active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-rose-600/30 flex items-center justify-center shrink-0"
               aria-label="Enviar mensaje a GuaneñaBot"
               title="Enviar mensaje"
             >
