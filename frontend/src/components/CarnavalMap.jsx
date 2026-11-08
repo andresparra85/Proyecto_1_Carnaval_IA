@@ -14,6 +14,7 @@ import {
   SENDA_OFICIAL_STREET_COORDS,
   CARNAVAL_DAYS_TRACKS,
 } from '../data/carnavalRoutesGeoJSON';
+import { calculateHaversineDistance } from '../services/osrmRoutingService';
 
 // Solución clásica de iconos rotos de Leaflet en Vite
 delete L.Icon.Default.prototype._getIconUrl;
@@ -115,6 +116,41 @@ export function createTerminalEndIcon() {
   });
 }
 
+// Icono GPS en tiempo real para el espectador con anillo radar pulsante
+export function createSpectatorGpsIcon() {
+  const html = `
+    <div style="position: relative; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
+      <!-- Anillo radar exterior pulsante -->
+      <div style="
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(37, 99, 235, 0.35);
+        border: 2px solid #3b82f6;
+        animation: ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+      "></div>
+      <!-- Punto azul central -->
+      <div style="
+        position: relative;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #2563eb;
+        border: 2.5px solid #ffffff;
+        box-shadow: 0 0 12px rgba(37, 99, 235, 0.9), 0 2px 4px rgba(0,0,0,0.5);
+      "></div>
+    </div>
+  `;
+  return L.divIcon({
+    className: 'custom-spectator-gps-icon',
+    html,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16],
+  });
+}
+
 // Controlador de cámara para animar suavemente a los límites de la Senda seleccionada
 function DynamicRouteCameraController({ routeCoords }) {
   const map = useMap();
@@ -169,8 +205,59 @@ export function CarnavalMap({
   const startPoint = currentTrack.startPoint;
   const endPoint = currentTrack.endPoint;
 
+  // Rastreo GPS en tiempo real del espectador con watchPosition
+  const [userPosition, setUserPosition] = useState(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !navigator.geolocation) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        setUserPosition({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        });
+      },
+      (err) => {
+        console.warn('Aviso de geolocalización espectador:', err?.message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 2000,
+      }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
+
+  // Cálculo de cercanía del espectador a la Senda en metros (umbral < 50m)
+  const distanceToSendaMeters = React.useMemo(() => {
+    if (!userPosition || !routeCoords || routeCoords.length === 0) return Infinity;
+    let minD = Infinity;
+    for (let i = 0; i < routeCoords.length; i++) {
+      const [sLat, sLng] = routeCoords[i];
+      const distKm = calculateHaversineDistance(userPosition.lat, userPosition.lng, sLat, sLng);
+      const distMeters = distKm * 1000;
+      if (distMeters < minD) {
+        minD = distMeters;
+      }
+    }
+    return minD;
+  }, [userPosition, routeCoords]);
+
+  const isNearSenda = distanceToSendaMeters <= 50;
+
   return (
     <div className="relative w-full h-full min-h-[500px]">
+      {/* Badge en vivo si el usuario se encuentra a menos de 50 metros de la Senda */}
+      {isNearSenda && (
+        <div className="absolute top-24 left-1/2 -translate-x-1/2 z-[950] animate-bounce px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-600 text-white font-black text-xs sm:text-sm shadow-2xl border-2 border-white/40 flex items-center gap-2 whitespace-nowrap">
+          <span className="text-base">🎉</span>
+          <span>¡Estás sobre la Senda del Carnaval! 🎉</span>
+        </div>
+      )}
       {/* Selector dinámico de trazado por día del evento (Glassmorphic) */}
       <div className="absolute top-4 left-4 z-[900] max-w-[95vw] sm:max-w-2xl bg-slate-900/90 backdrop-blur-md p-2 rounded-2xl border border-white/10 shadow-2xl">
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
@@ -285,6 +372,44 @@ export function CarnavalMap({
               </div>
             </Popup>
           </Marker>
+        )}
+
+        {/* 5. Rastreo GPS en tiempo real del espectador con punto azul y anillo radar */}
+        {userPosition && (
+          <>
+            <Circle
+              center={[userPosition.lat, userPosition.lng]}
+              radius={Math.min(userPosition.accuracy || 25, 45)}
+              pathOptions={{
+                color: '#2563eb',
+                fillColor: '#3b82f6',
+                fillOpacity: 0.15,
+                weight: 1.5,
+              }}
+            />
+            <Marker
+              position={[userPosition.lat, userPosition.lng]}
+              icon={createSpectatorGpsIcon()}
+            >
+              <Popup className="custom-popup">
+                <div className="p-2 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl">
+                  <div className="flex items-center gap-1.5 text-blue-400 font-black border-b border-white/10 pb-1 mb-1">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
+                    <span className="uppercase">Tu ubicación GPS</span>
+                  </div>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    {isNearSenda
+                      ? '¡Estás en plena fiesta sobre la Senda del Carnaval!'
+                      : `Te encuentras a aprox. ${Math.round(distanceToSendaMeters)} m de la Senda.`}
+                  </p>
+                  <div className="mt-2 text-[10px] text-slate-400 font-mono flex justify-between border-t border-white/10 pt-1">
+                    <span>Lat: {userPosition.lat.toFixed(5)}</span>
+                    <span>Lng: {userPosition.lng.toFixed(5)}</span>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          </>
         )}
       </MapContainer>
     </div>
