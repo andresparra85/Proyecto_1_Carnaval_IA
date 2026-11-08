@@ -529,19 +529,27 @@ export function CarnavalMap({
 
     const activeMap = mapRef.current || mapInstance;
 
-    // Si el día es 5 o 7, limpia la polilínea y enfoca los marcadores de las plazas o corregimientos
-    if (dayConfig.type === 'PLAZAS' || dayConfig.type === 'CORREGIMIENTOS') {
+    // Si el día es 5 o 7, limpia la polilínea y enfoca los marcadores temáticos de las plazas o corregimientos
+    if (dayConfig.type === 'PLAZAS' || dayConfig.type === 'CORREGIMIENTOS' || cleanDayKey === '5' || cleanDayKey === '7') {
       setActiveRouteCoords([]);
-      setFocusedPoints(dayConfig.points || []);
+      const clusterPoints = cleanDayKey === '5' ? [
+        { name: 'Plaza de Nariño (Tablado Principal)', coords: [1.2168, -77.2805], ambiance: '🎭 Conciertos en vivo, orquestas de salsa y juego tradicional con cosmético negro.' },
+        { name: 'Plaza del Carnaval y la Cultura', coords: [1.2140, -77.2780], ambiance: '🎶 Epicentro del Día de Negros: tarimas musicales y juego libre de identidad ¡Una pintica por favor!' }
+      ] : cleanDayKey === '7' ? [
+        { name: 'Corregimiento de Catambuco', coords: [1.1680, -77.2850], ambiance: '🍽️ Senda Gastronómica del Cuy: asaderos tradicionales a la brasa, trucha y música campesina.' },
+        { name: 'Corregimiento de Obonuco', coords: [1.1960, -77.3050], ambiance: '🥔 Festival del Frito y el Cuy: gastronomía autóctona nariñense y agrupaciones folclóricas.' }
+      ] : dayConfig.points || [];
+
+      setFocusedPoints(clusterPoints);
       setActiveEventInfo({
         name: dayConfig.name,
-        start: dayConfig.points?.[0]?.name || '',
-        end: dayConfig.points?.[1]?.name || '',
+        start: clusterPoints[0]?.name || '',
+        end: clusterPoints[1]?.name || '',
       });
 
-      if (activeMap && dayConfig.points && dayConfig.points.length > 0) {
+      if (activeMap && clusterPoints.length > 0) {
         try {
-          const bounds = L.latLngBounds(dayConfig.points.map((p) => p.coords));
+          const bounds = L.latLngBounds(clusterPoints.map((p) => p.coords));
           activeMap.fitBounds(bounds, { padding: [60, 60], animate: true });
         } catch (err) {
           console.warn('Error al ajustar límites de plazas/corregimientos:', err);
@@ -1061,26 +1069,37 @@ export function CarnavalMap({
           </>
         )}
 
-        {/* Marcadores de plazas o corregimientos para días 5 y 7 */}
-        {focusedPoints && focusedPoints.length > 0 && focusedPoints.map((pt, idx) => (
-          <Marker
-            key={`focused-${pt.name}-${idx}`}
-            position={pt.coords}
-            icon={createPoiIcon({ id: `pt-${idx}`, icon: activeDayConfig?.type === 'CORREGIMIENTOS' ? '🍽️' : '🎭', badgeColor: '#f59e0b' })}
-          >
-            <Popup className="custom-popup">
-              <div className="p-2 min-w-[200px] bg-slate-900 text-white rounded-xl text-xs font-sans">
-                <div className="font-bold text-amber-400 mb-1 flex items-center gap-1.5">
-                  <span>{activeDayConfig?.type === 'CORREGIMIENTOS' ? '🍽️' : '🎭'}</span>
-                  <span>{pt.name}</span>
+        {/* Marcadores temáticos de plazas (Día de Negros - 5 Ene) y corregimientos (Festival del Cuy - 7 Ene) */}
+        {focusedPoints && focusedPoints.length > 0 && focusedPoints.map((pt, idx) => {
+          const isRural = activeDayConfig?.type === 'CORREGIMIENTOS' || currentDay === '7';
+          const icon = isRural ? '🍽️' : '🎭';
+          const badgeColor = isRural ? '#10b981' : '#f59e0b';
+          const title = pt.name;
+          const detail = pt.ambiance || activeDayConfig?.description || (isRural ? 'Senda gastronómica y música campesina.' : 'Punto de concentración oficial para el juego de identidad.');
+
+          return (
+            <Marker
+              key={`focused-plaza-${pt.name}-${idx}`}
+              position={pt.coords}
+              icon={createPoiIcon({ id: `plaza-${idx}`, icon, badgeColor })}
+            >
+              <Popup className="custom-popup">
+                <div className="p-2.5 min-w-[220px] bg-slate-900 text-white rounded-xl text-xs font-sans shadow-xl border border-white/10">
+                  <div className="font-bold text-amber-400 mb-1 flex items-center gap-1.5 border-b border-white/10 pb-1">
+                    <span className="text-base">{icon}</span>
+                    <span className="uppercase text-[11px] tracking-wide">{title}</span>
+                  </div>
+                  <div className="text-[11px] text-slate-300 leading-relaxed mt-1">
+                    {detail}
+                  </div>
+                  <div className="mt-2 text-[10px] font-mono font-semibold" style={{ color: badgeColor }}>
+                    {isRural ? 'Festival Rural y Gastronómico' : 'Punto de Concentración Oficial'}
+                  </div>
                 </div>
-                <div className="text-[11px] text-slate-300">
-                  {activeDayConfig?.description || 'Punto oficial de celebración del Carnaval.'}
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          );
+        })}
 
         {/* 5. Rastreo GPS en tiempo real del espectador con punto azul y anillo radar */}
         {userPosition && (
