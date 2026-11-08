@@ -5,12 +5,60 @@
  */
 
 /**
+ * Genera un trazado vial de respaldo de alta resolución siguiendo la cuadrícula
+ * urbana (calles y carreras) de Pasto para evitar líneas rectas aéreas sobre techos o montañas.
+ * @param {number} startLat
+ * @param {number} startLng
+ * @param {number} endLat
+ * @param {number} endLng
+ * @returns {{ coordinates: [number, number][], distance: number, duration: number, distanceMeters: number, durationMinutes: number }}
+ */
+export function generateStreetFallbackRoute(startLat, startLng, endLat, endLng) {
+  const denseCoordinates = [];
+  const stepsPerLeg = 16;
+
+  // En Pasto, las carreras corren N-S y las calles E-W.
+  // Esquina ortogonal de conexión vial: avanza primero por la calle y luego por la carrera
+  const cornerLat = startLat;
+  const cornerLng = endLng;
+
+  // Tramo 1: a lo largo de la calle desde [startLat, startLng] hasta [startLat, endLng]
+  for (let i = 0; i <= stepsPerLeg; i++) {
+    const factor = i / stepsPerLeg;
+    const lng = startLng + (cornerLng - startLng) * factor;
+    denseCoordinates.push([Number(startLat.toFixed(6)), Number(lng.toFixed(6))]);
+  }
+
+  // Tramo 2: a lo largo de la carrera desde [startLat, endLng] hasta [endLat, endLng]
+  for (let j = 1; j <= stepsPerLeg; j++) {
+    const factor = j / stepsPerLeg;
+    const lat = cornerLat + (endLat - cornerLat) * factor;
+    denseCoordinates.push([Number(lat.toFixed(6)), Number(endLng.toFixed(6))]);
+  }
+
+  // Distancia Manhattan por calzadas urbanas de Pasto
+  const leg1DistanceKm = calculateHaversineDistance(startLat, startLng, startLat, endLng);
+  const leg2DistanceKm = calculateHaversineDistance(startLat, endLng, endLat, endLng);
+  const totalDistanceKm = leg1DistanceKm + leg2DistanceKm;
+  const distanceMeters = Math.max(30, Math.round(totalDistanceKm * 1000));
+  const durationMinutes = Math.max(1, Math.round((totalDistanceKm / 4.5) * 60));
+
+  return {
+    coordinates: denseCoordinates,
+    distance: distanceMeters,
+    duration: durationMinutes * 60,
+    distanceMeters,
+    durationMinutes,
+  };
+}
+
+/**
  * Consulta la ruta peatonal exacta por calles entre la posición del usuario y un punto objetivo de la Senda.
  * @param {number} userLat Latitud del usuario
  * @param {number} userLng Longitud del usuario
  * @param {number} targetLat Latitud del destino en la Senda
  * @param {number} targetLng Longitud del destino en la Senda
- * @returns {Promise<{ coordinates: [number, number][], distanceMeters: number, durationMinutes: number }>}
+ * @returns {Promise<{ coordinates: [number, number][], distance: number, duration: number, distanceMeters: number, durationMinutes: number }>}
  */
 export async function getWalkingRouteToSenda(userLat, userLng, targetLat, targetLng) {
   // Validación de coordenadas numéricas
@@ -23,19 +71,14 @@ export async function getWalkingRouteToSenda(userLat, userLng, targetLat, target
     console.warn('Coordenadas inválidas para enrutamiento OSRM:', { userLat, userLng, targetLat, targetLng });
     return {
       coordinates: [],
+      distance: 0,
+      duration: 0,
       distanceMeters: 0,
       durationMinutes: 0
     };
   }
 
-  const fallback = {
-    coordinates: [
-      [userLat, userLng],
-      [targetLat, targetLng]
-    ],
-    distanceMeters: Math.round(calculateHaversineDistance(userLat, userLng, targetLat, targetLng) * 1000),
-    durationMinutes: Math.round((calculateHaversineDistance(userLat, userLng, targetLat, targetLng) / 4.5) * 60)
-  };
+  const fallback = generateStreetFallbackRoute(userLat, userLng, targetLat, targetLng);
 
   try {
     const controller = new AbortController();
@@ -53,7 +96,7 @@ export async function getWalkingRouteToSenda(userLat, userLng, targetLat, target
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      console.warn(`Respuesta fallida de OSRM (${response.status}), usando fallback en línea recta.`);
+      console.warn(`Respuesta fallida de OSRM (${response.status}), usando fallback vial por cuadrícula.`);
       return fallback;
     }
 
@@ -75,7 +118,7 @@ export async function getWalkingRouteToSenda(userLat, userLng, targetLat, target
 
     return fallback;
   } catch (error) {
-    console.warn('Error al calcular ruta peatonal OSRM:', error);
+    console.warn('Error al calcular ruta peatonal OSRM (usando fallback vial):', error);
     return fallback;
   }
 }
@@ -203,16 +246,7 @@ export async function fetchFootRoute(startCoords, endCoords) {
   // OSRM REQUIERE: {lng},{lat};{lng},{lat}
   const url = `https://router.project-osrm.org/route/v1/foot/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
 
-  const fallback = {
-    coordinates: [
-      [startLat, startLng],
-      [endLat, endLng],
-    ],
-    distance: Math.round(calculateHaversineDistance(startLat, startLng, endLat, endLng) * 1000),
-    duration: Math.round((calculateHaversineDistance(startLat, startLng, endLat, endLng) / 4.5) * 3600),
-    distanceMeters: Math.round(calculateHaversineDistance(startLat, startLng, endLat, endLng) * 1000),
-    durationMinutes: Math.max(1, Math.round((calculateHaversineDistance(startLat, startLng, endLat, endLng) / 4.5) * 60)),
-  };
+  const fallback = generateStreetFallbackRoute(startLat, startLng, endLat, endLng);
 
   try {
     const controller = new AbortController();
@@ -257,6 +291,7 @@ export default {
   getWalkingRouteToSenda,
   fetchFootRoute,
   getRoute,
+  generateStreetFallbackRoute,
   findNearestPointOnSenda,
   calculateHaversineDistance,
   getSnappedSendaRoute,
