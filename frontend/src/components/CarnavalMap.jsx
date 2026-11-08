@@ -382,7 +382,10 @@ export function EventCard({ event, onClose }) {
   );
 }
 
-export const EventOverlayCard = EventCard;
+export const EventOverlayCard = ({ event, onClose }) => {
+  if (!event) return null;
+  return <EventCard event={event} onClose={onClose} />;
+};
 
 // Controlador de cámara para animar suavemente a los límites de la Senda seleccionada
 function DynamicRouteCameraController({ routeCoords, focusTrigger }) {

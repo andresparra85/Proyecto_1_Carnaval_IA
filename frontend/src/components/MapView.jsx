@@ -807,16 +807,16 @@ export function MapView({
 
   const [isCardMinimized, setIsCardMinimized] = useState(false);
 
-  // Estado del evento seleccionado condicional (inicia en null para mantener el mapa limpio)
-  const [selectedEvent, setSelectedEvent] = useState(() => (selectedDay ? (CARNIVAL_ROUTES[selectedDay] || null) : null));
+  // Estado del evento seleccionado condicional (inicia estrictamente en null para mantener el mapa 100% limpio en arranque)
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
-    if (selectedDay) {
+    if (showSenda && selectedDay) {
       setSelectedEvent(CARNIVAL_ROUTES[selectedDay] || null);
     } else {
       setSelectedEvent(null);
     }
-  }, [selectedDay]);
+  }, [selectedDay, showSenda]);
 
   const currentEvent = selectedEvent;
 
@@ -1008,13 +1008,13 @@ export function MapView({
         <div className="pointer-events-auto flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/60 shadow-sm text-xs max-w-lg">
           <div className="flex items-center gap-2 min-w-0">
             <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: currentEvent.color || '#f59e0b' }}
+              className={`w-2 h-2 rounded-full shrink-0 ${currentEvent ? 'bg-amber-500' : 'bg-slate-500'}`}
+              style={currentEvent?.color ? { backgroundColor: currentEvent.color } : {}}
             />
             <div className="truncate text-slate-600 dark:text-slate-300">
               <span className="hidden sm:inline text-slate-400">Evento Activo: </span>
               <strong className="font-bold text-slate-900 dark:text-white">
-                {currentEvent.name}
+                {currentEvent ? currentEvent.name : 'Ninguno'}
               </strong>
             </div>
           </div>
@@ -1064,7 +1064,7 @@ export function MapView({
       </div>
 
       {/* 2. Tarjeta Flotante Compacta de "Evento Oficial" con Bordes rounded-3xl - Renderizado condicional */}
-      {selectedEvent && currentEvent && (
+      {showSenda && selectedEvent && currentEvent && (
         <div className="absolute bottom-5 left-4 z-[1000] pointer-events-auto">
           {isCardMinimized ? (
             /* Estado Colapsado: Píldora ultra-compacta para ver el mapa completamente despejado */
