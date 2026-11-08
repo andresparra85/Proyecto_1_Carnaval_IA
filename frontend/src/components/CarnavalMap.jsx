@@ -583,30 +583,64 @@ export function CarnavalMap({
         {/* Capa de la Senda Oficial - Renderizado condicional reactivo bajo petición de GuaneñaBot */}
         {activeSendaTrack && (
           <>
-            {/* 1. Efecto de resplandor / sombra exterior para destacar sobre el fondo del mapa */}
+            {/* 1. Capa vectorial principal oficial ceñida a la calzada vial */}
             <Polyline
               positions={activeSendaTrack.coords || SENDA_OFICIAL_COORDS}
               pathOptions={{
-                color: activeSendaTrack.color || '#f43f5e',
-                weight: 12,
-                opacity: 0.3,
-                lineJoin: 'round',
-                lineCap: 'round',
-              }}
-            />
-
-            {/* 2. Capa vectorial principal oficial ceñida a la calzada vial */}
-            <Polyline
-              positions={activeSendaTrack.coords || SENDA_OFICIAL_COORDS}
-              pathOptions={{
-                color: activeSendaTrack.color || '#e11d48',
+                color: '#e11d48',
                 weight: 6,
                 opacity: 0.95,
-                lineJoin: 'round',
                 lineCap: 'round',
+                lineJoin: 'round',
                 className: 'drop-shadow-lg',
               }}
             />
+
+            {/* Marcador contextual de Inicio oficial de la Senda activa */}
+            {activeSendaTrack.startPoint && (
+              <Marker
+                position={activeSendaTrack.startPoint.coords}
+                icon={createTerminalStartIcon()}
+              >
+                <Popup className="custom-popup">
+                  <div className="p-2 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl">
+                    <div className="flex items-center gap-1.5 text-emerald-400 font-black border-b border-white/10 pb-1 mb-1">
+                      <span>🚩</span>
+                      <span className="uppercase text-[11px]">{activeSendaTrack.startPoint.name}</span>
+                    </div>
+                    <p className="text-slate-300 text-[11px] leading-relaxed">
+                      {activeSendaTrack.startPoint.description}
+                    </p>
+                    <div className="mt-1.5 text-[10px] text-emerald-300 font-mono">
+                      {activeSendaTrack.name} • Partida
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
+
+            {/* Marcador contextual de Fin oficial de la Senda activa */}
+            {activeSendaTrack.endPoint && (
+              <Marker
+                position={activeSendaTrack.endPoint.coords}
+                icon={createTerminalEndIcon()}
+              >
+                <Popup className="custom-popup">
+                  <div className="p-2 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl">
+                    <div className="flex items-center gap-1.5 text-rose-400 font-black border-b border-white/10 pb-1 mb-1">
+                      <span>🏁</span>
+                      <span className="uppercase text-[11px]">{activeSendaTrack.endPoint.name}</span>
+                    </div>
+                    <p className="text-slate-300 text-[11px] leading-relaxed">
+                      {activeSendaTrack.endPoint.description}
+                    </p>
+                    <div className="mt-1.5 text-[10px] text-rose-300 font-mono">
+                      {activeSendaTrack.name} • Llegada y Desmonte
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
 
             {/* Marcadores de hitos emblemáticos clave de la Senda */}
             {SENDA_EMBLEMATIC_LANDMARKS.map((landmark) => (
