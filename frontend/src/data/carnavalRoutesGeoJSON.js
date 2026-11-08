@@ -6,39 +6,42 @@
  */
 
 // Trazado vial milimétrico y denso oficial esquina por esquina en formato Leaflet [lat, lng]
-export const SENDA_OFICIAL_STREET_COORDS = [
-  // 1. Salida: Av. Champagnat / Parque Bolívar
-  [1.20550, -77.27980],
-  [1.20680, -77.27960],
-  [1.20820, -77.27935],
-  [1.20920, -77.27915],
-  // 2. Carrera 27 con Calle 12
-  [1.21020, -77.27900],
-  [1.21110, -77.27875],
-  // 3. Carrera 27 con Calle 14
-  [1.21200, -77.27850],
-  [1.21290, -77.27835],
-  // 4. Entrada Plaza del Carnaval (Cra 27 con Cll 16)
-  [1.21380, -77.27820],
-  [1.21440, -77.27870],
-  [1.21500, -77.27910],
-  // 5. Giro a Calle 19 por Carrera 26
-  [1.21550, -77.27950],
-  [1.21610, -77.28000],
-  // 6. Calle 19 frente a Plaza de Nariño
-  [1.21680, -77.28050],
-  [1.21740, -77.28115],
-  // 7. Calle 19 con Carrera 24
-  [1.21800, -77.28180],
-  [1.21880, -77.28240],
-  // 8. Bajada por Calle 19 hacia Av. Santander
-  [1.21950, -77.28300],
-  [1.22120, -77.28370],
-  [1.22280, -77.28430],
-  [1.22450, -77.28490],
-  // 9. Conexión Carrera 22 / Fuente de la Transparencia / Av. de los Estudiantes
-  [1.22600, -77.28550]
+export const SENDA_OFICIAL_COORDS = [
+  // 1. Partida: Senda / Champagnat / Parque Bolívar (Sur)
+  [1.2052, -77.2796],
+  [1.2065, -77.2794],
+  [1.2080, -77.2792],
+  // 2. Subida por Carrera 27
+  [1.2095, -77.2790],
+  [1.2108, -77.2788],
+  [1.2120, -77.2785],
+  [1.2132, -77.2783],
+  // 3. Plaza del Carnaval y la Cultura (Cra 27 con Cll 16 - Giro de comparsas)
+  [1.2140, -77.2781],
+  [1.2148, -77.2780],
+  [1.2154, -77.2786],
+  // 4. Conexión hacia el Centro Histórico por Calle 19
+  [1.2158, -77.2794],
+  [1.2162, -77.2801],
+  // 5. Tramo frente a la Plaza de Nariño (Calle 19 entre Cras 24 y 25)
+  [1.2167, -77.2808],
+  [1.2173, -77.2816],
+  [1.2179, -77.2823],
+  // 6. Bajada por Calle 19 hacia la Avenida Santander
+  [1.2185, -77.2831],
+  [1.2192, -77.2839],
+  [1.2201, -77.2845],
+  // 7. Enlace con Carrera 22 / Torobajo
+  [1.2212, -77.2848],
+  [1.2225, -77.2850],
+  [1.2238, -77.2852],
+  [1.2249, -77.2853],
+  // 8. Llegada y desconcentración: Fuente de la Transparencia / Av. de los Estudiantes
+  [1.2260, -77.2855]
 ];
+
+// Alias para retrocompatibilidad total
+export const SENDA_OFICIAL_STREET_COORDS = SENDA_OFICIAL_COORDS;
 
 // Conversión a GeoJSON LineString estándar [lng, lat]
 export const SENDA_GEOJSON_COORDINATES = SENDA_OFICIAL_STREET_COORDS.map(([lat, lng]) => [lng, lat]);
