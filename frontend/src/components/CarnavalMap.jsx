@@ -649,11 +649,11 @@ export function CarnavalMap({
         />
 
         {/* Capa de la Senda Oficial - Renderizado condicional reactivo bajo petición de GuaneñaBot */}
-        {activeSendaTrack && (
+        {isSendaVisible && activeRouteCoords && activeRouteCoords.length > 0 && (
           <>
             {/* 1. Capa vectorial principal oficial ceñida a la calzada vial */}
             <Polyline
-              positions={activeSendaTrack.coords || SENDA_OFICIAL_COORDS}
+              positions={activeRouteCoords}
               pathOptions={{
                 color: '#e11d48',
                 weight: 6,
@@ -665,22 +665,22 @@ export function CarnavalMap({
             />
 
             {/* Marcador contextual de Inicio oficial de la Senda activa */}
-            {activeSendaTrack.startPoint && (
+            {selectedEvent?.startPoint && (
               <Marker
-                position={activeSendaTrack.startPoint.coords}
+                position={selectedEvent.startPoint.coords}
                 icon={createTerminalStartIcon()}
               >
                 <Popup className="custom-popup">
                   <div className="p-2 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl">
                     <div className="flex items-center gap-1.5 text-emerald-400 font-black border-b border-white/10 pb-1 mb-1">
                       <span>🚩</span>
-                      <span className="uppercase text-[11px]">{activeSendaTrack.startPoint.name}</span>
+                      <span className="uppercase text-[11px]">{selectedEvent.startPoint.name}</span>
                     </div>
                     <p className="text-slate-300 text-[11px] leading-relaxed">
-                      {activeSendaTrack.startPoint.description}
+                      {selectedEvent.startPoint.description}
                     </p>
                     <div className="mt-1.5 text-[10px] text-emerald-300 font-mono">
-                      {activeSendaTrack.name} • Partida
+                      {selectedEvent.name} • Partida
                     </div>
                   </div>
                 </Popup>
@@ -688,22 +688,22 @@ export function CarnavalMap({
             )}
 
             {/* Marcador contextual de Fin oficial de la Senda activa */}
-            {activeSendaTrack.endPoint && (
+            {selectedEvent?.endPoint && (
               <Marker
-                position={activeSendaTrack.endPoint.coords}
+                position={selectedEvent.endPoint.coords}
                 icon={createTerminalEndIcon()}
               >
                 <Popup className="custom-popup">
                   <div className="p-2 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl">
                     <div className="flex items-center gap-1.5 text-rose-400 font-black border-b border-white/10 pb-1 mb-1">
                       <span>🏁</span>
-                      <span className="uppercase text-[11px]">{activeSendaTrack.endPoint.name}</span>
+                      <span className="uppercase text-[11px]">{selectedEvent.endPoint.name}</span>
                     </div>
                     <p className="text-slate-300 text-[11px] leading-relaxed">
-                      {activeSendaTrack.endPoint.description}
+                      {selectedEvent.endPoint.description}
                     </p>
                     <div className="mt-1.5 text-[10px] text-rose-300 font-mono">
-                      {activeSendaTrack.name} • Llegada y Desmonte
+                      {selectedEvent.name} • Llegada y Desmonte
                     </div>
                   </div>
                 </Popup>
