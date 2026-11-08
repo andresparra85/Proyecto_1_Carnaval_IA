@@ -263,6 +263,11 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
     setLoading(true);
 
     // Detección determinista de fechas de Carnaval e inyección de ruta
+    const isParadeQuery = /senda|desfile|blancos|casta[ñn]eda|4 de enero|6 de enero|camino|ruta/i.test(userText);
+    if (isParadeQuery && typeof window !== 'undefined' && typeof (window as any).dibujarSendaCarnaval === 'function') {
+      (window as any).dibujarSendaCarnaval('senda_oficial');
+    }
+
     const paradeIntent = parseBotIntent(userText);
     if (paradeIntent.matched) {
       dispatchParadeIntent(userText);

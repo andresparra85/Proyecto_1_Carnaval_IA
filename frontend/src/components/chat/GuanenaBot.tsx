@@ -233,7 +233,15 @@ export function GuanenaBot({ onFocusSenda, onFocusLandmark }: GuanenaBotProps = 
     let actionTriggered = false;
     let botReply = '';
 
-    if (q.includes('desfile') || q.includes('senda') || q.includes('recorrido') || q.includes('evento') || q.includes('carroza')) {
+    const isParadeQuery = /senda|desfile|blancos|casta[ñn]eda|4 de enero|6 de enero|camino|ruta/i.test(userText);
+    if (isParadeQuery) {
+      actionTriggered = true;
+      if (typeof window !== 'undefined' && typeof (window as any).dibujarSendaCarnaval === 'function') {
+        (window as any).dibujarSendaCarnaval('senda_oficial');
+      }
+      await executeActionOnMap('senda', { dayId: '06-ene' });
+      botReply = '¡Que viva Pasto, carajo! 🎭 He desplegado la Senda Oficial continua calle por calle (Champagnat -> Cra 27 -> Plaza Carnaval -> Cll 19 -> Plaza Nariño -> Cra 22 / Torobajo) en el mapa.';
+    } else if (q.includes('desfile') || q.includes('senda') || q.includes('recorrido') || q.includes('evento') || q.includes('carroza')) {
       actionTriggered = true;
       await executeActionOnMap('senda', { dayId: '06-ene' });
       botReply = '¡Que viva Pasto, carajo! 🎭 La Senda recorre 7 km desde la Normal por la Cra 27 hasta Champagnat.\n¡Te he desplegado el desfile y el mapa vial al instante!';

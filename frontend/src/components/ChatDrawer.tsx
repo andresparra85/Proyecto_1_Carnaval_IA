@@ -73,11 +73,20 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
     // Procesar intención semántica con el parser de mapa Chat-Driven UI
     setTimeout(() => {
+      const isParadeQuery = /senda|desfile|blancos|casta[ñn]eda|4 de enero|6 de enero|camino|ruta/i.test(query);
+      if (isParadeQuery && typeof window !== 'undefined' && typeof (window as any).dibujarSendaCarnaval === 'function') {
+        (window as any).dibujarSendaCarnaval('senda_oficial');
+      }
+
       const intent = parseBotIntent(query, userGps);
       let botResponse = '¡Que viva Pasto, carajo! 🎭 Estoy buscando la mejor información para ti.';
       let actionLabel: string | undefined;
 
-      if (intent) {
+      if (isParadeQuery) {
+        botResponse = '¡Que viva Pasto, carajo! 🎭 He desplegado la Senda Oficial continua calle por calle (Champagnat -> Cra 27 -> Plaza Carnaval -> Cll 19 -> Plaza Nariño -> Cra 22 / Torobajo) en el mapa.';
+        actionLabel = 'Mapa actualizado: SHOW_SENDA';
+        if (onFocusSenda) onFocusSenda();
+      } else if (intent) {
         dispatchIntentCommand(intent, dispatchMapCommand);
         botResponse = intent.feedbackText;
         actionLabel = `Mapa actualizado: ${intent.mapCommand.actionType}`;
