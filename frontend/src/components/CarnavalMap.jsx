@@ -320,6 +320,7 @@ export const AVAILABLE_CARNAVAL_DAYS = [
 export function CarnavalMap({
   selectedDay: propSelectedDay = '06-ene',
   onSelectDay,
+  zones = [],
 }) {
   const [currentDay, setCurrentDay] = useState(propSelectedDay);
 
@@ -609,6 +610,37 @@ export function CarnavalMap({
             </Marker>
           </>
         )}
+
+        {/* Círculos de aglomeración / zonas de riesgo con opacidad reducida (0.15) para no ocluir la Senda */}
+        {zones && zones.map((zone) => {
+          const lat = zone.latitude || zone.coords?.[0];
+          const lng = zone.longitude || zone.coords?.[1];
+          if (!lat || !lng) return null;
+          const isHigh = zone.risk_level === 'Alto' || zone.level === 'Alto';
+          return (
+            <Circle
+              key={`zone-${zone.id || `${lat}-${lng}`}`}
+              center={[lat, lng]}
+              radius={zone.radius || 90}
+              pathOptions={{
+                color: isHigh ? '#e11d48' : '#f59e0b',
+                fillColor: isHigh ? '#e11d48' : '#f59e0b',
+                fillOpacity: 0.15,
+                weight: 1.5,
+                dashArray: '4, 4',
+              }}
+            >
+              {zone.name && (
+                <Popup className="custom-popup">
+                  <div className="p-2 text-xs bg-slate-900 text-white rounded-lg">
+                    <span className="font-bold">{zone.name}</span>
+                    <p className="text-[11px] text-slate-300 mt-1">Zona de aglomeración monitoreada</p>
+                  </div>
+                </Popup>
+              )}
+            </Circle>
+          );
+        })}
 
         {/* 6. Puntos de Interés interactivos a lo largo de la Senda */}
         {SENDA_POINTS_OF_INTEREST.map((poi) => (
