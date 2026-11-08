@@ -1,9 +1,11 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { CARNAVAL_DAILY_TRACKS, CARNAVAL_DAYS_TRACKS, SENDA_OFICIAL_COORDS } from '../data/carnavalRoutesGeoJSON';
+import { CARNAVAL_DAYS_MAP } from '../data/carnavalOfficialTracks';
 import { PASTO_POIS } from '../data/pastoPOIs';
 
 export type MapActionType =
   | 'DRAW_SENDA'
+  | 'DRAW_DAY_ROUTE'
   | 'FILTER_POIS'
   | 'SHOW_ALL_CLEAN'
   | 'FLY_TO'
@@ -67,6 +69,37 @@ export const MapActionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const normalizedType = type.toUpperCase() as MapActionType;
 
       switch (normalizedType) {
+        case 'DRAW_DAY_ROUTE': {
+          const rawDay = (typeof payload === 'string' ? payload : payload?.day || payload?.dayKey || payload?.dayId) || '6';
+          const cleanDayKey = String(rawDay).replace(/[^0-9]/g, '') || '6';
+          const selected = (CARNAVAL_DAYS_MAP as any)[cleanDayKey] || CARNAVAL_DAYS_MAP['6'];
+
+          const actionPayload = {
+            day: cleanDayKey,
+            track: selected.track,
+            name: selected.name,
+            startName: selected.startName,
+            endName: selected.endName,
+            activeRouteTrack: selected.track,
+            activeEventInfo: {
+              name: selected.name,
+              start: selected.startName,
+              end: selected.endName,
+            },
+            isSendaActive: true,
+          };
+
+          dispatchMapCommand({ actionType: 'DRAW_DAY_ROUTE', payload: actionPayload });
+
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('DRAW_DAY_ROUTE', { detail: actionPayload }));
+            window.dispatchEvent(new CustomEvent('DRAW_SENDA', { detail: actionPayload }));
+            window.dispatchEvent(new CustomEvent('SHOW_SENDA', { detail: actionPayload }));
+            window.dispatchEvent(new CustomEvent('focus-senda', { detail: actionPayload }));
+          }
+          break;
+        }
+
         case 'DRAW_SENDA': {
           const dayKey = (typeof payload === 'string' ? payload : payload?.dayKey || payload?.dayId) || 'jan_06';
           const track = (CARNAVAL_DAILY_TRACKS as any)[dayKey] || (CARNAVAL_DAYS_TRACKS as any)[dayKey] || CARNAVAL_DAILY_TRACKS.jan_06;
@@ -143,6 +176,19 @@ export const MapActionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const clearMapCommand = useCallback(() => {
     executeMapAction({ type: 'SHOW_ALL_CLEAN' });
+  }, [executeMapAction]);
+
+  useEffect(() => {
+    const handleWindowDrawDayRoute = (e: any) => {
+      const detail = e?.detail;
+      if (detail && !detail.activeRouteTrack) {
+        executeMapAction({ type: 'DRAW_DAY_ROUTE', payload: detail });
+      }
+    };
+    window.addEventListener('DRAW_DAY_ROUTE', handleWindowDrawDayRoute);
+    return () => {
+      window.removeEventListener('DRAW_DAY_ROUTE', handleWindowDrawDayRoute);
+    };
   }, [executeMapAction]);
 
   return (
