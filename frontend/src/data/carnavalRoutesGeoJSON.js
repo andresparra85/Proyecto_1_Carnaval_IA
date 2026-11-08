@@ -76,142 +76,254 @@ export const SENDA_GEOJSON_FEATURE = {
   }
 };
 
-// Catálogo de Rutas Oficiales por Día con Metadatos Completos
-export const CARNAVAL_DAYS_TRACKS = {
-  '06-ene': {
-    id: '06-ene',
-    dateLabel: '6 de Enero',
-    name: 'Desfile Magno',
-    tagline: 'Día cumbre de la expresión artística y carrozas monumentales',
-    color: '#E11D48', // Carmesí festivo
-    secondaryColor: '#f59e0b',
-    lengthKm: 7.2,
-    durationHours: '8 a 10 horas',
-    direction: 'Normal Superior -> Cra 27 -> Plaza del Carnaval -> Champagnat',
+// Catálogo GeoJSON Oficial de Recorridos por Día (28 de Diciembre al 7 de Enero)
+export const CARNAVAL_DAILY_TRACKS = {
+  dec_28: {
+    id: 'dec_28',
+    date: '28 de Diciembre',
+    dateLabel: '28 de Diciembre',
+    name: 'Arcoíris en el Asfalto',
+    tagline: 'Expresión artística con tizas de colores sobre el pavimento del Centro Histórico',
+    color: '#8B5CF6', // Púrpura creativo
+    lengthKm: 1.8,
+    durationHours: '8:00 AM - 6:00 PM',
+    direction: 'Calle 18 entre Carreras 24 y 27 (Centro Histórico)',
     startPoint: {
-      name: 'Salida: Av. Champagnat / Parque Bolívar',
-      coords: [1.20550, -77.27980],
-      description: 'Punto de partida oficial en Av. Champagnat con concentración de carrozas monumentales y comparsas.'
+      name: 'Inicio: Cra 27 con Calle 18',
+      coords: [1.2140, -77.2785],
+      description: 'Punto de entrega de tizas de colores y asignación de lienzos viales.'
+    },
+    endPoint: {
+      name: 'Llegada: Plaza de Nariño / Cra 24',
+      coords: [1.2170, -77.2825],
+      description: 'Galería de arte urbano efímero frente a la estatua de Antonio Nariño.'
+    },
+    coords: [
+      [1.2140, -77.2785],
+      [1.2148, -77.2796],
+      [1.2155, -77.2805],
+      [1.2162, -77.2814],
+      [1.2170, -77.2825]
+    ],
+    description: 'El 28 de Diciembre se vive el Arcoíris en el Asfalto: miles de familias, niños y artistas transforman las calles del Centro Histórico en lienzos de tiza, reemplazando el antiguo juego con agua por arte y convivencia.'
+  },
+
+  dec_31: {
+    id: 'dec_31',
+    date: '31 de Diciembre',
+    dateLabel: '31 de Diciembre',
+    name: 'Desfile de Años Viejos',
+    tagline: 'Sátira, muñecos tradicionales y viudas despidiendo el año que culmina',
+    color: '#F59E0B', // Ámbar festivo
+    lengthKm: 7.2,
+    durationHours: '10:00 AM - 4:00 PM',
+    direction: 'Champagnat -> Carrera 27 -> Calle 19 -> Fuente de la Transparencia',
+    startPoint: {
+      name: 'Salida: Senda / Champagnat / Parque Bolívar',
+      coords: [1.2052, -77.2796],
+      description: 'Concentración de carros alegóricos y muñecos de aserrín y ropa vieja.'
     },
     endPoint: {
       name: 'Llegada: Fuente de la Transparencia / Av. de los Estudiantes',
-      coords: [1.22600, -77.28550],
-      description: 'Culminación del desfile oficial, desconcentración y premiación.'
+      coords: [1.2260, -77.2855],
+      description: 'Culminación del desfile humorístico y lectura del testamento satírico.'
     },
-    evacuationPoints: [
-      { id: 'evac-1', name: 'Evacuación Normal Superior', coords: [1.2195, -77.2685], street: 'Av. Santander Norte' },
-      { id: 'evac-2', name: 'Evacuación Plaza de Nariño', coords: [1.2138, -77.2805], street: 'Calle 19 con Cra 24' },
-      { id: 'evac-3', name: 'Evacuación Plaza del Carnaval', coords: [1.2160, -77.2845], street: 'Cra 20' },
-      { id: 'evac-4', name: 'Evacuación Champagnat', coords: [1.2065, -77.2920], street: 'Salida a Catambuco' }
-    ],
-    healthPoints: [
-      { id: 'health-1', name: 'Cruz Roja Plaza del Carnaval', coords: [1.2158, -77.2835], phone: '132' },
-      { id: 'health-2', name: 'Defensa Civil Plaza de Nariño', coords: [1.2170, -77.2812], phone: '144' },
-      { id: 'health-3', name: 'Hospital Civil de Pasto', coords: [1.2105, -77.2750], phone: '123' }
-    ],
-    coords: SENDA_OFICIAL_STREET_COORDS
+    coords: SENDA_OFICIAL_COORDS,
+    description: 'El 31 de Diciembre las calles de Pasto despiden el año con ingenio y humor picante en el Desfile de Años Viejos, con testamentos en verso y carros alegóricos cargados de crítica social.'
   },
 
-  '03-ene': {
-    id: '03-ene',
-    dateLabel: '3 de Enero',
-    name: 'Canto a la Tierra',
-    tagline: 'Desfile de colectivos coreográficos en homenaje a la Pachamama',
-    color: '#10B981', // Verde Esmeralda andino
-    secondaryColor: '#f59e0b',
-    lengthKm: 6.8,
-    durationHours: '6 a 8 horas',
-    direction: 'Normal Superior -> Senda Oficial -> Champagnat',
+  jan_02: {
+    id: 'jan_02',
+    date: '2 de Enero',
+    dateLabel: '2 de Enero',
+    name: 'Carnavalito y Homenaje a la Virgen de las Mercedes',
+    tagline: 'Los niños como herederos de la tradición artesanal y cultural',
+    color: '#06B6D4', // Cyan andino
+    lengthKm: 3.5,
+    durationHours: '9:00 AM - 2:00 PM',
+    direction: 'Carrera 27 -> Plaza del Carnaval -> Plaza de Nariño',
     startPoint: {
-      name: 'Salida: Normal Superior',
-      coords: [1.21852, -77.26941],
-      description: 'Concentración de zampoñas, bombos, quenas y danzantes.'
+      name: 'Salida: Carrera 27 con Calle 12',
+      coords: [1.2102, -77.2790],
+      description: 'Partida de mini-carrozas y colectivos dancísticos infantiles.'
     },
     endPoint: {
-      name: 'Llegada: Estadio Libertad / Champagnat',
-      coords: [1.20780, -77.29130],
-      description: 'Cierre musical de agrupaciones andinas.'
+      name: 'Llegada: Plaza de Nariño',
+      coords: [1.2173, -77.2816],
+      description: 'Muestra folclórica infantil y bendición de las réplicas en miniatura.'
     },
-    evacuationPoints: [
-      { id: 'evac-3-1', name: 'Evacuación Cra 27 Calle 14', coords: [1.2144, -77.2769], street: 'Cra 27' },
-      { id: 'evac-3-2', name: 'Evacuación Plaza del Carnaval', coords: [1.2160, -77.2845], street: 'Cra 20' }
+    coords: [
+      [1.2102, -77.2790],
+      [1.2108, -77.2788],
+      [1.2120, -77.2785],
+      [1.2132, -77.2783],
+      [1.2140, -77.2781],
+      [1.2148, -77.2780],
+      [1.2154, -77.2786],
+      [1.2158, -77.2794],
+      [1.2162, -77.2801],
+      [1.2167, -77.2808],
+      [1.2173, -77.2816]
     ],
-    healthPoints: [
-      { id: 'health-3-1', name: 'Cruz Roja Plaza del Carnaval', coords: [1.2158, -77.2835], phone: '132' },
-      { id: 'health-3-2', name: 'Punto de Hidratación Cra 27', coords: [1.2155, -77.2753], phone: '132' }
-    ],
-    coords: SENDA_OFICIAL_STREET_COORDS
+    description: 'El 2 de Enero es el Carnavalito: el semillero del Carnaval donde niños artesanos y danzantes desfilan con mini-carrozas idénticas a las monumentales, rindiendo homenaje a la patrona de Nariño.'
   },
 
-  '04-ene': {
-    id: '04-ene',
+  jan_03: {
+    id: 'jan_03',
+    date: '3 de Enero',
+    dateLabel: '3 de Enero',
+    name: 'Canto a la Tierra (Colectivos Coreográficos)',
+    tagline: 'Zampoñas, bombos y miles de danzantes en alabanza a la Pachamama',
+    color: '#10B981', // Verde Esmeralda de la Tierra
+    lengthKm: 7.2,
+    durationHours: '9:00 AM - 6:00 PM',
+    direction: 'Senda Oficial completa: Champagnat a Fuente de la Transparencia',
+    startPoint: {
+      name: 'Salida: Av. Champagnat / Parque Bolívar',
+      coords: [1.2052, -77.2796],
+      description: 'Concentración de zampoñas, bombos andinos, quenas y sayas milenarias.'
+    },
+    endPoint: {
+      name: 'Llegada: Fuente de la Transparencia',
+      coords: [1.2260, -77.2855],
+      description: 'Cierre multitudinario de colectivos coreográficos en la Av. de los Estudiantes.'
+    },
+    coords: SENDA_OFICIAL_COORDS,
+    description: 'El 3 de Enero vibra el Canto a la Tierra: más de 5.000 músicos y danzantes desfilan con trajes autóctonos al compás de sones andinos y zampoñas por toda la Senda Oficial.'
+  },
+
+  jan_04: {
+    id: 'jan_04',
+    date: '4 de Enero',
     dateLabel: '4 de Enero',
     name: 'Llegada de la Familia Castañeda',
-    tagline: 'Apertura tradicional del Carnaval con estampas costumbristas',
+    tagline: 'Bienvenida costumbrista a los campesinos y colonos de 1929',
     color: '#D946EF', // Magenta festivo
-    secondaryColor: '#38BDF8',
-    lengthKm: 6.5,
-    durationHours: '5 a 7 horas',
-    direction: 'Senda del Carnaval y Centro Histórico',
+    lengthKm: 7.2,
+    durationHours: '10:00 AM - 4:00 PM',
+    direction: 'Senda Oficial completa con parada en Plaza del Carnaval',
     startPoint: {
-      name: 'Salida: Normal Superior',
-      coords: [1.21852, -77.26941],
-      description: 'Bienvenida a don Nicanor Castañeda y su comitiva de colonos.'
+      name: 'Salida: Av. Champagnat / Parque Bolívar',
+      coords: [1.2052, -77.2796],
+      description: 'Llegada de don Nicanor Castañeda, su carretón, peones y cuadros vivos de época.'
     },
     endPoint: {
-      name: 'Llegada: Glorieta Champagnat',
-      coords: [1.20780, -77.29130],
-      description: 'Llegada de carretas, equipajes y cuadros vivos tradicionales.'
+      name: 'Llegada: Fuente de la Transparencia / Av. de los Estudiantes',
+      coords: [1.2260, -77.2855],
+      description: 'Entrega de las llaves de la ciudad e inicio formal de los días grandes del Carnaval.'
     },
-    evacuationPoints: [
-      { id: 'evac-4-1', name: 'Evacuación Parque Nariño', coords: [1.2138, -77.2805], street: 'Calle 19' },
-      { id: 'evac-4-2', name: 'Evacuación Champagnat', coords: [1.2065, -77.2920], street: 'Cra 25' }
-    ],
-    healthPoints: [
-      { id: 'health-4-1', name: 'Puesto Médico Plaza de Nariño', coords: [1.2170, -77.2812], phone: '144' },
-      { id: 'health-4-2', name: 'Puesto Asistencial Bomboná', coords: [1.2092, -77.2899], phone: '132' }
-    ],
-    coords: SENDA_OFICIAL_STREET_COORDS
+    coords: SENDA_OFICIAL_COORDS,
+    description: 'El 4 de Enero se rememora la hospitalidad pastusa con la Llegada de la Familia Castañeda: cuadros vivos, estampas coloniales, aguardiente y música tradicional en honor a los forasteros.'
   },
 
-  '05-ene': {
-    id: '05-ene',
+  jan_05: {
+    id: 'jan_05',
+    date: '5 de Enero',
     dateLabel: '5 de Enero',
-    name: 'Día de Negros',
-    tagline: '¡Una pintica por favor! El día del juego cosmético y tablados musicales',
-    color: '#38BDF8', // Cyan luminoso
-    secondaryColor: '#f59e0b',
-    lengthKm: 4.0,
+    name: 'Día de Negros (Juego de Identidad)',
+    tagline: '¡Una pintica por favor! Día de la igualdad racial y la cosmética negra',
+    color: '#38BDF8', // Azul identity
+    lengthKm: 4.5,
     durationHours: 'Todo el día y noche',
-    direction: 'Concentración en Tablados: Plaza del Carnaval y Plaza de Nariño',
+    direction: 'Plazas principales: Plaza Nariño, Plaza del Carnaval y Parque Bolívar',
     startPoint: {
-      name: 'Plaza del Carnaval y la Cultura',
-      coords: [1.21540, -77.28410],
-      description: 'Tablado oficial con orquestas nacionales e internacionales.'
+      name: 'Epicentro: Plaza del Carnaval y la Cultura',
+      coords: [1.2140, -77.2781],
+      description: 'Tarima oficial con agrupaciones musicales de son sureño y salsa.'
     },
     endPoint: {
-      name: 'Plaza de Nariño',
-      coords: [1.21380, -77.28180],
-      description: 'Escenario alterno de música tropical y juego tradicional.'
+      name: 'Punto Cívico: Plaza de Nariño',
+      coords: [1.2167, -77.2808],
+      description: 'Juego libre cosmético, hermandad popular y tablados orquestales.'
     },
-    evacuationPoints: [
-      { id: 'evac-5-1', name: 'Corredor seguro Cra 24', coords: [1.2146, -77.2829], street: 'Cra 24' },
-      { id: 'evac-5-2', name: 'Salida rápida Cra 20', coords: [1.2160, -77.2845], street: 'Cra 20' }
-    ],
-    healthPoints: [
-      { id: 'health-5-1', name: 'Hospital Civil de Pasto', coords: [1.2105, -77.2750], phone: '123' },
-      { id: 'health-5-2', name: 'Cruz Roja Plaza del Carnaval', coords: [1.2158, -77.2835], phone: '132' }
-    ],
     coords: [
-      [1.21380, -77.28180],
-      [1.21420, -77.28235],
-      [1.21460, -77.28290],
-      [1.21500, -77.28350],
-      [1.21540, -77.28410],
-      [1.21480, -77.28480],
-      [1.21350, -77.28620]
-    ]
+      [1.2052, -77.2796],
+      [1.2080, -77.2792],
+      [1.2108, -77.2788],
+      [1.2132, -77.2783],
+      [1.2140, -77.2781],
+      [1.2154, -77.2786],
+      [1.2158, -77.2794],
+      [1.2167, -77.2808]
+    ],
+    description: 'El 5 de Enero se celebra el Día de Negros: conmemoración de la liberación de los esclavos en 1607. Todo Pasto se tiñe de cosmético negro bajo el lema "¡Una pintica por favor!" sin importar condición social.'
+  },
+
+  jan_06: {
+    id: 'jan_06',
+    date: '6 de Enero',
+    dateLabel: '6 de Enero',
+    name: 'Desfile Magno (Día de Blancos - Carrozas Gigantes)',
+    tagline: 'La máxima expresión del talento artesanal nariñense y carrozas monumentales',
+    color: '#E11D48', // Carmesí oficial
+    lengthKm: 7.2,
+    durationHours: '8:00 AM - 6:00 PM',
+    direction: 'Senda Oficial completa: Champagnat a Fuente de la Transparencia',
+    startPoint: {
+      name: 'Salida: Av. Champagnat / Parque Bolívar',
+      coords: [1.2052, -77.2796],
+      description: 'Punto de partida de carrozas gigantes de hasta 15 metros de altura.'
+    },
+    endPoint: {
+      name: 'Llegada: Fuente de la Transparencia / Av. de los Estudiantes',
+      coords: [1.2260, -77.2855],
+      description: 'Llegada, calificación final de jurados y desconcentración de esculturas.'
+    },
+    coords: SENDA_OFICIAL_COORDS,
+    description: 'El 6 de Enero es el Desfile Magno: cumbre del Carnaval de Negros y Blancos, Patrimonio Cultural de la Humanidad. Carrozas monumentales de papel maché, disfraces individuales y comparsas recorren toda la Senda.'
+  },
+
+  jan_07: {
+    id: 'jan_07',
+    date: '7 de Enero',
+    dateLabel: '7 de Enero',
+    name: 'Festival del Cuy y la Cultura Campesina',
+    tagline: 'Cierre gastronómico y rural en los corregimientos tradicionales de Pasto',
+    color: '#EA580C', // Naranja gastronómico
+    lengthKm: 9.0,
+    durationHours: '8:00 AM - 7:00 PM',
+    direction: 'Corregimientos: Pandiaco -> Obonuco -> Catambuco',
+    startPoint: {
+      name: 'Salida: Pandiaco / Museo del Carnaval',
+      coords: [1.2260, -77.2855],
+      description: 'Encuentro de sabedoras de la cocina tradicional nariñense.'
+    },
+    endPoint: {
+      name: 'Llegada: Catambuco / Plaza Campesina',
+      coords: [1.1820, -77.2950],
+      description: 'Asado tradicional de cuy en brasas de carbón y música campesina.'
+    },
+    coords: [
+      [1.2260, -77.2855],
+      [1.2240, -77.2880],
+      [1.2210, -77.2910],
+      [1.2150, -77.2940],
+      [1.2050, -77.2970],
+      [1.1950, -77.3010],
+      [1.1820, -77.2950]
+    ],
+    description: 'El 7 de Enero culmina la festividad con el Festival del Cuy y la Cultura Campesina en Pandiaco, Obonuco y Catambuco: gastronomía de trucha, cuy asado, papas con cáscara y música campesina de cuerda.'
   }
+};
+
+// Aliases para compatibilidad con selectores de fechas anteriores
+export const CARNAVAL_DAYS_TRACKS = {
+  'dec_28': CARNAVAL_DAILY_TRACKS.dec_28,
+  'dec_31': CARNAVAL_DAILY_TRACKS.dec_31,
+  'jan_02': CARNAVAL_DAILY_TRACKS.jan_02,
+  'jan_03': CARNAVAL_DAILY_TRACKS.jan_03,
+  'jan_04': CARNAVAL_DAILY_TRACKS.jan_04,
+  'jan_05': CARNAVAL_DAILY_TRACKS.jan_05,
+  'jan_06': CARNAVAL_DAILY_TRACKS.jan_06,
+  'jan_07': CARNAVAL_DAILY_TRACKS.jan_07,
+  '28-dic': CARNAVAL_DAILY_TRACKS.dec_28,
+  '31-dic': CARNAVAL_DAILY_TRACKS.dec_31,
+  '02-ene': CARNAVAL_DAILY_TRACKS.jan_02,
+  '03-ene': CARNAVAL_DAILY_TRACKS.jan_03,
+  '04-ene': CARNAVAL_DAILY_TRACKS.jan_04,
+  '05-ene': CARNAVAL_DAILY_TRACKS.jan_05,
+  '06-ene': CARNAVAL_DAILY_TRACKS.jan_06,
+  '07-ene': CARNAVAL_DAILY_TRACKS.jan_07
 };
 
 // Puntos de Interés a lo largo de la Senda del Carnaval (Salud, Graderías, Zonas de Juego, Información, Baños)
