@@ -744,9 +744,9 @@ export function CarnavalMap({
     };
   }, [handleFitSendaBounds]);
 
-  // Puntos terminales: Salida y Llegada
-  const startPoint = currentTrack?.startPoint;
-  const endPoint = currentTrack?.endPoint;
+  // Puntos terminales: Salida y Llegada vinculados directamente a los extremos del trazado
+  const startPoint = (activeRouteCoords && activeRouteCoords.length > 0) ? activeRouteCoords[0] : currentTrack?.startPoint;
+  const endPoint = (activeRouteCoords && activeRouteCoords.length > 0) ? activeRouteCoords[activeRouteCoords.length - 1] : currentTrack?.endPoint;
 
   // Rastreo GPS en tiempo real del espectador con watchPosition
   useEffect(() => {
@@ -989,7 +989,7 @@ export function CarnavalMap({
         )}
 
         {/* Marcadores temáticos dinámicos de Inicio y Fin según el día activo */}
-        {activeRouteCoords && activeRouteCoords.length > 0 && (
+        {activeRouteCoords && activeRouteCoords.length > 1 && (
           <>
             {/* Pin Verde en el primer punto: Salida oficial */}
             <Marker
