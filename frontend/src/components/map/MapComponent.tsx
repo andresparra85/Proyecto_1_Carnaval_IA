@@ -266,6 +266,11 @@ export function MapComponent({
           opacity: 0.95
         }}
       />
+      {HITOS_SENDA.map((h) => (
+        <Marker key={h.id} position={h.coords}>
+          <Tooltip direction="top" permanent>{h.name}</Tooltip>
+        </Marker>
+      ))}
       {children}
     </MapContainer>
   );
