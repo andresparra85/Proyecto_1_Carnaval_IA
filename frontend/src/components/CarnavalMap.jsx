@@ -327,9 +327,12 @@ export function CarnavalMap({
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isSendaVisible, setIsSendaVisible] = useState(false);
   const [activeRouteCoords, setActiveRouteCoords] = useState([]);
-  const [activePoiCategory, setActivePoiCategory] = useState(null);
+  const [activeCategory, setActiveCategory] = useState(null);
   const [showRiskZones, setShowRiskZones] = useState(false);
   const [currentDay, setCurrentDay] = useState(propSelectedDay || null);
+
+  const activePoiCategory = activeCategory;
+  const setActivePoiCategory = setActiveCategory;
 
   const [mapInstance, setMapInstance] = useState(null);
   const [focusTrigger, setFocusTrigger] = useState(0);
@@ -355,14 +358,14 @@ export function CarnavalMap({
     const handleFilterPois = (e) => {
       const detail = e?.detail;
       const category = typeof detail === 'object' ? (detail?.category || detail?.name) : detail;
-      setActivePoiCategory(category);
+      setActiveCategory(category || null);
     };
 
     const handleCleanMap = () => {
       setSelectedEvent(null);
       setIsSendaVisible(false);
       setActiveRouteCoords([]);
-      setActivePoiCategory(null);
+      setActiveCategory(null);
       setShowRiskZones(false);
       if (mapInstance) {
         mapInstance.flyTo([1.2168, -77.2805], 15, { duration: 1.2 });
@@ -543,7 +546,7 @@ export function CarnavalMap({
       <div className="absolute top-4 left-4 z-[900] max-w-[95vw] sm:max-w-2xl bg-slate-900/90 backdrop-blur-md p-2 rounded-2xl border border-white/10 shadow-2xl">
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
           {AVAILABLE_CARNAVAL_DAYS.map((day) => {
-            const isSelected = day.id === currentDay;
+            const isSelected = Boolean(selectedEvent && (day.id === currentDay || selectedEvent?.id === day.id));
             return (
               <button
                 key={day.id}
