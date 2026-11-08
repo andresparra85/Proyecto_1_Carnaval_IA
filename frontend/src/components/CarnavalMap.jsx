@@ -282,6 +282,53 @@ export function createPoiIcon(poi) {
   });
 }
 
+// Icono personalizado para el destino de la navegación peatonal dinámica de GuaneñaBot
+export function createDestinationFlagIcon(name = 'Destino') {
+  const shortName = (name || 'Destino').split(':')[0];
+  const html = `
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -100%);">
+      <div style="
+        width: 40px;
+        height: 40px;
+        border-radius: 50% 50% 50% 0;
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        transform: rotate(-45deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2.5px solid #ffffff;
+        box-shadow: 0 0 20px rgba(6, 182, 212, 0.85), 0 6px 14px rgba(0,0,0,0.5);
+      ">
+        <div style="transform: rotate(45deg); font-size: 18px; color: white;">
+          🏁
+        </div>
+      </div>
+      <div style="
+        background: #0f172a;
+        color: #22d3ee;
+        font-family: sans-serif;
+        font-weight: 800;
+        font-size: 9px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        border: 1px solid #06b6d4;
+        margin-top: 3px;
+        white-space: nowrap;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      ">
+        ${shortName}
+      </div>
+    </div>
+  `;
+  return L.divIcon({
+    className: 'custom-destination-flag-icon',
+    html,
+    iconSize: [40, 56],
+    iconAnchor: [20, 56],
+    popupAnchor: [0, -58],
+  });
+}
+
 // Tarjeta flotante interactiva de Evento Oficial (EventCard / EventOverlayCard)
 export function EventCard({ event, onClose }) {
   if (!event) return null;
@@ -1028,6 +1075,40 @@ export function CarnavalMap({
               opacity: 0.95,
             }}
           />
+        )}
+
+        {/* 8. Ruta peatonal guiada dinámica de GuaneñaBot (Línea punteada cian animada) */}
+        {activeNavRoute && activeNavRoute.length > 0 && (
+          <>
+            <Polyline
+              positions={activeNavRoute}
+              pathOptions={{
+                color: '#06b6d4',
+                weight: 6,
+                dashArray: '8, 8',
+                lineCap: 'round',
+                opacity: 0.95,
+              }}
+            />
+            {navDestinationInfo?.coords && (
+              <Marker
+                position={navDestinationInfo.coords}
+                icon={createDestinationFlagIcon(navDestinationInfo.name)}
+              >
+                <Popup className="custom-popup">
+                  <div className="p-2 min-w-[200px] bg-slate-900 text-white rounded-xl text-xs font-sans">
+                    <div className="font-bold text-cyan-400 mb-1 flex items-center gap-1.5">
+                      <span>🏁</span>
+                      <span>{navDestinationInfo.name}</span>
+                    </div>
+                    <div className="text-[11px] text-slate-300">
+                      {navDestinationInfo.distance ? `${navDestinationInfo.distance} m` : ''} • ~{navDestinationInfo.eta || 1} min a pie
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
+          </>
         )}
       </MapContainer>
 
