@@ -963,17 +963,29 @@ export function CarnavalMap({
         />
 
         {/* Renderizado de alta resolución con estilo redondeado y alto contraste */}
-        {activeRouteCoords && activeRouteCoords.length > 0 && (
-          <Polyline
-            positions={activeRouteCoords}
-            pathOptions={{
-              color: '#e11d48',
-              weight: 6,
-              opacity: 0.95,
-              lineCap: 'round',
-              lineJoin: 'round',
-            }}
-          />
+        {activeRouteCoords && activeRouteCoords.length > 1 && (
+          <>
+            <Polyline
+              positions={activeRouteCoords}
+              pathOptions={{
+                color: '#fb7185',
+                weight: 14,
+                opacity: 0.35,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+            />
+            <Polyline
+              positions={activeRouteCoords}
+              pathOptions={{
+                color: '#e11d48',
+                weight: 7,
+                opacity: 0.95,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+            />
+          </>
         )}
 
         {/* Marcadores temáticos dinámicos de Inicio y Fin según el día activo */}
