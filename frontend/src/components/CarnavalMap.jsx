@@ -953,16 +953,16 @@ export function CarnavalMap({
           className="w-full h-full"
         />
 
-        {/* Única polilínea del mapa vinculada al estado dinámico activeTrack */}
-        {activeTrack && activeTrack.length > 0 && (
+        {/* Renderizado de alta resolución con estilo redondeado y alto contraste */}
+        {activeRouteCoords && activeRouteCoords.length > 0 && (
           <Polyline
-            positions={activeTrack}
+            positions={activeRouteCoords}
             pathOptions={{
               color: '#e11d48',
               weight: 6,
               opacity: 0.95,
-              lineJoin: 'round',
               lineCap: 'round',
+              lineJoin: 'round',
             }}
           />
         )}
