@@ -873,9 +873,9 @@ export function CarnavalMap({
         />
 
         {/* Capa de la Senda Oficial - Renderizado condicional reactivo bajo petición de GuaneñaBot */}
-        {isSendaActive && (
+        {Boolean(isSendaActive && activeRouteCoords && activeRouteCoords.length > 0) && (
           <Polyline
-            positions={SENDA_OFICIAL_COORDS}
+            positions={activeRouteCoords}
             pathOptions={{
               color: '#e11d48',
               weight: 6,
