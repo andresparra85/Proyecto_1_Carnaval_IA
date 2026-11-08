@@ -25,7 +25,7 @@ import {
 } from '../services/osrmRoutingService';
 import { getExactStreetParadeRoute } from '../services/osrmParadeService';
 import { fetchSnappedStreetRoute } from '../services/osrmService';
-import { CARNAVAL_DAYS_CONFIG, TRACK_SENDA_OFICIAL_CALLES } from '../data/carnavalDaysData';
+import { CARNAVAL_DAYS_CONFIG, TRACK_SENDA_OFICIAL_CALLES, TRACK_SENDA_DIRECTO } from '../data/carnavalDaysData';
 import { SENDAS_DATA } from '../data/sendasCarnaval';
 import {
   WAYPOINTS_SENDA_MAGNA,
@@ -551,7 +551,7 @@ export function CarnavalMap({
     }
 
     // Inyección síncrona inmediata desde dataset verificado
-    const coords = dayConfig.track || TRACK_SENDA_OFICIAL_CALLES;
+    const coords = dayConfig.track || TRACK_SENDA_DIRECTO || TRACK_SENDA_OFICIAL_CALLES;
     const validCoords = Array.isArray(coords) && coords.length > 0 ? coords : [];
     setActiveRouteCoords(validCoords);
     setActiveEventInfo({
@@ -974,31 +974,18 @@ export function CarnavalMap({
           className="w-full h-full"
         />
 
-        {Array.isArray(activeRouteCoords) && activeRouteCoords.length > 1 && (
-          <>
-            {/* Capa de resplandor / sombra exterior */}
-            <Polyline
-              positions={activeRouteCoords}
-              pathOptions={{
-                color: '#fb7185',
-                weight: 12,
-                opacity: 0.35,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
-            />
-            {/* Capa principal visible de la calle */}
-            <Polyline
-              positions={activeRouteCoords}
-              pathOptions={{
-                color: '#e11d48',
-                weight: 6,
-                opacity: 0.95,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
-            />
-          </>
+        {activeRouteCoords && activeRouteCoords.length > 1 && (
+          <Polyline
+            key={`senda-track-${activeRouteCoords.length}-${activeRouteCoords[0][0]}`}
+            positions={activeRouteCoords}
+            pathOptions={{
+              color: '#e11d48',
+              weight: 7,
+              opacity: 0.95,
+              lineCap: 'round',
+              lineJoin: 'round',
+            }}
+          />
         )}
 
         {/* Marcadores temáticos dinámicos de Inicio y Fin según el día activo */}
