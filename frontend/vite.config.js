@@ -65,7 +65,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,ico,txt}'],
       },
       devOptions: {
-        enabled: true,
+        enabled: false,
       },
     }),
   ],
