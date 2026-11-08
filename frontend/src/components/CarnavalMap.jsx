@@ -115,11 +115,54 @@ export function createTerminalEndIcon() {
   });
 }
 
+// Controlador de cámara para animar suavemente a los límites de la Senda seleccionada
+function DynamicRouteCameraController({ routeCoords }) {
+  const map = useMap();
+  useEffect(() => {
+    if (map && routeCoords && routeCoords.length > 0) {
+      try {
+        const bounds = L.latLngBounds(routeCoords);
+        map.fitBounds(bounds, {
+          padding: [60, 60],
+          maxZoom: 16,
+          animate: true,
+          duration: 1.2,
+        });
+      } catch (err) {
+        console.warn('Error al ajustar límites de la ruta:', err);
+      }
+    }
+  }, [map, routeCoords]);
+  return null;
+}
+
+export const AVAILABLE_CARNAVAL_DAYS = [
+  { id: '03-ene', label: '3 de Enero - Canto a la Tierra', short: '3 Ene • Canto a la Tierra', icon: '🌿' },
+  { id: '04-ene', label: '4 de Enero - Familia Castañeda', short: '4 Ene • Flia Castañeda', icon: '👨‍👩‍👦' },
+  { id: '05-ene', label: '5 de Enero - Día de Negros', short: '5 Ene • Día de Negros', icon: '🎨' },
+  { id: '06-ene', label: '6 de Enero - Desfile Magno', short: '6 Ene • Desfile Magno', icon: '👑' },
+];
+
 export function CarnavalMap({
-  selectedDay = '06-ene',
+  selectedDay: propSelectedDay = '06-ene',
   onSelectDay,
 }) {
-  const currentTrack = CARNAVAL_DAYS_TRACKS[selectedDay] || CARNAVAL_DAYS_TRACKS['06-ene'];
+  const [currentDay, setCurrentDay] = useState(propSelectedDay);
+
+  useEffect(() => {
+    if (propSelectedDay) {
+      setCurrentDay(propSelectedDay);
+    }
+  }, [propSelectedDay]);
+
+  const handleDaySelect = (dayId) => {
+    setCurrentDay(dayId);
+    if (onSelectDay) {
+      onSelectDay(dayId);
+    }
+  };
+
+  const currentTrack = CARNAVAL_DAYS_TRACKS[currentDay] || CARNAVAL_DAYS_TRACKS['06-ene'];
   const routeCoords = currentTrack.coords || SENDA_OFICIAL_STREET_COORDS;
 
   // Puntos terminales: Salida y Llegada
@@ -128,6 +171,43 @@ export function CarnavalMap({
 
   return (
     <div className="relative w-full h-full min-h-[500px]">
+      {/* Selector dinámico de trazado por día del evento (Glassmorphic) */}
+      <div className="absolute top-4 left-4 z-[900] max-w-[95vw] sm:max-w-2xl bg-slate-900/90 backdrop-blur-md p-2 rounded-2xl border border-white/10 shadow-2xl">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          {AVAILABLE_CARNAVAL_DAYS.map((day) => {
+            const isSelected = day.id === currentDay;
+            return (
+              <button
+                key={day.id}
+                type="button"
+                onClick={() => handleDaySelect(day.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap active:scale-95 cursor-pointer ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-emerald-500 to-amber-500 text-slate-950 shadow-lg font-black'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
+                }`}
+                title={day.label}
+              >
+                <span>{day.icon}</span>
+                <span className="hidden sm:inline">{day.label}</span>
+                <span className="inline sm:hidden">{day.short}</span>
+              </button>
+            );
+          })}
+        </div>
+        {/* Metadatos en vivo del día seleccionado */}
+        <div className="mt-1.5 pt-1.5 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-300 px-1">
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold text-amber-400">{currentTrack.name}</span>
+            <span>•</span>
+            <span className="text-emerald-400 font-mono">{currentTrack.lengthKm} km</span>
+          </div>
+          <span className="text-[10px] text-slate-400 hidden md:inline font-mono">
+            {currentTrack.direction}
+          </span>
+        </div>
+      </div>
+
       <MapContainer
         center={[1.2140, -77.2820]}
         zoom={15}
@@ -136,6 +216,8 @@ export function CarnavalMap({
         zoomControl={false}
         scrollWheelZoom={true}
       >
+        <DynamicRouteCameraController routeCoords={routeCoords} />
+
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -157,7 +239,7 @@ export function CarnavalMap({
         <Polyline
           positions={routeCoords}
           pathOptions={{
-            color: '#10b981', // Color esmeralda vibrante
+            color: currentTrack.color || '#10b981', // Color temático dinámico del día
             weight: 6,
             opacity: 0.85,
             lineCap: 'round',
