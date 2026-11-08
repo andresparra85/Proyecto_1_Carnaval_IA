@@ -29,6 +29,98 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+// Hitos emblemáticos clave de la Senda del Carnaval
+export const SENDA_EMBLEMATIC_LANDMARKS = [
+  {
+    id: 'partida-champagnat',
+    name: 'Partida: Champagnat / Bolívar',
+    type: 'partida',
+    icon: '🚩',
+    coords: [1.2055, -77.2798],
+    badgeColor: '#10b981',
+    description: 'Punto de partida oficial en Av. Champagnat con concentración de carrozas monumentales y colectivos.',
+    role: 'Punto de Partida Oficial'
+  },
+  {
+    id: 'hito-plaza-carnaval',
+    name: 'Hito Central: Plaza del Carnaval y la Cultura',
+    type: 'central',
+    icon: '🎭',
+    coords: [1.2138, -77.2782],
+    badgeColor: '#f59e0b',
+    description: 'Epicentro del Carnaval, tarima de jurados y graderías principales de transmisión.',
+    role: 'Hito Central y Calificación'
+  },
+  {
+    id: 'hito-plaza-narino',
+    name: 'Hito Cívico: Plaza de Nariño',
+    type: 'civico',
+    icon: '🏛️',
+    coords: [1.2168, -77.2805],
+    badgeColor: '#3b82f6',
+    description: 'Corazón histórico de Pasto, tarima cívica y paso multitudinario de agrupaciones.',
+    role: 'Hito Cívico e Histórico'
+  },
+  {
+    id: 'llegada-transparencia',
+    name: 'Llegada / Desconcentración: Fuente de la Transparencia',
+    type: 'llegada',
+    icon: '🏁',
+    coords: [1.2260, -77.2855],
+    badgeColor: '#e11d48',
+    description: 'Culminación del desfile oficial, zona de desconcentración y premiación en Av. de los Estudiantes.',
+    role: 'Punto de Llegada y Desmonte'
+  }
+];
+
+// Generador de iconos temáticos para los hitos emblemáticos
+export function createEmblematicLandmarkIcon(landmark) {
+  const bg = landmark.badgeColor || '#f59e0b';
+  const html = `
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -100%);">
+      <div style="
+        width: 44px;
+        height: 44px;
+        border-radius: 50% 50% 50% 0;
+        background: ${bg};
+        transform: rotate(-45deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2.5px solid #ffffff;
+        box-shadow: 0 0 20px ${bg}aa, 0 8px 16px rgba(0,0,0,0.6);
+        transition: transform 0.2s ease;
+      ">
+        <div style="transform: rotate(45deg); font-size: 20px;">
+          ${landmark.icon}
+        </div>
+      </div>
+      <div style="
+        background: #0f172a;
+        color: ${bg};
+        font-family: sans-serif;
+        font-weight: 900;
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        border: 1px solid ${bg};
+        margin-top: 4px;
+        white-space: nowrap;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      ">
+        ${landmark.name.split(':')[0]}
+      </div>
+    </div>
+  `;
+  return L.divIcon({
+    className: `custom-emblematic-landmark-${landmark.id}`,
+    html,
+    iconSize: [44, 66],
+    iconAnchor: [22, 66],
+    popupAnchor: [0, -68],
+  });
+}
+
 // Icono personalizado para el Punto de Partida (Salida)
 export function createTerminalStartIcon() {
   const html = `
@@ -418,45 +510,36 @@ export function CarnavalMap({
           }}
         />
 
-        {/* 3. Marcador especial de Salida (Punto de Partida) */}
-        {startPoint && (
-          <Marker position={startPoint.coords} icon={createTerminalStartIcon()}>
+        {/* Marcadores de hitos emblemáticos clave de la Senda */}
+        {SENDA_EMBLEMATIC_LANDMARKS.map((landmark) => (
+          <Marker
+            key={landmark.id}
+            position={landmark.coords}
+            icon={createEmblematicLandmarkIcon(landmark)}
+          >
             <Popup className="custom-popup">
-              <div className="p-2 min-w-[220px] font-sans text-xs bg-slate-900 text-white rounded-xl">
-                <div className="flex items-center gap-1.5 text-emerald-400 font-black border-b border-white/10 pb-1 mb-1">
-                  <span>🚩</span>
-                  <span className="uppercase">{startPoint.name}</span>
+              <div className="p-2 min-w-[220px] max-w-[260px] font-sans text-xs bg-slate-900 text-white rounded-xl">
+                <div
+                  className="flex items-center gap-1.5 font-black border-b border-white/10 pb-1 mb-1"
+                  style={{ color: landmark.badgeColor }}
+                >
+                  <span className="text-base">{landmark.icon}</span>
+                  <span className="uppercase text-[11px]">{landmark.name}</span>
+                </div>
+                <div className="text-[10px] text-amber-300 font-bold mb-1">
+                  {landmark.role}
                 </div>
                 <p className="text-slate-300 text-[11px] leading-relaxed">
-                  {startPoint.description}
+                  {landmark.description}
                 </p>
-                <div className="mt-2 text-[10px] text-emerald-300 font-mono">
-                  Senda del Carnaval • Inicio Oficial
+                <div className="mt-2 text-[10px] text-slate-400 font-mono flex justify-between border-t border-white/10 pt-1">
+                  <span>Lat: {landmark.coords[0].toFixed(4)}</span>
+                  <span>Lng: {landmark.coords[1].toFixed(4)}</span>
                 </div>
               </div>
             </Popup>
           </Marker>
-        )}
-
-        {/* 4. Marcador especial de Llegada (Punto de Culminación) */}
-        {endPoint && (
-          <Marker position={endPoint.coords} icon={createTerminalEndIcon()}>
-            <Popup className="custom-popup">
-              <div className="p-2 min-w-[220px] font-sans text-xs bg-slate-900 text-white rounded-xl">
-                <div className="flex items-center gap-1.5 text-rose-400 font-black border-b border-white/10 pb-1 mb-1">
-                  <span>🏁</span>
-                  <span className="uppercase">{endPoint.name}</span>
-                </div>
-                <p className="text-slate-300 text-[11px] leading-relaxed">
-                  {endPoint.description}
-                </p>
-                <div className="mt-2 text-[10px] text-rose-300 font-mono">
-                  Senda del Carnaval • Meta y Desmonte
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        )}
+        ))}
 
         {/* 5. Rastreo GPS en tiempo real del espectador con punto azul y anillo radar */}
         {userPosition && (
