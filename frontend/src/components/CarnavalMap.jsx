@@ -18,6 +18,7 @@ import {
 import {
   calculateHaversineDistance,
   getWalkingRouteToSenda,
+  getSnappedSendaRoute,
 } from '../services/osrmRoutingService';
 
 // Solución clásica de iconos rotos de Leaflet en Vite
@@ -237,6 +238,28 @@ export function CarnavalMap({
   const currentTrack = CARNAVAL_DAYS_TRACKS[currentDay] || CARNAVAL_DAYS_TRACKS['06-ene'];
   const routeCoords = currentTrack.coords || SENDA_OFICIAL_STREET_COORDS;
 
+  // Ruta procesada por el servicio de map-matching OSRM para ceñirse milimétricamente al asfalto
+  const [snappedRoute, setSnappedRoute] = useState(routeCoords);
+
+  useEffect(() => {
+    let isMounted = true;
+    setSnappedRoute(routeCoords);
+
+    getSnappedSendaRoute(routeCoords)
+      .then((snapped) => {
+        if (isMounted && Array.isArray(snapped) && snapped.length >= 2) {
+          setSnappedRoute(snapped);
+        }
+      })
+      .catch((err) => {
+        console.warn('Aviso OSRM snapping (usando trazado denso de respaldo):', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentDay, routeCoords]);
+
   // Puntos terminales: Salida y Llegada
   const startPoint = currentTrack.startPoint;
   const endPoint = currentTrack.endPoint;
@@ -363,34 +386,35 @@ export function CarnavalMap({
         zoomControl={false}
         scrollWheelZoom={true}
       >
-        <DynamicRouteCameraController routeCoords={routeCoords} />
+        <DynamicRouteCameraController routeCoords={snappedRoute} />
 
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
 
-        {/* 1. Borde exterior oscuro para contraste óptico de la Senda */}
+        {/* 1. Efecto de resplandor / sombra exterior para destacar sobre el fondo del mapa */}
         <Polyline
-          positions={routeCoords}
+          positions={snappedRoute}
           pathOptions={{
-            color: '#0f172a',
+            color: '#e11d48',
             weight: 10,
-            opacity: 0.9,
-            lineCap: 'round',
+            opacity: 0.3,
             lineJoin: 'round',
+            lineCap: 'round',
           }}
         />
 
-        {/* 2. Capa vectorial principal estilizada con identidad del Carnaval (Esmeralda / Dorado vibrante) */}
+        {/* 2. Capa vectorial principal oficial ceñida a la calzada vial */}
         <Polyline
-          positions={routeCoords}
+          positions={snappedRoute}
           pathOptions={{
-            color: currentTrack.color || '#10b981', // Color temático dinámico del día
+            color: '#e11d48',
             weight: 6,
-            opacity: 0.85,
-            lineCap: 'round',
+            opacity: 0.9,
             lineJoin: 'round',
+            lineCap: 'round',
+            className: 'drop-shadow-lg',
           }}
         />
 
