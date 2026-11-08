@@ -19,6 +19,7 @@ import {
 import {
   calculateHaversineDistance,
   getWalkingRouteToSenda,
+  fetchFootRoute,
   getSnappedSendaRoute,
 } from '../services/osrmRoutingService';
 
@@ -385,6 +386,11 @@ export function CarnavalMap({
   const [activeCategory, setActiveCategory] = useState('none');
   const [showRiskZones, setShowRiskZones] = useState(false);
   const [currentDay, setCurrentDay] = useState(propSelectedDay || null);
+  const [userPosition, setUserPosition] = useState(null);
+
+  // Estados dinámicos de navegación peatonal (GuaneñaBot Chat-Driven UI)
+  const [activeNavRoute, setActiveNavRoute] = useState(null); // [lat, lng][]
+  const [navDestinationInfo, setNavDestinationInfo] = useState(null); // { name, eta, distance, coords }
 
   // Aliases de compatibilidad
   const isSendaVisible = isSendaActive;
@@ -400,6 +406,30 @@ export function CarnavalMap({
 
   const [mapInstance, setMapInstance] = useState(null);
   const [focusTrigger, setFocusTrigger] = useState(0);
+
+  // Disparador de navegación dinámica peatonal OSRM
+  const handleTriggerNavigation = useCallback(async (targetCoords, targetName = 'Destino', originCoords = null) => {
+    if (!targetCoords) return;
+    const origin = originCoords || (userPosition ? [userPosition.lat, userPosition.lng] : [1.2168, -77.2805]);
+    try {
+      const res = await fetchFootRoute(origin, targetCoords);
+      if (res && res.coordinates && res.coordinates.length > 0) {
+        setActiveNavRoute(res.coordinates);
+        setNavDestinationInfo({
+          name: targetName,
+          eta: res.durationMinutes || 1,
+          distance: res.distanceMeters || 0,
+          coords: targetCoords,
+        });
+        if (mapInstance && typeof mapInstance.fitBounds === 'function') {
+          const bounds = L.latLngBounds([origin, targetCoords, ...(res.coordinates || [])]);
+          mapInstance.fitBounds(bounds, { padding: [60, 60], animate: true });
+        }
+      }
+    } catch (err) {
+      console.warn('Error al activar navegación dinámica peatonal:', err);
+    }
+  }, [userPosition, mapInstance]);
 
   // Escucha de eventos Chat-to-Map desde GuaneñaBot
   useEffect(() => {
@@ -438,21 +468,40 @@ export function CarnavalMap({
       setActiveRouteCoords([]);
       setActiveCategory('none');
       setShowRiskZones(false);
+      setActiveNavRoute(null);
+      setNavDestinationInfo(null);
       if (mapInstance) {
         mapInstance.flyTo([1.2168, -77.2805], 15, { duration: 1.2 });
       }
     };
 
+    const handleTriggerNavEvent = (e) => {
+      const detail = e?.detail;
+      if (!detail) return;
+      const targetCoords = detail.targetCoords || detail.target_coords || detail.coords;
+      const targetName = detail.targetName || detail.target_name || detail.name || 'Destino';
+      const originCoords = detail.originCoords || detail.origin_coords || null;
+      handleTriggerNavigation(targetCoords, targetName, originCoords);
+    };
+
     window.addEventListener('DRAW_SENDA', handleDrawSenda);
     window.addEventListener('FILTER_POIS', handleFilterPois);
     window.addEventListener('SHOW_ALL_CLEAN', handleCleanMap);
+    window.addEventListener('TRIGGER_NAVIGATION', handleTriggerNavEvent);
+    window.addEventListener('ROUTE_TO_DESTINATION', handleTriggerNavEvent);
+    window.addEventListener('DRAW_ROUTE', handleTriggerNavEvent);
+    window.addEventListener('ROUTE_TO_EVENT_START', handleTriggerNavEvent);
 
     return () => {
       window.removeEventListener('DRAW_SENDA', handleDrawSenda);
       window.removeEventListener('FILTER_POIS', handleFilterPois);
       window.removeEventListener('SHOW_ALL_CLEAN', handleCleanMap);
+      window.removeEventListener('TRIGGER_NAVIGATION', handleTriggerNavEvent);
+      window.removeEventListener('ROUTE_TO_DESTINATION', handleTriggerNavEvent);
+      window.removeEventListener('DRAW_ROUTE', handleTriggerNavEvent);
+      window.removeEventListener('ROUTE_TO_EVENT_START', handleTriggerNavEvent);
     };
-  }, [mapInstance]);
+  }, [mapInstance, handleTriggerNavigation]);
 
   useEffect(() => {
     if (propSelectedDay) {
@@ -561,8 +610,6 @@ export function CarnavalMap({
   const endPoint = currentTrack?.endPoint;
 
   // Rastreo GPS en tiempo real del espectador con watchPosition
-  const [userPosition, setUserPosition] = useState(null);
-
   useEffect(() => {
     if (typeof window === 'undefined' || !navigator.geolocation) return;
 
