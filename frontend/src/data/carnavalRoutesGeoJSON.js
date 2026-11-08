@@ -5,44 +5,39 @@
  * Plaza del Carnaval, Plaza de Nariño, Champagnat y Av. de los Estudiantes.
  */
 
-// Trazado vial milimétrico oficial en formato Leaflet [lat, lng]
+// Trazado vial milimétrico y denso oficial esquina por esquina en formato Leaflet [lat, lng]
 export const SENDA_OFICIAL_STREET_COORDS = [
-  // 1. Salida oficial norte: I.E. Normal Superior / Av. de los Estudiantes
-  [1.22420, -77.26600], // Fuente de la Transparencia / Av. de los Estudiantes
-  [1.22250, -77.26680],
-  [1.22100, -77.26750],
-  [1.21950, -77.26850],
-  [1.21852, -77.26941], // Salida concentración carrozas: Normal Superior
-  [1.21815, -77.27025],
-  [1.21780, -77.27110], // Av. Santander tramo inicial
-  [1.21740, -77.27210],
-  [1.21695, -77.27312], // Av. Santander hacia Glorieta
-  [1.21630, -77.27415], // Carrera 27 con Calle 10
-  [1.21550, -77.27530], // Carrera 27 con Calle 12
-  [1.21495, -77.27610], // Carrera 27 con Calle 13
-  [1.21440, -77.27690], // Carrera 27 con Calle 14
-  [1.21380, -77.27770], // Carrera 27 con Calle 15
-  [1.21320, -77.27850], // Carrera 27 con Calle 16
-  [1.21270, -77.27920], // Inicio giro hacia Calle 18
-  [1.21250, -77.27960], // Calle 18 centro
-  [1.21285, -77.28020],
-  [1.21310, -77.28080], // Calle 18 aproximación Parque Nariño
-  [1.21350, -77.28135],
-  [1.21380, -77.28180], // Plaza de Nariño (Costado Oriental)
-  [1.21420, -77.28235], // Calle 19 paso peatonal comercial
-  [1.21460, -77.28290], // Calle 19 con Cra 24
-  [1.21500, -77.28350], // Calle 19 aproximación Plaza del Carnaval
-  [1.21540, -77.28410], // Plaza del Carnaval y la Cultura (Epicentro de Graderías)
-  [1.21480, -77.28480], // Salida de la Plaza hacia Boyacá
-  [1.21420, -77.28550], // Conexión Carrera 25 / Av. Boyacá
-  [1.21350, -77.28620],
-  [1.21280, -77.28690], // Av. Boyacá tramo sur
-  [1.21200, -77.28770],
-  [1.21110, -77.28850], // Descenso Calle 12
-  [1.21015, -77.28920],
-  [1.20920, -77.28990], // Sector Bomboná
-  [1.20850, -77.29060],
-  [1.20780, -77.29130]  // Llegada Oficial: Glorieta Colegio Champagnat
+  // 1. Salida: Av. Champagnat / Parque Bolívar
+  [1.20550, -77.27980],
+  [1.20680, -77.27960],
+  [1.20820, -77.27935],
+  [1.20920, -77.27915],
+  // 2. Carrera 27 con Calle 12
+  [1.21020, -77.27900],
+  [1.21110, -77.27875],
+  // 3. Carrera 27 con Calle 14
+  [1.21200, -77.27850],
+  [1.21290, -77.27835],
+  // 4. Entrada Plaza del Carnaval (Cra 27 con Cll 16)
+  [1.21380, -77.27820],
+  [1.21440, -77.27870],
+  [1.21500, -77.27910],
+  // 5. Giro a Calle 19 por Carrera 26
+  [1.21550, -77.27950],
+  [1.21610, -77.28000],
+  // 6. Calle 19 frente a Plaza de Nariño
+  [1.21680, -77.28050],
+  [1.21740, -77.28115],
+  // 7. Calle 19 con Carrera 24
+  [1.21800, -77.28180],
+  [1.21880, -77.28240],
+  // 8. Bajada por Calle 19 hacia Av. Santander
+  [1.21950, -77.28300],
+  [1.22120, -77.28370],
+  [1.22280, -77.28430],
+  [1.22450, -77.28490],
+  // 9. Conexión Carrera 22 / Fuente de la Transparencia / Av. de los Estudiantes
+  [1.22600, -77.28550]
 ];
 
 // Conversión a GeoJSON LineString estándar [lng, lat]
@@ -91,14 +86,14 @@ export const CARNAVAL_DAYS_TRACKS = {
     durationHours: '8 a 10 horas',
     direction: 'Normal Superior -> Cra 27 -> Plaza del Carnaval -> Champagnat',
     startPoint: {
-      name: 'Salida: Normal Superior',
-      coords: [1.21852, -77.26941],
-      description: 'Punto de partida de las carrozas monumentales, colectivos y disfraces.'
+      name: 'Salida: Av. Champagnat / Parque Bolívar',
+      coords: [1.20550, -77.27980],
+      description: 'Punto de partida oficial en Av. Champagnat con concentración de carrozas monumentales y comparsas.'
     },
     endPoint: {
-      name: 'Llegada: Champagnat / Bomboná',
-      coords: [1.20780, -77.29130],
-      description: 'Zona de desmonte y concentración final del jurado calificador.'
+      name: 'Llegada: Fuente de la Transparencia / Av. de los Estudiantes',
+      coords: [1.22600, -77.28550],
+      description: 'Culminación del desfile oficial, desconcentración y premiación.'
     },
     evacuationPoints: [
       { id: 'evac-1', name: 'Evacuación Normal Superior', coords: [1.2195, -77.2685], street: 'Av. Santander Norte' },
