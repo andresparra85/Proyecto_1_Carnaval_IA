@@ -86,6 +86,36 @@ export const QUICK_ACTION_CHIPS: QuickActionChip[] = [
   },
 ];
 
+// Coordenadas oficiales de respaldo en Plaza de Nariño
+export const FALLBACK_PLAZA_NARINO_COORDS: [number, number] = [1.2168, -77.2805];
+
+/**
+ * Captura las coordenadas GPS en tiempo real del turista con fallback a Plaza de Nariño.
+ */
+export async function getTouristGpsCoords(): Promise<[number, number]> {
+  if (typeof window === 'undefined' || !navigator.geolocation) {
+    return FALLBACK_PLAZA_NARINO_COORDS;
+  }
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      resolve(FALLBACK_PLAZA_NARINO_COORDS);
+    }, 3500);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        clearTimeout(timer);
+        resolve([pos.coords.latitude, pos.coords.longitude]);
+      },
+      (err) => {
+        clearTimeout(timer);
+        console.warn('Aviso GPS turista (usando Plaza de Nariño como fallback):', err?.message);
+        resolve(FALLBACK_PLAZA_NARINO_COORDS);
+      },
+      { enableHighAccuracy: true, timeout: 3500, maximumAge: 5000 }
+    );
+  });
+}
+
 export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -314,7 +344,8 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
     }
 
     try {
-      const guanenaResult = await sendGuanenaMessage(userText, 1.2168, -77.2805);
+      const [userLat, userLng] = await getTouristGpsCoords();
+      const guanenaResult = await sendGuanenaMessage(userText, userLat, userLng);
       let botResponse = guanenaResult.reply;
 
       // Interpretación y enlace de acciones del mapa devueltas por la IA (map_action)
@@ -331,7 +362,7 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
                 detail: {
                   targetCoords: action.target_coords,
                   targetName: action.target_name || 'Destino',
-                  originCoords: [1.2168, -77.2805],
+                  originCoords: [userLat, userLng],
                 },
               })
             );

@@ -79,6 +79,36 @@ export const GUANENA_SUGGESTIONS: QuickSuggestion[] = [
   },
 ];
 
+// Coordenadas oficiales de respaldo en Plaza de Nariño
+export const FALLBACK_PLAZA_NARINO: [number, number] = [1.2168, -77.2805];
+
+/**
+ * Captura las coordenadas GPS en tiempo real del turista con fallback a Plaza de Nariño.
+ */
+export async function getTouristGpsCoords(): Promise<[number, number]> {
+  if (typeof window === 'undefined' || !navigator.geolocation) {
+    return FALLBACK_PLAZA_NARINO;
+  }
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      resolve(FALLBACK_PLAZA_NARINO);
+    }, 3500);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        clearTimeout(timer);
+        resolve([pos.coords.latitude, pos.coords.longitude]);
+      },
+      (err) => {
+        clearTimeout(timer);
+        console.warn('Aviso GPS turista (usando Plaza de Nariño como fallback):', err?.message);
+        resolve(FALLBACK_PLAZA_NARINO);
+      },
+      { enableHighAccuracy: true, timeout: 3500, maximumAge: 5000 }
+    );
+  });
+}
+
 export function GuanenaBot({ onFocusSenda, onFocusLandmark }: GuanenaBotProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -232,7 +262,8 @@ export function GuanenaBot({ onFocusSenda, onFocusLandmark }: GuanenaBotProps = 
 
     if (!actionTriggered) {
       try {
-        const guanenaResult = await sendGuanenaMessage(userText, 1.2168, -77.2805);
+        const [userLat, userLng] = await getTouristGpsCoords();
+        const guanenaResult = await sendGuanenaMessage(userText, userLat, userLng);
         botReply = guanenaResult.reply;
 
         if (guanenaResult.map_action) {
@@ -248,7 +279,7 @@ export function GuanenaBot({ onFocusSenda, onFocusLandmark }: GuanenaBotProps = 
                   detail: {
                     targetCoords: action.target_coords,
                     targetName: action.target_name || 'Destino',
-                    originCoords: [1.2168, -77.2805],
+                    originCoords: [userLat, userLng],
                   },
                 })
               );
