@@ -793,6 +793,37 @@ export function CarnavalMap({
         )}
       </MapContainer>
 
+      {/* Banner flotante sutil del evento activo con opción de quitar ruta con un solo clic */}
+      {activeSendaTrack && !walkingRoute && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[950] max-w-[95vw] sm:max-w-lg bg-slate-950/92 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-amber-500/40 shadow-2xl flex items-center justify-between gap-4 text-white">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-white text-base shadow-md shrink-0">
+              🎭
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs sm:text-sm font-black text-white flex items-center gap-2">
+                <span className="truncate">{activeSendaTrack.name}</span>
+                <span className="text-[10px] text-amber-400 font-mono font-bold bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30 shrink-0">
+                  {activeSendaTrack.lengthKm} km
+                </span>
+              </div>
+              <div className="text-[10px] sm:text-[11px] text-slate-300 font-medium truncate max-w-[220px] sm:max-w-xs">
+                {activeSendaTrack.tagline || activeSendaTrack.direction}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActiveSendaTrack(null)}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-rose-600/30 text-slate-300 hover:text-rose-300 text-xs font-bold border border-white/10 hover:border-rose-500/40 transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
+            title="Quitar ruta activa de la Senda"
+          >
+            <span>✕</span>
+            <span>Quitar ruta</span>
+          </button>
+        </div>
+      )}
+
       {/* Tarjeta flotante de navegación peatonal OSRM activa */}
       {walkingRoute && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[950] max-w-[90vw] sm:max-w-md bg-slate-900/95 backdrop-blur-md p-3 rounded-2xl border border-blue-500/40 shadow-2xl flex items-center justify-between gap-3 text-white">
