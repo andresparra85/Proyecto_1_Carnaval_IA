@@ -1316,4 +1316,5 @@ export function CarnavalMap({
   );
 }
 
+// Exportación por defecto verificada para resolución limpia de módulos en Vite
 export default CarnavalMap;
