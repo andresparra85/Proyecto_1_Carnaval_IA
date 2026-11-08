@@ -11,7 +11,7 @@ import {
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
-  SENDA_OFICIAL_STREET_COORDS,
+  SENDA_OFICIAL_COORDS,
   CARNAVAL_DAYS_TRACKS,
   SENDA_POINTS_OF_INTEREST,
 } from '../data/carnavalRoutesGeoJSON';
@@ -337,31 +337,25 @@ export function CarnavalMap({
   };
 
   const currentTrack = CARNAVAL_DAYS_TRACKS[currentDay] || CARNAVAL_DAYS_TRACKS['06-ene'];
-  const routeCoords = currentTrack.coords || SENDA_OFICIAL_STREET_COORDS;
-
-  // Ruta procesada por el servicio de map-matching OSRM para ceñirse milimétricamente al asfalto
-  const [snappedRoute, setSnappedRoute] = useState(routeCoords);
+  const routeCoords = SENDA_OFICIAL_COORDS;
   const [mapInstance, setMapInstance] = useState(null);
   const [focusTrigger, setFocusTrigger] = useState(0);
 
   // Ajuste de cámara inteligente (Fit Bounds) para encuadrar la Senda completa
   const handleFitSendaBounds = useCallback(() => {
-    const targetCoords = (snappedRoute && snappedRoute.length > 0) ? snappedRoute : routeCoords;
-    if (targetCoords && targetCoords.length > 0) {
-      if (mapInstance && typeof mapInstance.fitBounds === 'function') {
-        try {
-          const bounds = L.latLngBounds(targetCoords);
-          mapInstance.fitBounds(bounds, {
-            padding: [40, 40],
-            animate: true,
-          });
-        } catch (err) {
-          console.warn('Error al ajustar límites de la Senda:', err);
-        }
+    if (mapInstance && typeof mapInstance.fitBounds === 'function') {
+      try {
+        const bounds = L.latLngBounds(SENDA_OFICIAL_COORDS);
+        mapInstance.fitBounds(bounds, {
+          padding: [40, 40],
+          animate: true,
+        });
+      } catch (err) {
+        console.warn('Error al ajustar límites de la Senda:', err);
       }
-      setFocusTrigger((prev) => prev + 1);
     }
-  }, [mapInstance, snappedRoute, routeCoords]);
+    setFocusTrigger((prev) => prev + 1);
+  }, [mapInstance]);
 
   // Soporte para despachos directos de GuaneñaBot (focus-senda)
   useEffect(() => {
@@ -374,24 +368,7 @@ export function CarnavalMap({
     };
   }, [handleFitSendaBounds]);
 
-  useEffect(() => {
-    let isMounted = true;
-    setSnappedRoute(routeCoords);
 
-    getSnappedSendaRoute(routeCoords)
-      .then((snapped) => {
-        if (isMounted && Array.isArray(snapped) && snapped.length >= 2) {
-          setSnappedRoute(snapped);
-        }
-      })
-      .catch((err) => {
-        console.warn('Aviso OSRM snapping (usando trazado denso de respaldo):', err);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [currentDay, routeCoords]);
 
   // Puntos terminales: Salida y Llegada
   const startPoint = currentTrack.startPoint;
@@ -532,7 +509,7 @@ export function CarnavalMap({
         scrollWheelZoom={true}
       >
         <MapInstanceBridge onMapReady={setMapInstance} />
-        <DynamicRouteCameraController routeCoords={snappedRoute} focusTrigger={focusTrigger} />
+        <DynamicRouteCameraController routeCoords={SENDA_OFICIAL_COORDS} focusTrigger={focusTrigger} />
 
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -541,7 +518,7 @@ export function CarnavalMap({
 
         {/* 1. Efecto de resplandor / sombra exterior para destacar sobre el fondo del mapa */}
         <Polyline
-          positions={snappedRoute}
+          positions={SENDA_OFICIAL_COORDS}
           pathOptions={{
             color: '#e11d48',
             weight: 10,
@@ -553,7 +530,7 @@ export function CarnavalMap({
 
         {/* 2. Capa vectorial principal oficial ceñida a la calzada vial */}
         <Polyline
-          positions={snappedRoute}
+          positions={SENDA_OFICIAL_COORDS}
           pathOptions={{
             color: '#e11d48',
             weight: 6,
