@@ -636,9 +636,9 @@ export function CarnavalMap({
         scrollWheelZoom={true}
       >
         <MapInstanceBridge onMapReady={setMapInstance} />
-        {activeSendaTrack && (
+        {isSendaVisible && activeRouteCoords && activeRouteCoords.length > 0 && (
           <DynamicRouteCameraController
-            routeCoords={activeSendaTrack.coords || SENDA_OFICIAL_COORDS}
+            routeCoords={activeRouteCoords}
             focusTrigger={focusTrigger}
           />
         )}
