@@ -10,8 +10,8 @@ import {
 } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { SENDA_OFICIAL_COORDS } from '../data/sendaOficialTrack.js';
 import {
-  SENDA_OFICIAL_COORDS,
   CARNAVAL_DAYS_TRACKS,
   CARNAVAL_DAILY_TRACKS,
   SENDA_POINTS_OF_INTEREST,
@@ -763,21 +763,21 @@ export function CarnavalMap({
         />
 
         {/* Capa de la Senda Oficial - Renderizado condicional reactivo bajo petición de GuaneñaBot */}
-        {Array.isArray(activeRouteCoords) && activeRouteCoords.length > 0 && isSendaVisible && (
-          <>
-            {/* 1. Capa vectorial principal oficial ceñida a la calzada vial */}
-            <Polyline
-              positions={activeRouteCoords}
-              pathOptions={{
-                color: '#e11d48',
-                weight: 6,
-                opacity: 0.95,
-                lineCap: 'round',
-                lineJoin: 'round',
-                className: 'drop-shadow-lg',
-              }}
-            />
+        {isSendaActive && (
+          <Polyline
+            positions={SENDA_OFICIAL_COORDS}
+            pathOptions={{
+              color: '#e11d48',
+              weight: 6,
+              opacity: 0.9,
+              lineCap: 'round',
+              lineJoin: 'round',
+            }}
+          />
+        )}
 
+        {isSendaActive && (
+          <>
             {/* Marcador contextual de Inicio oficial de la Senda activa */}
             {selectedEvent?.startPoint && (
               <Marker
