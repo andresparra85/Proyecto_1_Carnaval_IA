@@ -284,6 +284,10 @@ export function createPoiIcon(poi) {
 // Tarjeta flotante interactiva de estado del evento activo (EventOverlayCard)
 export function EventOverlayCard({ event, onClose }) {
   if (!event) return null;
+  const eventName = event?.name || '';
+  const eventLengthKm = event?.lengthKm || 0;
+  const eventDirection = event?.tagline || event?.direction || '';
+
   return (
     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[950] max-w-[95vw] sm:max-w-lg bg-slate-950/92 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-amber-500/40 shadow-2xl flex items-center justify-between gap-4 text-white">
       <div className="flex items-center gap-3">
@@ -292,13 +296,13 @@ export function EventOverlayCard({ event, onClose }) {
         </div>
         <div className="min-w-0">
           <div className="text-xs sm:text-sm font-black text-white flex items-center gap-2">
-            <span className="truncate">{event.name}</span>
+            <span className="truncate">{eventName}</span>
             <span className="text-[10px] text-amber-400 font-mono font-bold bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30 shrink-0">
-              {event.lengthKm} km
+              {eventLengthKm} km
             </span>
           </div>
           <div className="text-[10px] sm:text-[11px] text-slate-300 font-medium truncate max-w-[220px] sm:max-w-xs">
-            {event.tagline || event.direction}
+            {eventDirection}
           </div>
         </div>
       </div>
@@ -375,13 +379,20 @@ export function CarnavalMap({
   useEffect(() => {
     const handleDrawSenda = (e) => {
       const detail = e?.detail;
-      const dayKey = (typeof detail === 'object' ? (detail?.dayKey || detail?.dayId) : detail) || 'jan_06';
-      const track = CARNAVAL_DAILY_TRACKS[dayKey] || CARNAVAL_DAYS_TRACKS[dayKey] || CARNAVAL_DAILY_TRACKS.jan_06;
+      const rawDayKey = (typeof detail === 'object' ? (detail?.dayKey || detail?.dayId || detail?.name) : detail) || 'jan_06';
+      const dayKey = (rawDayKey || '').toLowerCase();
+      const track = CARNAVAL_DAILY_TRACKS[dayKey] ||
+        CARNAVAL_DAYS_TRACKS[dayKey] ||
+        Object.values(CARNAVAL_DAILY_TRACKS).find((t) =>
+          (t.id || '').toLowerCase() === dayKey ||
+          (t.name || '').toLowerCase().includes(dayKey)
+        ) ||
+        CARNAVAL_DAILY_TRACKS.jan_06;
       if (track) {
         setSelectedEvent(track);
         setIsSendaVisible(true);
         setActiveRouteCoords(track.coords || []);
-        setCurrentDay(dayKey);
+        setCurrentDay(track.id || dayKey);
         if (mapInstance && track.coords) {
           const bounds = L.latLngBounds(track.coords);
           mapInstance.fitBounds(bounds, { padding: [50, 50], animate: true });
@@ -430,8 +441,22 @@ export function CarnavalMap({
   }, [propSelectedDay]);
 
   const handleDaySelect = (dayId) => {
+    if (!dayId) {
+      setSelectedEvent(null);
+      setIsSendaVisible(false);
+      setActiveRouteCoords([]);
+      setCurrentDay(null);
+      return;
+    }
     setCurrentDay(dayId);
-    const track = CARNAVAL_DAILY_TRACKS[dayId] || CARNAVAL_DAYS_TRACKS[dayId];
+    const normDayId = (dayId || '').toLowerCase();
+    const track = CARNAVAL_DAILY_TRACKS[dayId] ||
+      CARNAVAL_DAYS_TRACKS[dayId] ||
+      Object.values(CARNAVAL_DAILY_TRACKS).find((t) =>
+        (t.id || '').toLowerCase() === normDayId ||
+        (t.name || '').toLowerCase().includes(normDayId)
+      ) ||
+      null;
     if (track) {
       setSelectedEvent(track);
       setIsSendaVisible(true);
@@ -595,7 +620,13 @@ export function CarnavalMap({
       <div className="absolute top-4 left-4 z-[900] max-w-[95vw] sm:max-w-2xl bg-slate-900/90 backdrop-blur-md p-2 rounded-2xl border border-white/10 shadow-2xl">
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
           {AVAILABLE_CARNAVAL_DAYS.map((day) => {
-            const isSelected = Boolean(selectedEvent && (day.id === currentDay || selectedEvent?.id === day.id));
+            const isSelected = Boolean(
+              selectedEvent && (
+                (day.id || '').toLowerCase() === (currentDay || '').toLowerCase() ||
+                (day.id || '').toLowerCase() === (selectedEvent?.id || '').toLowerCase() ||
+                (day.label || '').toLowerCase().includes((selectedEvent?.name || '').toLowerCase())
+              )
+            );
             return (
               <button
                 key={day.id}
@@ -616,15 +647,15 @@ export function CarnavalMap({
           })}
         </div>
         {/* Metadatos en vivo del día seleccionado */}
-        {currentTrack && (
+        {selectedEvent && (
           <div className="mt-1.5 pt-1.5 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-300 px-1">
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-amber-400">{currentTrack.name}</span>
+              <span className="font-extrabold text-amber-400">{selectedEvent?.name || ''}</span>
               <span>•</span>
-              <span className="text-emerald-400 font-mono">{currentTrack.lengthKm} km</span>
+              <span className="text-emerald-400 font-mono">{selectedEvent?.lengthKm || 0} km</span>
             </div>
             <span className="text-[10px] text-slate-400 hidden md:inline font-mono">
-              {currentTrack.direction}
+              {selectedEvent?.direction || ''}
             </span>
           </div>
         )}
