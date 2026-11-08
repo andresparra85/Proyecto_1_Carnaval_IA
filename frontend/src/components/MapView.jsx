@@ -1389,8 +1389,8 @@ export function MapView({
           </>
         )}
 
-        {/* Polilínea Dinámica: Trazado oficial del día seleccionado */}
-        {currentEvent.route && currentEvent.route.length > 1 && (
+        {/* Polilínea Dinámica: Trazado oficial del día seleccionado (protegida bajo showSenda) */}
+        {showSenda && currentEvent && currentEvent.route && currentEvent.route.length > 1 && (
           <>
             {/* Resplandor exterior de la ruta del día */}
             <Polyline

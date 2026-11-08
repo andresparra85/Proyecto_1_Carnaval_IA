@@ -769,10 +769,11 @@ export function CarnavalMap({
 
         {/* Barra de Controles y Selector Dinámico de Días */}
         <div className="pointer-events-auto flex items-center gap-1.5 max-w-full overflow-x-auto no-scrollbar py-0.5">
-          {/* Botón directo de activación / desactivación de la Senda del Carnaval */}
+          {/* Botón directo de activación / desactivación de la Senda del Carnaval - Estado inactivo al montar */}
           <button
             type="button"
             id="btn-senda-carnaval-toggle"
+            aria-pressed={isSendaActive}
             onClick={handleToggleSenda}
             className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-sm ${
               isSendaActive
