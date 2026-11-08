@@ -551,8 +551,9 @@ export function CarnavalMap({
     }
 
     // Inyección síncrona inmediata desde dataset verificado
-    const syncTrack = dayConfig.track || TRACK_SENDA_OFICIAL_CALLES;
-    setActiveRouteCoords(syncTrack);
+    const coords = dayConfig.track || TRACK_SENDA_OFICIAL_CALLES;
+    const validCoords = Array.isArray(coords) && coords.length > 0 ? coords : [];
+    setActiveRouteCoords(validCoords);
     setActiveEventInfo({
       name: dayConfig.name,
       start: dayConfig.startName || '',
@@ -560,9 +561,9 @@ export function CarnavalMap({
     });
     setFocusedPoints([]);
 
-    if (activeMap && syncTrack && syncTrack.length > 0 && typeof activeMap.fitBounds === 'function') {
+    if (activeMap && validCoords && validCoords.length > 0 && typeof activeMap.fitBounds === 'function') {
       try {
-        activeMap.fitBounds(syncTrack, { padding: [40, 40], animate: true });
+        activeMap.fitBounds(validCoords, { padding: [40, 40], animate: true });
       } catch (err) {
         console.warn('Error al ajustar límites de la senda activa:', err);
       }
@@ -572,8 +573,9 @@ export function CarnavalMap({
     if (Array.isArray(dayConfig.waypoints) && dayConfig.waypoints.length >= 2) {
       try {
         const streetCoords = await fetchSnappedStreetRoute(dayConfig.waypoints);
-        if (streetCoords && streetCoords.length > 0) {
-          setActiveRouteCoords(streetCoords);
+        const validStreetCoords = Array.isArray(streetCoords) && streetCoords.length > 0 ? streetCoords : [];
+        if (validStreetCoords.length > 0) {
+          setActiveRouteCoords(validStreetCoords);
           setActiveEventInfo({
             name: dayConfig.name,
             start: dayConfig.startName,
@@ -582,7 +584,7 @@ export function CarnavalMap({
 
           // Ejecuta map.fitBounds(activeRouteCoords, { padding: [50, 50], animate: true })
           if (activeMap && typeof activeMap.fitBounds === 'function') {
-            activeMap.fitBounds(streetCoords, { padding: [50, 50], animate: true });
+            activeMap.fitBounds(validStreetCoords, { padding: [50, 50], animate: true });
           }
         }
       } catch (err) {
@@ -713,7 +715,9 @@ export function CarnavalMap({
     setActiveEvent(track);
     if (track) {
       setIsSendaActive(true);
-      setActiveRouteCoords(track.coords || []);
+      const coords = track.coords;
+      const validCoords = Array.isArray(coords) && coords.length > 0 ? coords : [];
+      setActiveRouteCoords(validCoords);
     } else {
       setIsSendaActive(false);
       setActiveRouteCoords([]);
