@@ -347,32 +347,35 @@ export function EventCard({ event, onClose }) {
   const eventDirection = event?.tagline || event?.direction || '';
 
   return (
-    <div className="absolute bottom-6 left-4 z-[950] max-w-[95vw] sm:max-w-md bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-4 py-3 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-2xl flex items-center justify-between gap-4 text-slate-800 dark:text-white">
+    <div className="absolute bottom-6 left-4 z-[950] max-w-[95vw] sm:max-w-md rounded-2xl bg-slate-950/80 backdrop-blur-xl border border-white/10 shadow-2xl px-4 py-3 flex items-center justify-between gap-4 text-white">
       <div className="flex items-center gap-3 min-w-0">
-        <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-white text-base shadow-md shrink-0">
+        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-600 via-rose-500 to-amber-500 flex items-center justify-center text-white text-base shadow-md shrink-0">
           🎭
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-amber-500">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">
               Evento Oficial
             </span>
             {event?.hours && (
-              <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-white/5 px-1.5 py-0.2 rounded-md">
+              <span className="text-[10px] font-mono text-slate-400 bg-white/5 px-1.5 py-0.2 rounded-md">
                 {event.hours}
               </span>
             )}
             {eventLengthKm > 0 && (
-              <span className="text-[10px] text-amber-400 font-mono font-bold bg-amber-500/20 px-1.5 py-0.2 rounded-full">
+              <span className="text-[10px] text-amber-300 font-mono font-bold bg-amber-500/20 px-1.5 py-0.2 rounded-full border border-amber-500/30">
                 {eventLengthKm} km
               </span>
             )}
           </div>
-          <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-tight truncate">
+          <h3 className="font-bold text-white leading-tight truncate text-xs sm:text-sm">
             {eventName}
           </h3>
-          <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-300 font-medium truncate max-w-[220px] sm:max-w-xs">
+          <p className="text-slate-400 text-xs font-medium truncate max-w-[220px] sm:max-w-xs mt-0.5">
             {eventDirection}
           </p>
         </div>
@@ -381,7 +384,7 @@ export function EventCard({ event, onClose }) {
         <button
           type="button"
           onClick={onClose}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-rose-500/20 text-slate-600 dark:text-slate-300 hover:text-rose-400 text-xs font-bold border border-slate-200 dark:border-white/10 hover:border-rose-500/30 transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
+          className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 text-xs font-bold border border-white/10 hover:border-rose-500/30 transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
           title="Cerrar tarjeta de evento"
         >
           <span>✕</span>
@@ -1057,7 +1060,7 @@ export function CarnavalMap({
               icon={createTerminalStartIcon()}
             >
               <Popup className="custom-popup">
-                <div className="p-2 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl">
+                <div className="p-2.5 min-w-[210px] font-sans text-xs bg-slate-950/90 text-white rounded-2xl border border-white/10 backdrop-blur-xl shadow-xl">
                   <div className="flex items-center gap-1.5 text-emerald-400 font-black border-b border-white/10 pb-1 mb-1">
                     <span>🚩</span>
                     <span className="uppercase text-[11px]">
@@ -1080,7 +1083,7 @@ export function CarnavalMap({
               icon={createTerminalEndIcon()}
             >
               <Popup className="custom-popup">
-                <div className="p-2 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl">
+                <div className="p-2.5 min-w-[210px] font-sans text-xs bg-slate-950/90 text-white rounded-2xl border border-white/10 backdrop-blur-xl shadow-xl">
                   <div className="flex items-center gap-1.5 text-rose-400 font-black border-b border-white/10 pb-1 mb-1">
                     <span>🏁</span>
                     <span className="uppercase text-[11px]">
@@ -1114,7 +1117,7 @@ export function CarnavalMap({
               icon={createPoiIcon({ id: `plaza-${idx}`, icon, badgeColor })}
             >
               <Popup className="custom-popup">
-                <div className="p-2.5 min-w-[220px] bg-slate-900 text-white rounded-xl text-xs font-sans shadow-xl border border-white/10">
+                <div className="p-2.5 min-w-[220px] bg-slate-950/90 text-white rounded-2xl text-xs font-sans shadow-xl border border-white/10 backdrop-blur-xl">
                   <div className="font-bold text-amber-400 mb-1 flex items-center gap-1.5 border-b border-white/10 pb-1">
                     <span className="text-base">{icon}</span>
                     <span className="uppercase text-[11px] tracking-wide">{title}</span>
@@ -1149,7 +1152,7 @@ export function CarnavalMap({
               icon={createSpectatorGpsIcon()}
             >
               <Popup className="custom-popup">
-                <div className="p-2 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl">
+                <div className="p-2.5 min-w-[210px] font-sans text-xs bg-slate-950/90 text-white rounded-2xl border border-white/10 backdrop-blur-xl shadow-xl">
                   <div className="flex items-center gap-1.5 text-blue-400 font-black border-b border-white/10 pb-1 mb-1">
                     <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
                     <span className="uppercase">Tu ubicación GPS</span>
@@ -1190,7 +1193,7 @@ export function CarnavalMap({
             >
               {zone.name && (
                 <Popup className="custom-popup">
-                  <div className="p-2 text-xs bg-slate-900 text-white rounded-lg">
+                  <div className="p-2 text-xs bg-slate-950/90 text-white rounded-2xl border border-white/10 backdrop-blur-xl">
                     <span className="font-bold">{zone.name}</span>
                     <p className="text-[11px] text-slate-300 mt-1">Zona de aglomeración monitoreada</p>
                   </div>
@@ -1208,7 +1211,7 @@ export function CarnavalMap({
             icon={createPoiIcon(poi)}
           >
               <Popup className="custom-popup">
-                <div className="p-2.5 min-w-[220px] max-w-[270px] font-sans text-xs bg-slate-900 text-white rounded-xl">
+                <div className="p-2.5 min-w-[220px] max-w-[270px] font-sans text-xs bg-slate-950/90 text-white rounded-2xl border border-white/10 backdrop-blur-xl shadow-xl">
                   <div className="flex items-center gap-1.5 font-bold border-b border-white/10 pb-1 mb-1.5 text-amber-400">
                     <span className="text-base">{poi.icon}</span>
                     <span className="leading-tight">{poi.name}</span>
@@ -1223,7 +1226,7 @@ export function CarnavalMap({
                     type="button"
                     onClick={() => handleRouteToPoi(poi)}
                     disabled={isRouting}
-                    className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs shadow-md transition active:scale-95 cursor-pointer disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-bold text-xs shadow-md transition active:scale-95 cursor-pointer disabled:opacity-50"
                   >
                     <span>🚶‍♂️</span>
                     <span>{isRouting ? 'Calculando ruta...' : 'Cómo llegar a pie'}</span>
@@ -1268,19 +1271,22 @@ export function CarnavalMap({
 
       {/* Tarjeta HUD informativa con botón de cierre para el desfile oficial activo */}
       {activeEventInfo && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[950] w-[95vw] sm:max-w-xl bg-slate-900/95 backdrop-blur-md px-4 py-3 rounded-2xl border border-rose-500/50 shadow-2xl flex items-center justify-between gap-3 text-white">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[950] w-[95vw] sm:max-w-xl rounded-2xl bg-slate-950/80 backdrop-blur-xl border border-white/10 shadow-2xl px-4 py-3 flex items-center justify-between gap-3 text-white">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-white text-lg shadow-md shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-600 via-rose-500 to-amber-500 flex items-center justify-center text-white text-lg shadow-md shrink-0">
               🎭
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <h4 className="text-xs sm:text-sm font-black text-white truncate leading-tight">
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                </span>
+                <h4 className="font-bold text-white truncate leading-tight text-xs sm:text-sm">
                   {activeEventInfo.name}
                 </h4>
               </div>
-              <p className="text-[11px] text-slate-300 truncate font-mono">
+              <p className="text-slate-400 text-xs truncate font-mono">
                 <span className="text-emerald-400 font-bold">Salida:</span> {activeEventInfo.start} ➔ <span className="text-rose-400 font-bold">Llegada:</span> {activeEventInfo.end}
               </p>
             </div>
@@ -1298,7 +1304,7 @@ export function CarnavalMap({
                 mapInstance.flyTo([1.2168, -77.2805], 15, { duration: 1.2 });
               }
             }}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-rose-500/30 text-slate-300 hover:text-rose-300 text-xs font-bold border border-white/20 hover:border-rose-400/50 transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-rose-500/30 text-slate-300 hover:text-rose-300 text-xs font-bold border border-white/10 hover:border-rose-400/50 transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
             title="Quitar ruta y limpiar mapa"
           >
             <span>✕</span>
