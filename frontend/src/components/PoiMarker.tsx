@@ -20,6 +20,7 @@ export interface PoiData {
 
 export interface PoiMarkerProps {
   poi: PoiData;
+  activeCategory?: string | null;
   userGps?: [number, number] | null;
   onRouteClick?: (coords: [number, number], name: string) => void;
 }
@@ -32,6 +33,7 @@ function createThemedPoiIcon(poi: PoiData) {
   if (!poi.icon) {
     switch (poi.category) {
       case 'bano':
+      case 'banos':
         emoji = '🚻';
         bg = '#06b6d4';
         break;
@@ -40,14 +42,17 @@ function createThemedPoiIcon(poi: PoiData) {
         bg = '#ef4444';
         break;
       case 'restaurante':
+      case 'restaurantes':
         emoji = '🍽️';
         bg = '#f97316';
         break;
       case 'cai':
+      case 'policia':
         emoji = '👮';
         bg = '#3b82f6';
         break;
       case 'graderia':
+      case 'graderias':
         emoji = '🏟️';
         bg = '#eab308';
         break;
@@ -88,11 +93,30 @@ function createThemedPoiIcon(poi: PoiData) {
 }
 
 /**
- * Marcador de Punto de Interés (POI) para Leaflet con botón interactivo
- * de trazado de ruta peatonal directa OSRM hacia sus coordenadas.
+ * Marcador de Punto de Interés (POI) para Leaflet.
+ * Se dibuja únicamente si coincide con la categoría solicitada por GuaneñaBot
+ * e integra en su popup información georreferenciada y el botón directo "📍 ¿Cómo llegar?".
  */
-export const PoiMarker: React.FC<PoiMarkerProps> = ({ poi, userGps, onRouteClick }) => {
-  const { dispatchMapCommand } = useMapAction();
+export const PoiMarker: React.FC<PoiMarkerProps> = ({ poi, activeCategory, userGps, onRouteClick }) => {
+  const { dispatchMapCommand, mapCommand } = useMapAction();
+
+  // Filtrado reactivo estricto por categoría solicitada por el bot
+  const currentCategory = activeCategory || (mapCommand?.actionType === 'FILTER_POIS' ? mapCommand.payload?.category : null);
+
+  if (currentCategory && currentCategory !== 'todos') {
+    const normCurrent = currentCategory.toLowerCase();
+    const normPoi = (poi.category || '').toLowerCase();
+    const matches =
+      normCurrent === normPoi ||
+      (normCurrent.startsWith('restauran') && normPoi.startsWith('restauran')) ||
+      (normCurrent.startsWith('ban') && normPoi.startsWith('ban')) ||
+      (normCurrent.startsWith('salud') && normPoi.startsWith('salud')) ||
+      (normCurrent.startsWith('cai') && normPoi.startsWith('cai'));
+
+    if (!matches) {
+      return null;
+    }
+  }
 
   const coords: [number, number] | null = poi.coords
     ? poi.coords
@@ -105,7 +129,7 @@ export const PoiMarker: React.FC<PoiMarkerProps> = ({ poi, userGps, onRouteClick
   const handleHowToGetThere = () => {
     const start: [number, number] = userGps || [1.2138, -77.2818]; // Plaza Nariño por defecto
 
-    // Despacho de comando de enrutamiento sin recargar ni romper el estado del mapa
+    // Despacho del comando de enrutamiento OSRM
     dispatchMapCommand({
       actionType: 'DRAW_ROUTE',
       payload: {
@@ -160,7 +184,7 @@ export const PoiMarker: React.FC<PoiMarkerProps> = ({ poi, userGps, onRouteClick
             </div>
           )}
 
-          {/* Botón de acción directo para trazar ruta peatonal */}
+          {/* Botón interactivo de enrutamiento peatonal solicitado */}
           <button
             type="button"
             onClick={handleHowToGetThere}
@@ -168,7 +192,7 @@ export const PoiMarker: React.FC<PoiMarkerProps> = ({ poi, userGps, onRouteClick
             title={`Trazar ruta a pie hacia ${poi.name}`}
           >
             <span>📍</span>
-            <span>¿Cómo llegar a pie?</span>
+            <span>¿Cómo llegar?</span>
           </button>
         </div>
       </Popup>
