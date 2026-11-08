@@ -24,6 +24,7 @@ import {
   getSnappedSendaRoute,
 } from '../services/osrmRoutingService';
 import { getExactStreetParadeRoute } from '../services/osrmParadeService';
+import { SENDAS_DATA } from '../data/sendasCarnaval';
 import {
   WAYPOINTS_SENDA_MAGNA,
   WAYPOINTS_CANTO_TIERRA,
@@ -434,13 +435,18 @@ function ParadeCameraController({ activeRouteTrack }) {
 }
 
 // Puente para exponer la instancia activa del mapa a controles externos
-function MapInstanceBridge({ onMapReady }) {
+function MapInstanceBridge({ onMapReady, mapRef }) {
   const map = useMap();
   useEffect(() => {
-    if (map && onMapReady) {
-      onMapReady(map);
+    if (map) {
+      if (mapRef) {
+        mapRef.current = map;
+      }
+      if (onMapReady) {
+        onMapReady(map);
+      }
     }
-  }, [map, onMapReady]);
+  }, [map, onMapReady, mapRef]);
   return null;
 }
 
@@ -488,8 +494,33 @@ export function CarnavalMap({
   const activePoiCategory = activeCategory;
   const setActivePoiCategory = setActiveCategory;
 
+  const mapRef = useRef(null);
   const [mapInstance, setMapInstance] = useState(null);
   const [focusTrigger, setFocusTrigger] = useState(0);
+
+  // Exponer función global para pintar la Senda desde cualquier parte
+  useEffect(() => {
+    window.dibujarSendaCarnaval = (nombreRuta) => {
+      const ruta = SENDAS_DATA.senda_oficial;
+      setActiveTrack(ruta);
+      setIsSendaActive(true);
+      setShowSendaDetails(true);
+      setActiveEventInfo({
+        name: 'Senda Oficial del Carnaval',
+        start: 'Normal Superior / Champagnat',
+        end: 'Fuente de la Transparencia',
+      });
+      if (mapRef.current) {
+        mapRef.current.fitBounds(ruta, { padding: [50, 50], animate: true });
+      } else if (mapInstance && typeof mapInstance.fitBounds === 'function') {
+        mapInstance.fitBounds(ruta, { padding: [50, 50], animate: true });
+      }
+    };
+
+    return () => {
+      delete window.dibujarSendaCarnaval;
+    };
+  }, [mapInstance]);
 
   // Disparador de navegación dinámica peatonal OSRM
   const handleTriggerNavigation = useCallback(async (targetCoords, targetName = 'Destino', originCoords = null) => {
@@ -990,7 +1021,7 @@ export function CarnavalMap({
         zoomControl={false}
         scrollWheelZoom={true}
       >
-        <MapInstanceBridge onMapReady={setMapInstance} />
+        <MapInstanceBridge onMapReady={setMapInstance} mapRef={mapRef} />
         {Array.isArray(activeRouteCoords) && activeRouteCoords.length > 0 && isSendaVisible && (
           <DynamicRouteCameraController
             routeCoords={activeRouteCoords}
