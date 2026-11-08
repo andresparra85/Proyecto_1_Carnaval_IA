@@ -520,8 +520,8 @@ export function CarnavalMap({
         <Polyline
           positions={SENDA_OFICIAL_COORDS}
           pathOptions={{
-            color: '#e11d48',
-            weight: 10,
+            color: '#f43f5e',
+            weight: 12,
             opacity: 0.3,
             lineJoin: 'round',
             lineCap: 'round',
@@ -533,8 +533,8 @@ export function CarnavalMap({
           positions={SENDA_OFICIAL_COORDS}
           pathOptions={{
             color: '#e11d48',
-            weight: 6,
-            opacity: 0.9,
+            weight: 7,
+            opacity: 0.95,
             lineJoin: 'round',
             lineCap: 'round',
             className: 'drop-shadow-lg',
