@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { PASTO_POIS, PointOfInterest, LatLngTuple, dispatchGuanenaAction } from '../../data/pastoPOIs';
@@ -237,6 +237,38 @@ export function createSvgLandmarkPin({
 
 export * from './CarnavalDaySelector';
 export { default as CarnavalDaySelector } from './CarnavalDaySelector';
-export * from '../MapView';
-export { default } from '../MapView';
-export { MapView as MapComponent } from '../MapView';
+
+/**
+ * Componente principal MapComponent con la Senda Oficial del Carnaval
+ */
+export function MapComponent({
+  children,
+  ...props
+}: any) {
+  return (
+    <MapContainer
+      center={DEFAULT_MAP_CENTER}
+      zoom={DEFAULT_MAP_ZOOM}
+      className={DEFAULT_MAP_CONTAINER_CLASS}
+      style={DEFAULT_MAP_CONTAINER_STYLE}
+      zoomControl={false}
+      scrollWheelZoom={true}
+    >
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      />
+      <Polyline
+        positions={SENDA_OFICIAL_COORDS}
+        pathOptions={{
+          color: '#E11D48',
+          weight: 6,
+          opacity: 0.95
+        }}
+      />
+      {children}
+    </MapContainer>
+  );
+}
+
+export default MapComponent;
