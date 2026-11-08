@@ -4,6 +4,7 @@ import { findCarnavalLandmark, CARNAVAL_LANDMARKS } from '../../data/carnavalKno
 import { searchPastoPOI, PASTO_POIS, PointOfInterest, dispatchGuanenaAction } from '../../data/pastoPOIs';
 import { getStreetRoute } from '../../services/routingService';
 import { sendGuanenaMessage } from '../../services/guanenaChatService';
+import { parseBotIntent, dispatchParadeIntent } from '../../services/botIntentParser';
 
 export interface GuanenaBotProps {
   onFocusSenda?: () => void;
@@ -220,6 +221,11 @@ export function GuanenaBot({ onFocusSenda, onFocusLandmark }: GuanenaBotProps = 
     setMessages((prev) => [...prev, userMsg]);
     setInputMessage('');
     setLoading(true);
+
+    const paradeIntent = parseBotIntent(userText);
+    if (paradeIntent.matched) {
+      dispatchParadeIntent(userText);
+    }
 
     const q = userText.toLowerCase();
 

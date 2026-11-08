@@ -1212,6 +1212,47 @@ export function CarnavalMap({
         />
       )}
 
+      {/* Tarjeta HUD informativa con botón de cierre para el desfile oficial activo */}
+      {activeEventInfo && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[950] w-[95vw] sm:max-w-xl bg-slate-900/95 backdrop-blur-md px-4 py-3 rounded-2xl border border-rose-500/50 shadow-2xl flex items-center justify-between gap-3 text-white">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-white text-lg shadow-md shrink-0">
+              🎭
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <h4 className="text-xs sm:text-sm font-black text-white truncate leading-tight">
+                  {activeEventInfo.name}
+                </h4>
+              </div>
+              <p className="text-[11px] text-slate-300 truncate font-mono">
+                <span className="text-emerald-400 font-bold">Salida:</span> {activeEventInfo.start} ➔ <span className="text-rose-400 font-bold">Llegada:</span> {activeEventInfo.end}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            id="btn-quitar-ruta-parade"
+            onClick={() => {
+              setActiveEventInfo(null);
+              setActiveRouteTrack([]);
+              setActiveRouteCoords([]);
+              setIsSendaActive(false);
+              setShowSendaDetails(false);
+              if (mapInstance && typeof mapInstance.flyTo === 'function') {
+                mapInstance.flyTo([1.2168, -77.2805], 15, { duration: 1.2 });
+              }
+            }}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-rose-500/30 text-slate-300 hover:text-rose-300 text-xs font-bold border border-white/20 hover:border-rose-400/50 transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
+            title="Quitar ruta y limpiar mapa"
+          >
+            <span>✕</span>
+            <span>Quitar ruta</span>
+          </button>
+        </div>
+      )}
+
       {/* Floating HUD navigation banner con ETA y dismissal de ruta activa */}
       {activeNavRoute && navDestinationInfo && (
         <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[950] w-[92vw] max-w-lg bg-slate-900/95 backdrop-blur-md px-4 py-3 rounded-2xl border border-cyan-500/50 shadow-2xl shadow-cyan-950/40 flex items-center justify-between gap-3 text-white">

@@ -3,6 +3,7 @@ import { X, Send, Sparkles, RotateCcw, MessageSquare } from 'lucide-react';
 import { findCarnavalLandmark, CARNAVAL_LANDMARKS } from '../data/carnavalKnowledge';
 import { searchPastoPOI, PASTO_POIS, PointOfInterest } from '../data/pastoPOIs';
 import { sendGuanenaMessage } from '../services/guanenaChatService';
+import { parseBotIntent, dispatchParadeIntent } from '../services/botIntentParser';
 
 export interface ChatBotProps {
   onFocusSenda?: () => void;
@@ -260,6 +261,12 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
     setMessages((prev) => [...prev, userMsg]);
     setInputMessage('');
     setLoading(true);
+
+    // Detección determinista de fechas de Carnaval e inyección de ruta
+    const paradeIntent = parseBotIntent(userText);
+    if (paradeIntent.matched) {
+      dispatchParadeIntent(userText);
+    }
 
     const q = userText.toLowerCase();
 
