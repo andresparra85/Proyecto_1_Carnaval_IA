@@ -288,7 +288,7 @@ function DynamicRouteCameraController({ routeCoords, focusTrigger }) {
       try {
         const bounds = L.latLngBounds(routeCoords);
         map.fitBounds(bounds, {
-          padding: [40, 40],
+          padding: [50, 50],
           animate: true,
         });
       } catch (err) {
@@ -348,7 +348,7 @@ export function CarnavalMap({
       try {
         const bounds = L.latLngBounds(SENDA_OFICIAL_COORDS);
         mapInstance.fitBounds(bounds, {
-          padding: [40, 40],
+          padding: [50, 50],
           animate: true,
         });
       } catch (err) {
