@@ -365,7 +365,7 @@ export function CarnavalMap({
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isSendaVisible, setIsSendaVisible] = useState(false);
   const [activeRouteCoords, setActiveRouteCoords] = useState([]);
-  const [activeCategory, setActiveCategory] = useState(null);
+  const [activeCategory, setActiveCategory] = useState('none');
   const [showRiskZones, setShowRiskZones] = useState(false);
   const [currentDay, setCurrentDay] = useState(propSelectedDay || null);
 
@@ -410,7 +410,7 @@ export function CarnavalMap({
       setSelectedEvent(null);
       setIsSendaVisible(false);
       setActiveRouteCoords([]);
-      setActiveCategory(null);
+      setActiveCategory('none');
       setShowRiskZones(false);
       if (mapInstance) {
         mapInstance.flyTo([1.2168, -77.2805], 15, { duration: 1.2 });
