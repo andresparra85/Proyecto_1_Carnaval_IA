@@ -4,7 +4,7 @@ import { findCarnavalLandmark, CARNAVAL_LANDMARKS } from '../data/carnavalKnowle
 import { searchPastoPOI, PASTO_POIS, PointOfInterest } from '../data/pastoPOIs';
 import { sendGuanenaMessage } from '../services/guanenaChatService';
 import { parseBotIntent, dispatchParadeIntent } from '../services/botIntentParser';
-import { TRACK_SENDA_DIRECTO } from '../data/carnavalDaysData';
+import { CARNAVAL_DAYS_CONFIG, TRACK_SENDA_DIRECTO } from '../data/carnavalDaysData';
 
 export interface ChatBotProps {
   onFocusSenda?: () => void;
@@ -145,11 +145,45 @@ export function ChatBot({ onFocusSenda, onFocusLandmark }: ChatBotProps = {}) {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Despacho inicial de acción para botón de ruta
+  // Vinculación del clic del botón al despacho de ruta en el mapa y reencuadre de cámara
   const handleTriggerDayRoute = (dayKey?: string) => {
     if (!dayKey) return;
+    const cleanDay = String(dayKey).replace(/[^0-9]/g, '') || String(dayKey);
+    const dayConfig = CARNAVAL_DAYS_CONFIG[cleanDay] || CARNAVAL_DAYS_CONFIG['6'];
+
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('focus-carnival-day', { detail: { dayId: dayKey } }));
+      // 1. Invocar función global sincronizada del mapa
+      if (typeof (window as any).activarSendaPorDia === 'function') {
+        (window as any).activarSendaPorDia(cleanDay);
+      } else if (typeof (window as any).activarSendaDirecta === 'function') {
+        const coords = dayConfig?.track || TRACK_SENDA_DIRECTO;
+        (window as any).activarSendaDirecta(coords);
+      }
+
+      // 2. Notificar actualización de día e indicador flotante de evento activo
+      window.dispatchEvent(
+        new CustomEvent('focus-carnival-day', { detail: { dayId: cleanDay } })
+      );
+      window.dispatchEvent(
+        new CustomEvent('DRAW_SENDA', { detail: { dayKey: cleanDay } })
+      );
+      window.dispatchEvent(
+        new CustomEvent('focus-senda', { detail: { show: true } })
+      );
+
+      // 3. Despacho directo con fitBounds para reencuadre instantáneo
+      const coords = dayConfig?.track || TRACK_SENDA_DIRECTO;
+      if (Array.isArray(coords) && coords.length > 0) {
+        window.dispatchEvent(
+          new CustomEvent('DIRECT_TRACK_DISPATCH', {
+            detail: { coords, fitBounds: true },
+          })
+        );
+      }
+    }
+
+    if (onFocusSenda) {
+      onFocusSenda();
     }
   };
 
