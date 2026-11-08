@@ -1018,8 +1018,8 @@ export function CarnavalMap({
           />
         )}
 
-        {/* Marcadores dinámicos de Inicio y Llegada según el Desfile */}
-        {activeRouteTrack && activeRouteTrack.length > 0 && activeEventInfo && (
+        {/* Marcadores dinámicos exclusivos de Inicio y Llegada anclados a la ruta activa */}
+        {activeRouteTrack && activeRouteTrack.length > 0 && (
           <>
             {/* Marcador Verde (🚩 Salida) en activeRouteTrack[0] */}
             <Marker
@@ -1031,14 +1031,14 @@ export function CarnavalMap({
                   <div className="flex items-center gap-1.5 text-emerald-400 font-black border-b border-white/10 pb-1 mb-1">
                     <span>🚩</span>
                     <span className="uppercase text-[11px]">
-                      Salida: {activeEventInfo.start}
+                      Salida: {activeEventInfo?.start || 'Punto de Inicio'}
                     </span>
                   </div>
                   <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Punto de concentración y partida oficial para {activeEventInfo.name}.
+                    Punto de concentración y partida oficial{activeEventInfo?.name ? ` para ${activeEventInfo.name}` : ''}.
                   </p>
                   <div className="mt-1.5 text-[10px] text-emerald-300 font-mono">
-                    {activeEventInfo.name} • Salida
+                    {activeEventInfo?.name || 'Carnaval de Pasto'} • Salida
                   </div>
                 </div>
               </Popup>
@@ -1054,51 +1054,18 @@ export function CarnavalMap({
                   <div className="flex items-center gap-1.5 text-rose-400 font-black border-b border-white/10 pb-1 mb-1">
                     <span>🏁</span>
                     <span className="uppercase text-[11px]">
-                      Llegada: {activeEventInfo.end}
+                      Llegada: {activeEventInfo?.end || 'Punto de Culminación'}
                     </span>
                   </div>
                   <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Punto de culminación y desconcentración de {activeEventInfo.name}.
+                    Punto de culminación y desconcentración{activeEventInfo?.name ? ` de ${activeEventInfo.name}` : ''}.
                   </p>
                   <div className="mt-1.5 text-[10px] text-rose-300 font-mono">
-                    {activeEventInfo.name} • Llegada
+                    {activeEventInfo?.name || 'Carnaval de Pasto'} • Llegada
                   </div>
                 </div>
               </Popup>
             </Marker>
-          </>
-        )}
-
-            {/* Marcadores de hitos emblemáticos clave de la Senda */}
-            {SENDA_EMBLEMATIC_LANDMARKS.map((landmark) => (
-              <Marker
-                key={landmark.id}
-                position={landmark.coords}
-                icon={createEmblematicLandmarkIcon(landmark)}
-              >
-                <Popup className="custom-popup">
-                  <div className="p-2 min-w-[220px] max-w-[260px] font-sans text-xs bg-slate-900 text-white rounded-xl">
-                    <div
-                      className="flex items-center gap-1.5 font-black border-b border-white/10 pb-1 mb-1"
-                      style={{ color: landmark.badgeColor }}
-                    >
-                      <span className="text-base">{landmark.icon}</span>
-                      <span className="uppercase text-[11px]">{landmark.name}</span>
-                    </div>
-                    <div className="text-[10px] text-amber-300 font-bold mb-1">
-                      {landmark.role}
-                    </div>
-                    <p className="text-slate-300 text-[11px] leading-relaxed">
-                      {landmark.description}
-                    </p>
-                    <div className="mt-2 text-[10px] text-slate-400 font-mono flex justify-between border-t border-white/10 pt-1">
-                      <span>Lat: {landmark.coords[0].toFixed(4)}</span>
-                      <span>Lng: {landmark.coords[1].toFixed(4)}</span>
-                    </div>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
           </>
         )}
 
