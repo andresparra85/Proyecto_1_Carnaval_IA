@@ -805,10 +805,18 @@ export function MapView({
 
   const [isCardMinimized, setIsCardMinimized] = useState(false);
 
-  // Información del evento del día seleccionado
-  const currentEvent = useMemo(() => {
-    return CARNIVAL_ROUTES[selectedDay] || CARNIVAL_ROUTES['06-ene'];
+  // Estado del evento seleccionado condicional (inicia en null para mantener el mapa limpio)
+  const [selectedEvent, setSelectedEvent] = useState(() => (selectedDay ? (CARNIVAL_ROUTES[selectedDay] || null) : null));
+
+  useEffect(() => {
+    if (selectedDay) {
+      setSelectedEvent(CARNIVAL_ROUTES[selectedDay] || null);
+    } else {
+      setSelectedEvent(null);
+    }
   }, [selectedDay]);
+
+  const currentEvent = selectedEvent;
 
   // Color dinámico de la Senda según la fecha oficial seleccionada
   const dayRouteColor = useMemo(() => {
@@ -825,8 +833,8 @@ export function MapView({
     }
   }, [selectedDay]);
 
-  // Filtro activo de visualización rápida
-  const [activeFilter, setActiveFilter] = useState('todos');
+  // Filtro activo de visualización rápida (inicia en null para no renderizar POIs por defecto)
+  const [activeFilter, setActiveFilter] = useState(null);
 
   // Opciones de filtro
   const filterOptions = [
@@ -1044,91 +1052,93 @@ export function MapView({
         </div>
       </div>
 
-      {/* 2. Tarjeta Flotante Compacta de "Evento Oficial" con Bordes rounded-3xl */}
-      <div className="absolute bottom-5 left-4 z-[1000] pointer-events-auto">
-        {isCardMinimized ? (
-          /* Estado Colapsado: Píldora ultra-compacta para ver el mapa completamente despejado */
-          <button
-            type="button"
-            onClick={() => setIsCardMinimized(false)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-full backdrop-blur-md bg-white/85 dark:bg-slate-900/85 border border-slate-200/60 dark:border-slate-800/60 shadow-sm hover:shadow-md text-xs font-bold text-slate-800 dark:text-slate-200 hover:scale-[1.02] transition cursor-pointer"
-            title="Expandir información del evento"
-          >
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: currentEvent.color }}
-            />
-            <span className="truncate max-w-[170px] sm:max-w-none">{currentEvent.name}</span>
-            <span className="text-[10px] text-slate-400 font-mono">({currentEvent.hours})</span>
-            <ChevronUp className="w-3.5 h-3.5 text-amber-500 ml-1 shrink-0" />
-          </button>
-        ) : (
-          /* Estado Expandido: Tarjeta limpia y compacta */
-          <div className="max-w-xs sm:max-w-sm w-[calc(100vw-2rem)] sm:w-auto backdrop-blur-md bg-white/85 dark:bg-slate-900/85 p-3.5 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-sm text-slate-700 dark:text-slate-200 transition-all">
-            <div className="flex items-start justify-between gap-2 border-b border-slate-100 dark:border-white/5 pb-2 mb-2">
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: currentEvent.color }}
-                  />
-                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-500">
-                    Evento Oficial
-                  </span>
-                  <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-white/5 px-1.5 py-0.2 rounded-md">
-                    {currentEvent.hours}
-                  </span>
+      {/* 2. Tarjeta Flotante Compacta de "Evento Oficial" con Bordes rounded-3xl - Renderizado condicional */}
+      {selectedEvent && currentEvent && (
+        <div className="absolute bottom-5 left-4 z-[1000] pointer-events-auto">
+          {isCardMinimized ? (
+            /* Estado Colapsado: Píldora ultra-compacta para ver el mapa completamente despejado */
+            <button
+              type="button"
+              onClick={() => setIsCardMinimized(false)}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-full backdrop-blur-md bg-white/85 dark:bg-slate-900/85 border border-slate-200/60 dark:border-slate-800/60 shadow-sm hover:shadow-md text-xs font-bold text-slate-800 dark:text-slate-200 hover:scale-[1.02] transition cursor-pointer"
+              title="Expandir información del evento"
+            >
+              <span
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{ backgroundColor: currentEvent.color }}
+              />
+              <span className="truncate max-w-[170px] sm:max-w-none">{currentEvent.name}</span>
+              <span className="text-[10px] text-slate-400 font-mono">({currentEvent.hours})</span>
+              <ChevronUp className="w-3.5 h-3.5 text-amber-500 ml-1 shrink-0" />
+            </button>
+          ) : (
+            /* Estado Expandido: Tarjeta limpia y compacta */
+            <div className="max-w-xs sm:max-w-sm w-[calc(100vw-2rem)] sm:w-auto backdrop-blur-md bg-white/85 dark:bg-slate-900/85 p-3.5 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-sm text-slate-700 dark:text-slate-200 transition-all">
+              <div className="flex items-start justify-between gap-2 border-b border-slate-100 dark:border-white/5 pb-2 mb-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: currentEvent.color }}
+                    />
+                    <span className="text-[10px] font-black uppercase tracking-wider text-amber-500">
+                      Evento Oficial
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-white/5 px-1.5 py-0.2 rounded-md">
+                      {currentEvent.hours}
+                    </span>
+                  </div>
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-tight truncate">
+                    {currentEvent.name}
+                  </h3>
                 </div>
-                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-tight truncate">
-                  {currentEvent.name}
-                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsCardMinimized(true)}
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition shrink-0 cursor-pointer"
+                  title="Colapsar información para despejar el mapa"
+                  aria-label="Colapsar información"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsCardMinimized(true)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition shrink-0 cursor-pointer"
-                title="Colapsar información para despejar el mapa"
-                aria-label="Colapsar información"
-              >
-                <ChevronDown className="w-4 h-4" />
-              </button>
-            </div>
 
-            <div className="space-y-2 text-xs">
-              <p className="text-slate-500 dark:text-slate-300 text-[11px] leading-snug line-clamp-2">
-                {currentEvent.description}
-              </p>
+              <div className="space-y-2 text-xs">
+                <p className="text-slate-500 dark:text-slate-300 text-[11px] leading-snug line-clamp-2">
+                  {currentEvent.description}
+                </p>
 
-              {/* Badges de estado de vías */}
-              <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100 dark:border-white/5">
-                {currentEvent.closedPoints && currentEvent.closedPoints.length > 0 ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-[10px] font-medium">
-                    <span>⛔</span>
-                    <span>{currentEvent.closedPoints.length} Puntos Cierre</span>
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-[10px] font-medium">
-                    <span>✅</span>
-                    <span>Vías Despejadas</span>
-                  </span>
-                )}
+                {/* Badges de estado de vías */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100 dark:border-white/5">
+                  {currentEvent.closedPoints && currentEvent.closedPoints.length > 0 ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-[10px] font-medium">
+                      <span>⛔</span>
+                      <span>{currentEvent.closedPoints.length} Puntos Cierre</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-[10px] font-medium">
+                      <span>✅</span>
+                      <span>Vías Despejadas</span>
+                    </span>
+                  )}
 
-                {currentEvent.route && currentEvent.route.length > 0 ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-[10px] font-medium">
-                    <span>🎉</span>
-                    <span>Ruta Trazada</span>
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-[10px] font-medium">
-                    <span>🚶</span>
-                    <span>Zona Peatonal</span>
-                  </span>
-                )}
+                  {currentEvent.route && currentEvent.route.length > 0 ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-[10px] font-medium">
+                      <span>🎉</span>
+                      <span>Ruta Trazada</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-[10px] font-medium">
+                      <span>🚶</span>
+                      <span>Zona Peatonal</span>
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* 2.1 Tarjeta Flotante de Navegación Activa por Calles */}
       {navRoute && (

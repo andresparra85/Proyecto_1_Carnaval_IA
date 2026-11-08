@@ -111,11 +111,11 @@ export function CarnavalDaySelector({
 /**
  * Controlador de Leaflet que encuadra la cámara con fitBounds cada vez que cambia el día oficial
  */
-export function DayCameraController({ selectedDay }: { selectedDay: string }) {
+export function DayCameraController({ selectedDay }: { selectedDay?: string | null }) {
   const map = useMap();
 
   React.useEffect(() => {
-    if (!map) return;
+    if (!map || !selectedDay) return;
     try {
       if (typeof map.fitBounds === 'function') {
         map.fitBounds(SENDA_OFICIAL_COORDS as any, {
