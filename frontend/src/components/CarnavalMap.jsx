@@ -1113,7 +1113,7 @@ export function CarnavalMap({
       </MapContainer>
 
       {/* Tarjeta flotante inferior de Evento Oficial desmontada al inicio si !activeEvent */}
-      {activeEvent && !walkingRoute && (
+      {activeEvent && !walkingRoute && !activeNavRoute && (
         <EventCard
           event={activeEvent}
           onClose={() => {
@@ -1122,6 +1122,43 @@ export function CarnavalMap({
             setActiveRouteCoords([]);
           }}
         />
+      )}
+
+      {/* Floating HUD navigation banner con ETA y dismissal de ruta activa */}
+      {activeNavRoute && navDestinationInfo && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[950] w-[92vw] max-w-lg bg-slate-900/95 backdrop-blur-md px-4 py-3 rounded-2xl border border-cyan-500/50 shadow-2xl shadow-cyan-950/40 flex items-center justify-between gap-3 text-white">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-300 text-lg shrink-0">
+              🚶‍♂️
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping shrink-0" />
+                <span className="text-[10px] font-black uppercase tracking-wider text-cyan-400">
+                  Ruta Peatonal Activa • OSRM
+                </span>
+              </div>
+              <h4 className="text-xs sm:text-sm font-bold text-white truncate leading-tight">
+                Ruta hacia: {navDestinationInfo.name}
+              </h4>
+              <p className="text-[11px] text-cyan-200 font-mono mt-0.5">
+                {navDestinationInfo.distance ? `${navDestinationInfo.distance} m` : ''} • ~{navDestinationInfo.eta || 1} min a pie
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveNavRoute(null);
+              setNavDestinationInfo(null);
+            }}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-rose-500/30 text-cyan-300 hover:text-rose-300 text-xs font-bold border border-cyan-400/40 hover:border-rose-400/50 transition active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
+            title="Finalizar y cerrar ruta"
+          >
+            <span>✕</span>
+            <span>Finalizar Ruta</span>
+          </button>
+        </div>
       )}
 
       {/* Tarjeta flotante de navegación peatonal OSRM activa */}
