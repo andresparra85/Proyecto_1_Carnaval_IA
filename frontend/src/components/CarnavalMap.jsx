@@ -943,12 +943,12 @@ export function CarnavalMap({
           </>
         )}
 
-        {/* Marcadores de terminales (Inicio/Fin), hitos y cierres viales encapsulados bajo showSendaDetails e isSendaActive */}
-        {showSendaDetails && isSendaActive && (
+        {/* Marcadores dinámicos de Inicio y Llegada según el Desfile */}
+        {activeRouteTrack && activeRouteTrack.length > 0 && activeEventInfo && (
           <>
-            {/* Marcador contextual de Inicio oficial de la Senda activa (Verde) */}
+            {/* Marcador Verde (🚩 Salida) en activeRouteTrack[0] */}
             <Marker
-              position={SENDA_OFICIAL_COORDS[0]}
+              position={activeRouteTrack[0]}
               icon={createTerminalStartIcon()}
             >
               <Popup className="custom-popup">
@@ -956,22 +956,22 @@ export function CarnavalMap({
                   <div className="flex items-center gap-1.5 text-emerald-400 font-black border-b border-white/10 pb-1 mb-1">
                     <span>🚩</span>
                     <span className="uppercase text-[11px]">
-                      {activeEvent?.startPoint?.name || 'Partida: Champagnat / Bolívar'}
+                      Salida: {activeEventInfo.start}
                     </span>
                   </div>
                   <p className="text-slate-300 text-[11px] leading-relaxed">
-                    {activeEvent?.startPoint?.description || 'Punto de partida oficial en Av. Champagnat con concentración de carrozas monumentales y colectivos.'}
+                    Punto de concentración y partida oficial para {activeEventInfo.name}.
                   </p>
                   <div className="mt-1.5 text-[10px] text-emerald-300 font-mono">
-                    {activeEvent?.name || 'Senda del Carnaval'} • Partida
+                    {activeEventInfo.name} • Salida
                   </div>
                 </div>
               </Popup>
             </Marker>
 
-            {/* Marcador contextual de Fin oficial de la Senda activa (Rojo) */}
+            {/* Marcador Rojo (🏁 Llegada) en activeRouteTrack[activeRouteTrack.length - 1] */}
             <Marker
-              position={SENDA_OFICIAL_COORDS[SENDA_OFICIAL_COORDS.length - 1]}
+              position={activeRouteTrack[activeRouteTrack.length - 1]}
               icon={createTerminalEndIcon()}
             >
               <Popup className="custom-popup">
@@ -979,18 +979,20 @@ export function CarnavalMap({
                   <div className="flex items-center gap-1.5 text-rose-400 font-black border-b border-white/10 pb-1 mb-1">
                     <span>🏁</span>
                     <span className="uppercase text-[11px]">
-                      {activeEvent?.endPoint?.name || 'Llegada: Fuente de la Transparencia'}
+                      Llegada: {activeEventInfo.end}
                     </span>
                   </div>
                   <p className="text-slate-300 text-[11px] leading-relaxed">
-                    {activeEvent?.endPoint?.description || 'Culminación del desfile oficial, zona de desconcentración y desmonte en Av. de los Estudiantes.'}
+                    Punto de culminación y desconcentración de {activeEventInfo.name}.
                   </p>
                   <div className="mt-1.5 text-[10px] text-rose-300 font-mono">
-                    {activeEvent?.name || 'Senda del Carnaval'} • Llegada y Desmonte
+                    {activeEventInfo.name} • Llegada
                   </div>
                 </div>
               </Popup>
             </Marker>
+          </>
+        )}
 
             {/* Marcadores de hitos emblemáticos clave de la Senda */}
             {SENDA_EMBLEMATIC_LANDMARKS.map((landmark) => (
