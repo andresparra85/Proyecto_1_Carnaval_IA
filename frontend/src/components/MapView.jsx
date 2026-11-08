@@ -959,7 +959,8 @@ export function MapView({
 
   // Filtrado reactivo de POIs según el botón seleccionado
   const filteredPois = useMemo(() => {
-    if (activeFilter === 'todos') return allPOIs;
+    if (!activeFilter || activeFilter === 'none' || activeFilter === null) return [];
+    if (activeFilter === 'todos' || activeFilter === 'all') return allPOIs;
     if (activeFilter === 'restaurantes' || activeFilter === 'restaurante') {
       return allPOIs.filter((p) => p.category?.toLowerCase() === 'restaurante' || p.category?.toLowerCase() === 'restaurantes');
     }
@@ -976,14 +977,22 @@ export function MapView({
       return allPOIs.filter((p) => p.category?.toLowerCase() === 'tarima');
     }
     if (activeFilter === 'zonas') return [];
-    return allPOIs.filter((p) => p.category?.toLowerCase() === activeFilter.toLowerCase());
+    return allPOIs.filter((p) =>
+      activeFilter && p.category
+        ? p.category.toLowerCase() === activeFilter.toLowerCase()
+        : false
+    );
   }, [allPOIs, activeFilter]);
 
   // Filtrado de reportes activos
   const filteredReports = useMemo(() => {
+    if (!activeFilter || activeFilter === 'none' || activeFilter === null) return [];
     const list = internalReports && internalReports.length > 0 ? internalReports : reports;
-    if (activeFilter === 'todos' || activeFilter === 'zonas') return list;
-    return list.filter((r) => (r.category && r.category.toLowerCase() === activeFilter.toLowerCase()) || (r.type && r.type.toLowerCase() === activeFilter.toLowerCase()));
+    if (activeFilter === 'todos' || activeFilter === 'all' || activeFilter === 'zonas') return list;
+    return list.filter((r) =>
+      (r.category && activeFilter && r.category.toLowerCase() === activeFilter.toLowerCase()) ||
+      (r.type && activeFilter && r.type.toLowerCase() === activeFilter.toLowerCase())
+    );
   }, [reports, internalReports, activeFilter]);
 
   // Determinar si se muestran las zonas

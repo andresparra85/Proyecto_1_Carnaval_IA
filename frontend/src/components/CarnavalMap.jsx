@@ -543,6 +543,21 @@ export function CarnavalMap({
 
   const isNearSenda = distanceToSendaMeters <= 50;
 
+  // Filtrado reactivo y protegido contra nulos de Puntos de Interés (POIs)
+  const filteredPois = React.useMemo(() => {
+    if (!activeCategory || activeCategory === 'none' || activeCategory === null) {
+      return [];
+    }
+    if (activeCategory === 'all' || activeCategory === 'todos') {
+      return SENDA_POINTS_OF_INTEREST;
+    }
+    return SENDA_POINTS_OF_INTEREST.filter((poi) =>
+      activeCategory && poi.category
+        ? poi.category.toLowerCase() === activeCategory.toLowerCase()
+        : false
+    );
+  }, [activeCategory]);
+
   // Estado para la ruta peatonal calculada por OSRM
   const [walkingRoute, setWalkingRoute] = useState(null);
   const [isRouting, setIsRouting] = useState(false);
@@ -813,14 +828,12 @@ export function CarnavalMap({
         })}
 
         {/* Puntos de Interés interactivos - Visualización gobernada estrictamente por la categoría activa */}
-        {activePoiCategory && SENDA_POINTS_OF_INTEREST
-          .filter((poi) => activePoiCategory === 'todos' || poi.category === activePoiCategory)
-          .map((poi) => (
-            <Marker
-              key={poi.id}
-              position={poi.coords}
-              icon={createPoiIcon(poi)}
-            >
+        {filteredPois.map((poi) => (
+          <Marker
+            key={poi.id}
+            position={poi.coords}
+            icon={createPoiIcon(poi)}
+          >
               <Popup className="custom-popup">
                 <div className="p-2.5 min-w-[220px] max-w-[270px] font-sans text-xs bg-slate-900 text-white rounded-xl">
                   <div className="flex items-center gap-1.5 font-bold border-b border-white/10 pb-1 mb-1.5 text-amber-400">
