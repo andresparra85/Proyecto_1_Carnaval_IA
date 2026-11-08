@@ -3,6 +3,7 @@ import { Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { PASTO_POIS, PointOfInterest, LatLngTuple, dispatchGuanenaAction } from '../../data/pastoPOIs';
+import { SENDA_OFICIAL_COORDS, HITOS_SENDA } from '../../data/sendaCoords';
 
 // Resuelve el error clásico de Leaflet con Vite donde las rutas de los iconos por defecto se rompen
 delete (L.Icon.Default.prototype as any)._getIconUrl;
