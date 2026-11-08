@@ -970,24 +970,25 @@ export function CarnavalMap({
           className="w-full h-full"
         />
 
-        {/* Renderizado de alta resolución con estilo redondeado y alto contraste */}
-        {activeRouteCoords && activeRouteCoords.length > 1 && (
+        {Array.isArray(activeRouteCoords) && activeRouteCoords.length > 1 && (
           <>
+            {/* Capa de resplandor / sombra exterior */}
             <Polyline
               positions={activeRouteCoords}
               pathOptions={{
                 color: '#fb7185',
-                weight: 14,
+                weight: 12,
                 opacity: 0.35,
                 lineCap: 'round',
                 lineJoin: 'round',
               }}
             />
+            {/* Capa principal visible de la calle */}
             <Polyline
               positions={activeRouteCoords}
               pathOptions={{
                 color: '#e11d48',
-                weight: 7,
+                weight: 6,
                 opacity: 0.95,
                 lineCap: 'round',
                 lineJoin: 'round',
