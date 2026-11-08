@@ -676,8 +676,8 @@ export function CarnavalMap({
       <MapContainer
         center={[1.2168, -77.2805]}
         zoom={15}
-        className="h-[calc(100vh-4rem)] w-full relative z-0"
-        style={{ minHeight: '500px', width: '100%' }}
+        className="w-full h-full min-h-[500px] relative z-0"
+        style={{ width: '100%', height: '100%', minHeight: '500px' }}
         zoomControl={false}
         scrollWheelZoom={true}
       >
@@ -692,6 +692,7 @@ export function CarnavalMap({
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          className="w-full h-full"
         />
 
         {/* Capa de la Senda Oficial - Renderizado condicional reactivo bajo petición de GuaneñaBot */}
