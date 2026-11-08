@@ -776,53 +776,54 @@ export function CarnavalMap({
           />
         )}
 
+        {/* Marcadores de terminales (Inicio/Fin), hitos y cierres viales encapsulados bajo isSendaActive */}
         {isSendaActive && (
           <>
-            {/* Marcador contextual de Inicio oficial de la Senda activa */}
-            {selectedEvent?.startPoint && (
-              <Marker
-                position={selectedEvent.startPoint.coords}
-                icon={createTerminalStartIcon()}
-              >
-                <Popup className="custom-popup">
-                  <div className="p-2 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl">
-                    <div className="flex items-center gap-1.5 text-emerald-400 font-black border-b border-white/10 pb-1 mb-1">
-                      <span>🚩</span>
-                      <span className="uppercase text-[11px]">{selectedEvent.startPoint.name}</span>
-                    </div>
-                    <p className="text-slate-300 text-[11px] leading-relaxed">
-                      {selectedEvent.startPoint.description}
-                    </p>
-                    <div className="mt-1.5 text-[10px] text-emerald-300 font-mono">
-                      {selectedEvent.name} • Partida
-                    </div>
+            {/* Marcador contextual de Inicio oficial de la Senda activa (Verde) */}
+            <Marker
+              position={SENDA_OFICIAL_COORDS[0]}
+              icon={createTerminalStartIcon()}
+            >
+              <Popup className="custom-popup">
+                <div className="p-2 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl">
+                  <div className="flex items-center gap-1.5 text-emerald-400 font-black border-b border-white/10 pb-1 mb-1">
+                    <span>🚩</span>
+                    <span className="uppercase text-[11px]">
+                      {activeEvent?.startPoint?.name || 'Partida: Champagnat / Bolívar'}
+                    </span>
                   </div>
-                </Popup>
-              </Marker>
-            )}
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    {activeEvent?.startPoint?.description || 'Punto de partida oficial en Av. Champagnat con concentración de carrozas monumentales y colectivos.'}
+                  </p>
+                  <div className="mt-1.5 text-[10px] text-emerald-300 font-mono">
+                    {activeEvent?.name || 'Senda del Carnaval'} • Partida
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
 
-            {/* Marcador contextual de Fin oficial de la Senda activa */}
-            {selectedEvent?.endPoint && (
-              <Marker
-                position={selectedEvent.endPoint.coords}
-                icon={createTerminalEndIcon()}
-              >
-                <Popup className="custom-popup">
-                  <div className="p-2 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl">
-                    <div className="flex items-center gap-1.5 text-rose-400 font-black border-b border-white/10 pb-1 mb-1">
-                      <span>🏁</span>
-                      <span className="uppercase text-[11px]">{selectedEvent.endPoint.name}</span>
-                    </div>
-                    <p className="text-slate-300 text-[11px] leading-relaxed">
-                      {selectedEvent.endPoint.description}
-                    </p>
-                    <div className="mt-1.5 text-[10px] text-rose-300 font-mono">
-                      {selectedEvent.name} • Llegada y Desmonte
-                    </div>
+            {/* Marcador contextual de Fin oficial de la Senda activa (Rojo) */}
+            <Marker
+              position={SENDA_OFICIAL_COORDS[SENDA_OFICIAL_COORDS.length - 1]}
+              icon={createTerminalEndIcon()}
+            >
+              <Popup className="custom-popup">
+                <div className="p-2 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl">
+                  <div className="flex items-center gap-1.5 text-rose-400 font-black border-b border-white/10 pb-1 mb-1">
+                    <span>🏁</span>
+                    <span className="uppercase text-[11px]">
+                      {activeEvent?.endPoint?.name || 'Llegada: Fuente de la Transparencia'}
+                    </span>
                   </div>
-                </Popup>
-              </Marker>
-            )}
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    {activeEvent?.endPoint?.description || 'Culminación del desfile oficial, zona de desconcentración y desmonte en Av. de los Estudiantes.'}
+                  </p>
+                  <div className="mt-1.5 text-[10px] text-rose-300 font-mono">
+                    {activeEvent?.name || 'Senda del Carnaval'} • Llegada y Desmonte
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
 
             {/* Marcadores de hitos emblemáticos clave de la Senda */}
             {SENDA_EMBLEMATIC_LANDMARKS.map((landmark) => (
@@ -895,8 +896,8 @@ export function CarnavalMap({
           </>
         )}
 
-        {/* Círculos de aglomeración / zonas de riesgo (activación reactiva bajo petición) */}
-        {showRiskZones && zones && zones.map((zone) => {
+        {/* Círculos de cierres viales / zonas de riesgo (solo si isSendaActive está encendido) */}
+        {isSendaActive && showRiskZones && zones && zones.map((zone) => {
           const lat = zone.latitude || zone.coords?.[0];
           const lng = zone.longitude || zone.coords?.[1];
           if (!lat || !lng) return null;
