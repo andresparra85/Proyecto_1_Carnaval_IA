@@ -23,6 +23,12 @@ import {
   fetchFootRoute,
   getSnappedSendaRoute,
 } from '../services/osrmRoutingService';
+import { getExactStreetParadeRoute } from '../services/osrmParadeService';
+import {
+  WAYPOINTS_SENDA_MAGNA,
+  WAYPOINTS_CANTO_TIERRA,
+  WAYPOINTS_ARCOIRIS,
+} from '../data/carnavalKeyWaypoints';
 
 // Solución clásica de iconos rotos de Leaflet en Vite
 delete L.Icon.Default.prototype._getIconUrl;
@@ -507,10 +513,11 @@ export function CarnavalMap({
 
   // Escucha de eventos Chat-to-Map desde GuaneñaBot
   useEffect(() => {
-    const handleDrawSenda = (e) => {
+    const handleDrawSenda = async (e) => {
       const detail = e?.detail;
       const rawDayKey = (typeof detail === 'object' ? (detail?.dayKey || detail?.dayId || detail?.name) : detail) || 'jan_06';
       const dayKey = (rawDayKey || '').toLowerCase();
+      const cleanDay = String(rawDayKey).replace(/[^0-9]/g, '') || '6';
       const track = CARNAVAL_DAILY_TRACKS[dayKey] ||
         CARNAVAL_DAYS_TRACKS[dayKey] ||
         Object.values(CARNAVAL_DAILY_TRACKS).find((t) =>
@@ -518,15 +525,38 @@ export function CarnavalMap({
           (t.name || '').toLowerCase().includes(dayKey)
         ) ||
         CARNAVAL_DAILY_TRACKS.jan_06;
-      if (track) {
-        setActiveEvent(track);
-        setIsSendaActive(true);
-        setActiveRouteCoords(track.coords || []);
-        setCurrentDay(track.id || dayKey);
-        if (mapInstance && track.coords) {
-          const bounds = L.latLngBounds(track.coords);
-          mapInstance.fitBounds(bounds, { padding: [50, 50], animate: true });
+
+      let targetWaypoints = WAYPOINTS_SENDA_MAGNA;
+      if (cleanDay === '3' || dayKey.includes('canto') || dayKey.includes('03')) {
+        targetWaypoints = WAYPOINTS_CANTO_TIERRA;
+      } else if (cleanDay === '28' || dayKey.includes('arcoiris') || dayKey.includes('28')) {
+        targetWaypoints = WAYPOINTS_ARCOIRIS;
+      }
+
+      try {
+        const denseCoords = await getExactStreetParadeRoute(targetWaypoints);
+        if (denseCoords && denseCoords.length > 0) {
+          if (track) {
+            setActiveEvent(track);
+          }
+          setIsSendaActive(true);
+          setActiveRouteCoords(denseCoords);
+          setActiveRouteTrack(denseCoords);
+          const selected = CARNAVAL_DAYS_MAP[cleanDay] || CARNAVAL_DAYS_MAP['6'];
+          if (selected) {
+            setActiveEventInfo({
+              name: selected.name,
+              start: selected.startName,
+              end: selected.endName,
+            });
+          }
+          setCurrentDay(track?.id || cleanDay);
+          if (mapInstance && typeof mapInstance.fitBounds === 'function') {
+            mapInstance.fitBounds(denseCoords, { padding: [50, 50], animate: true });
+          }
         }
+      } catch (err) {
+        console.warn('Error al trazar Senda OSRM:', err);
       }
     };
 
@@ -552,26 +582,40 @@ export function CarnavalMap({
       }
     };
 
-    const handleDrawDayRoute = (e) => {
+    const handleDrawDayRoute = async (e) => {
       const detail = e?.detail;
       const rawDay = (typeof detail === 'object' ? (detail?.day || detail?.dayKey || detail?.dayId) : detail) || '6';
       const cleanDay = String(rawDay).replace(/[^0-9]/g, '') || '6';
       const selected = CARNAVAL_DAYS_MAP[cleanDay] || CARNAVAL_DAYS_MAP['6'];
-      if (selected) {
-        setActiveRouteTrack(selected.track);
-        setActiveRouteCoords(selected.track);
-        setActiveEventInfo({
-          name: selected.name,
-          start: selected.startName,
-          end: selected.endName,
-        });
-        setIsSendaActive(true);
-        setShowSendaDetails(true);
-        setCurrentDay(cleanDay);
-        if (mapInstance && selected.track) {
-          const bounds = L.latLngBounds(selected.track);
-          mapInstance.fitBounds(bounds, { padding: [50, 50], animate: true });
+
+      let targetWaypoints = WAYPOINTS_SENDA_MAGNA;
+      if (cleanDay === '3') {
+        targetWaypoints = WAYPOINTS_CANTO_TIERRA;
+      } else if (cleanDay === '28') {
+        targetWaypoints = WAYPOINTS_ARCOIRIS;
+      }
+
+      try {
+        const denseCoords = await getExactStreetParadeRoute(targetWaypoints);
+        if (denseCoords && denseCoords.length > 0) {
+          setActiveRouteTrack(denseCoords);
+          setActiveRouteCoords(denseCoords);
+          if (selected) {
+            setActiveEventInfo({
+              name: selected.name,
+              start: selected.startName,
+              end: selected.endName,
+            });
+          }
+          setIsSendaActive(true);
+          setShowSendaDetails(true);
+          setCurrentDay(cleanDay);
+          if (mapInstance && typeof mapInstance.fitBounds === 'function') {
+            mapInstance.fitBounds(denseCoords, { padding: [50, 50], animate: true });
+          }
         }
+      } catch (err) {
+        console.warn('Error al trazar ruta de carnaval OSRM:', err);
       }
     };
 
@@ -612,7 +656,7 @@ export function CarnavalMap({
     }
   }, [propSelectedDay]);
 
-  const handleDaySelect = (dayId) => {
+  const handleDaySelect = async (dayId) => {
     if (!dayId) {
       setActiveEvent(null);
       setActiveEventInfo(null);
@@ -626,17 +670,36 @@ export function CarnavalMap({
     setCurrentDay(dayId);
     const cleanDay = String(dayId).replace(/[^0-9]/g, '') || '6';
     const selected = CARNAVAL_DAYS_MAP[cleanDay] || CARNAVAL_DAYS_MAP['6'];
-    if (selected) {
-      setActiveRouteTrack(selected.track);
-      setActiveRouteCoords(selected.track);
-      setActiveEventInfo({
-        name: selected.name,
-        start: selected.startName,
-        end: selected.endName,
-      });
-      setIsSendaActive(true);
-      setShowSendaDetails(true);
+
+    let targetWaypoints = WAYPOINTS_SENDA_MAGNA;
+    if (cleanDay === '3' || String(dayId).includes('03')) {
+      targetWaypoints = WAYPOINTS_CANTO_TIERRA;
+    } else if (cleanDay === '28' || String(dayId).includes('28')) {
+      targetWaypoints = WAYPOINTS_ARCOIRIS;
     }
+
+    try {
+      const denseCoords = await getExactStreetParadeRoute(targetWaypoints);
+      if (denseCoords && denseCoords.length > 0) {
+        setActiveRouteTrack(denseCoords);
+        setActiveRouteCoords(denseCoords);
+        if (selected) {
+          setActiveEventInfo({
+            name: selected.name,
+            start: selected.startName,
+            end: selected.endName,
+          });
+        }
+        setIsSendaActive(true);
+        setShowSendaDetails(true);
+        if (mapInstance && typeof mapInstance.fitBounds === 'function') {
+          mapInstance.fitBounds(denseCoords, { padding: [50, 50], animate: true });
+        }
+      }
+    } catch (err) {
+      console.warn('Error al cargar ruta OSRM en handleDaySelect:', err);
+    }
+
     const normDayId = (dayId || '').toLowerCase();
     const track = CARNAVAL_DAILY_TRACKS[dayId] ||
       CARNAVAL_DAYS_TRACKS[dayId] ||
@@ -669,42 +732,43 @@ export function CarnavalMap({
   const routeCoords = isSendaActive ? activeRouteCoords : [];
 
   // Toggle interactivo para el botón 'Senda del Carnaval' con ajuste dinámico de cámara
-  const handleToggleSenda = useCallback(() => {
+  const handleToggleSenda = useCallback(async () => {
     setShowSendaDetails((prev) => !prev);
-    setIsSendaActive((prev) => {
-      const nextState = !prev;
-      if (nextState) {
-        const selected = CARNAVAL_DAYS_MAP['6'];
-        setActiveRouteTrack(selected.track);
-        setActiveRouteCoords(selected.track);
-        setActiveEventInfo({
-          name: selected.name,
-          start: selected.startName,
-          end: selected.endName,
-        });
-        if (!activeEvent) {
-          setActiveEvent(CARNAVAL_DAILY_TRACKS.jan_06);
-        }
-        if (mapInstance && typeof mapInstance.fitBounds === 'function') {
-          try {
-            mapInstance.fitBounds(selected.track, { padding: [40, 40] });
-          } catch (err) {
-            console.warn('Error al ajustar límites de la Senda:', err);
+    if (!isSendaActive) {
+      setIsSendaActive(true);
+      const selected = CARNAVAL_DAYS_MAP['6'];
+      if (!activeEvent) {
+        setActiveEvent(CARNAVAL_DAILY_TRACKS.jan_06);
+      }
+      try {
+        const denseCoords = await getExactStreetParadeRoute(WAYPOINTS_SENDA_MAGNA);
+        if (denseCoords && denseCoords.length > 0) {
+          setActiveRouteTrack(denseCoords);
+          setActiveRouteCoords(denseCoords);
+          setActiveEventInfo({
+            name: selected.name,
+            start: selected.startName,
+            end: selected.endName,
+          });
+          if (mapInstance && typeof mapInstance.fitBounds === 'function') {
+            mapInstance.fitBounds(denseCoords, { padding: [50, 50], animate: true });
           }
         }
-      } else {
-        setActiveEvent(null);
-        setActiveEventInfo(null);
-        setActiveRouteTrack([]);
-        setActiveRouteCoords([]);
-        if (mapInstance && typeof mapInstance.flyTo === 'function') {
-          mapInstance.flyTo([1.2168, -77.2805], 15, { duration: 1.2 });
-        }
+      } catch (err) {
+        console.warn('Error al ajustar límites de la Senda OSRM:', err);
       }
-      return nextState;
-    });
+    } else {
+      setIsSendaActive(false);
+      setActiveEvent(null);
+      setActiveEventInfo(null);
+      setActiveRouteTrack([]);
+      setActiveRouteCoords([]);
+      if (mapInstance && typeof mapInstance.flyTo === 'function') {
+        mapInstance.flyTo([1.2168, -77.2805], 15, { duration: 1.2 });
+      }
+    }
     setFocusTrigger((prev) => prev + 1);
-  }, [mapInstance, activeEvent]);
+  }, [mapInstance, activeEvent, isSendaActive]);
 
   // Ajuste de cámara inteligente (Fit Bounds) para encuadrar la Senda completa
   const handleFitSendaBounds = useCallback(() => {
