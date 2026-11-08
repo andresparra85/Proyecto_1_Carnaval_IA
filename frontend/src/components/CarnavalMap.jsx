@@ -407,6 +407,26 @@ function DynamicRouteCameraController({ routeCoords, focusTrigger }) {
   return null;
 }
 
+// Controlador de cámara inteligente: ejecuta transición animada fitBounds al inyectar o cambiar la ruta
+function ParadeCameraController({ activeRouteTrack }) {
+  const map = useMap();
+  useEffect(() => {
+    if (map && Array.isArray(activeRouteTrack) && activeRouteTrack.length > 0) {
+      try {
+        const bounds = L.latLngBounds(activeRouteTrack);
+        map.fitBounds(bounds, {
+          padding: [50, 50],
+          animate: true,
+          duration: 1.2,
+        });
+      } catch (err) {
+        console.warn('Error al animar cámara fitBounds en la ruta:', err);
+      }
+    }
+  }, [map, activeRouteTrack]);
+  return null;
+}
+
 // Puente para exponer la instancia activa del mapa a controles externos
 function MapInstanceBridge({ onMapReady }) {
   const map = useMap();
@@ -909,6 +929,9 @@ export function CarnavalMap({
             routeCoords={activeRouteCoords}
             focusTrigger={focusTrigger}
           />
+        )}
+        {Array.isArray(activeRouteTrack) && activeRouteTrack.length > 0 && (
+          <ParadeCameraController activeRouteTrack={activeRouteTrack} />
         )}
 
         <TileLayer
