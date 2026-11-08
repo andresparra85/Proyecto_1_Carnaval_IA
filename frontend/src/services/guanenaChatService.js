@@ -26,7 +26,33 @@ const GUANENA_ENDPOINT = `${BASE_URL.endsWith('/api/v1') ? BASE_URL : `${BASE_UR
  * @returns {Promise<{ reply: string, map_action: any }>}
  */
 export async function sendGuanenaMessage(message, userLat, userLng) {
-  // 1. Regla de contención temática exclusiva del Carnaval de Pasto
+  const lowerMsg = (message || '').toLowerCase();
+
+  // 1. Atención inmediata a emergencias y solicitudes de salud/hospitales (sin rodeos ni saludos)
+  const isHealthEmergency =
+    lowerMsg.includes('hospital') ||
+    lowerMsg.includes('salud') ||
+    lowerMsg.includes('medico') ||
+    lowerMsg.includes('médico') ||
+    lowerMsg.includes('cruz roja') ||
+    lowerMsg.includes('urgencia') ||
+    lowerMsg.includes('primeros auxilios');
+
+  if (isHealthEmergency) {
+    return {
+      reply: 'Ruta peatonal trazada hacia el centro de salud más cercano sobre el mapa.',
+      crowdNotice: '🚨 Hospital Civil de Pasto y puestos de primeros auxilios activos.',
+      actionButton: null,
+      map_action: {
+        action_type: 'ROUTE_TO_POI',
+        target_coords: [1.2118, -77.2755],
+        target_name: 'Hospital Civil de Pasto',
+        category: 'salud',
+      },
+    };
+  }
+
+  // 2. Regla de contención temática exclusiva del Carnaval de Pasto
   if (!isCarnavalRelatedQuery(message)) {
     return {
       reply: OFF_TOPIC_RESPONSE,
@@ -96,7 +122,16 @@ export async function sendGuanenaMessage(message, userLat, userLng) {
     let crowdNotice = null;
     let actionButton = null;
 
-    if (lower.includes('baño') || lower.includes('sanitario')) {
+    if (lower.includes('hospital') || lower.includes('salud') || lower.includes('medico') || lower.includes('médico') || lower.includes('cruz roja') || lower.includes('urgencia') || lower.includes('primeros auxilios')) {
+      reply = 'Ruta peatonal trazada hacia el centro de salud más cercano sobre el mapa.';
+      crowdNotice = '🚨 Hospital Civil de Pasto y puestos de primeros auxilios activos.';
+      mapAction = {
+        action_type: 'ROUTE_TO_POI',
+        target_coords: [1.2118, -77.2755],
+        target_name: 'Hospital Civil de Pasto',
+        category: 'salud',
+      };
+    } else if (lower.includes('baño') || lower.includes('sanitario')) {
       reply = 'Baterías sanitarias activas en Plaza del Carnaval y Plaza de Nariño. Marcadores ubicados en el mapa.';
       crowdNotice = '⚠️ Zona más concurrida: Costado sur de la Plaza del Carnaval.';
       mapAction = {
