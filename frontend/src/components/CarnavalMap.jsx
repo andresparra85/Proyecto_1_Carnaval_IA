@@ -13,6 +13,7 @@ import 'leaflet/dist/leaflet.css';
 import {
   SENDA_OFICIAL_COORDS,
   CARNAVAL_DAYS_TRACKS,
+  CARNAVAL_DAILY_TRACKS,
   SENDA_POINTS_OF_INTEREST,
 } from '../data/carnavalRoutesGeoJSON';
 import {
@@ -318,35 +319,92 @@ export const AVAILABLE_CARNAVAL_DAYS = [
 ];
 
 export function CarnavalMap({
-  selectedDay: propSelectedDay = '06-ene',
+  selectedDay: propSelectedDay = null,
   onSelectDay,
   zones = [],
 }) {
+  // Estado inicial limpio y reactivo gobernado por GuaneñaBot (Chat-Driven UI)
+  const [activeSendaTrack, setActiveSendaTrack] = useState(null);
+  const [activePoiCategory, setActivePoiCategory] = useState(null);
+  const [showRiskZones, setShowRiskZones] = useState(false);
   const [currentDay, setCurrentDay] = useState(propSelectedDay);
+
+  const [mapInstance, setMapInstance] = useState(null);
+  const [focusTrigger, setFocusTrigger] = useState(0);
+
+  // Escucha de eventos Chat-to-Map desde GuaneñaBot
+  useEffect(() => {
+    const handleDrawSenda = (e) => {
+      const detail = e?.detail;
+      const dayKey = (typeof detail === 'object' ? (detail?.dayKey || detail?.dayId) : detail) || 'jan_06';
+      const track = CARNAVAL_DAILY_TRACKS[dayKey] || CARNAVAL_DAYS_TRACKS[dayKey] || CARNAVAL_DAILY_TRACKS.jan_06;
+      if (track) {
+        setActiveSendaTrack(track);
+        setCurrentDay(dayKey);
+        if (mapInstance && track.coords) {
+          const bounds = L.latLngBounds(track.coords);
+          mapInstance.fitBounds(bounds, { padding: [50, 50], animate: true });
+        }
+      }
+    };
+
+    const handleFilterPois = (e) => {
+      const detail = e?.detail;
+      const category = typeof detail === 'object' ? (detail?.category || detail?.name) : detail;
+      setActivePoiCategory(category);
+    };
+
+    const handleCleanMap = () => {
+      setActiveSendaTrack(null);
+      setActivePoiCategory(null);
+      setShowRiskZones(false);
+      if (mapInstance) {
+        mapInstance.flyTo([1.2168, -77.2805], 15, { duration: 1.2 });
+      }
+    };
+
+    window.addEventListener('DRAW_SENDA', handleDrawSenda);
+    window.addEventListener('FILTER_POIS', handleFilterPois);
+    window.addEventListener('SHOW_ALL_CLEAN', handleCleanMap);
+
+    return () => {
+      window.removeEventListener('DRAW_SENDA', handleDrawSenda);
+      window.removeEventListener('FILTER_POIS', handleFilterPois);
+      window.removeEventListener('SHOW_ALL_CLEAN', handleCleanMap);
+    };
+  }, [mapInstance]);
 
   useEffect(() => {
     if (propSelectedDay) {
       setCurrentDay(propSelectedDay);
+      const track = CARNAVAL_DAILY_TRACKS[propSelectedDay] || CARNAVAL_DAYS_TRACKS[propSelectedDay];
+      if (track) {
+        setActiveSendaTrack(track);
+      }
     }
   }, [propSelectedDay]);
 
   const handleDaySelect = (dayId) => {
     setCurrentDay(dayId);
+    const track = CARNAVAL_DAILY_TRACKS[dayId] || CARNAVAL_DAYS_TRACKS[dayId];
+    setActiveSendaTrack(track || null);
     if (onSelectDay) {
       onSelectDay(dayId);
     }
   };
 
-  const currentTrack = CARNAVAL_DAYS_TRACKS[currentDay] || CARNAVAL_DAYS_TRACKS['06-ene'];
-  const routeCoords = SENDA_OFICIAL_COORDS;
-  const [mapInstance, setMapInstance] = useState(null);
-  const [focusTrigger, setFocusTrigger] = useState(0);
+  const currentTrack = activeSendaTrack || CARNAVAL_DAILY_TRACKS.jan_06;
+  const routeCoords = activeSendaTrack ? activeSendaTrack.coords : SENDA_OFICIAL_COORDS;
 
   // Ajuste de cámara inteligente (Fit Bounds) para encuadrar la Senda completa
   const handleFitSendaBounds = useCallback(() => {
+    const coordsToFit = activeSendaTrack?.coords || SENDA_OFICIAL_COORDS;
+    if (!activeSendaTrack) {
+      setActiveSendaTrack(CARNAVAL_DAILY_TRACKS.jan_06);
+    }
     if (mapInstance && typeof mapInstance.fitBounds === 'function') {
       try {
-        const bounds = L.latLngBounds(SENDA_OFICIAL_COORDS);
+        const bounds = L.latLngBounds(coordsToFit);
         mapInstance.fitBounds(bounds, {
           padding: [50, 50],
           animate: true,
@@ -356,7 +414,7 @@ export function CarnavalMap({
       }
     }
     setFocusTrigger((prev) => prev + 1);
-  }, [mapInstance]);
+  }, [mapInstance, activeSendaTrack]);
 
   // Soporte para despachos directos de GuaneñaBot (focus-senda)
   useEffect(() => {
@@ -502,7 +560,7 @@ export function CarnavalMap({
       </button>
 
       <MapContainer
-        center={[1.2140, -77.2820]}
+        center={[1.2168, -77.2805]}
         zoom={15}
         className="h-[calc(100vh-4rem)] w-full relative z-0"
         style={{ minHeight: '500px', width: '100%' }}
@@ -510,68 +568,78 @@ export function CarnavalMap({
         scrollWheelZoom={true}
       >
         <MapInstanceBridge onMapReady={setMapInstance} />
-        <DynamicRouteCameraController routeCoords={SENDA_OFICIAL_COORDS} focusTrigger={focusTrigger} />
+        {activeSendaTrack && (
+          <DynamicRouteCameraController
+            routeCoords={activeSendaTrack.coords || SENDA_OFICIAL_COORDS}
+            focusTrigger={focusTrigger}
+          />
+        )}
 
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
 
-        {/* 1. Efecto de resplandor / sombra exterior para destacar sobre el fondo del mapa */}
-        <Polyline
-          positions={SENDA_OFICIAL_COORDS}
-          pathOptions={{
-            color: '#f43f5e',
-            weight: 12,
-            opacity: 0.3,
-            lineJoin: 'round',
-            lineCap: 'round',
-          }}
-        />
+        {/* Capa de la Senda Oficial - Renderizado condicional reactivo bajo petición de GuaneñaBot */}
+        {activeSendaTrack && (
+          <>
+            {/* 1. Efecto de resplandor / sombra exterior para destacar sobre el fondo del mapa */}
+            <Polyline
+              positions={activeSendaTrack.coords || SENDA_OFICIAL_COORDS}
+              pathOptions={{
+                color: activeSendaTrack.color || '#f43f5e',
+                weight: 12,
+                opacity: 0.3,
+                lineJoin: 'round',
+                lineCap: 'round',
+              }}
+            />
 
-        {/* 2. Capa vectorial principal oficial ceñida a la calzada vial */}
-        <Polyline
-          positions={SENDA_OFICIAL_COORDS}
-          pathOptions={{
-            color: '#e11d48',
-            weight: 7,
-            opacity: 0.95,
-            lineJoin: 'round',
-            lineCap: 'round',
-            className: 'drop-shadow-lg',
-          }}
-        />
+            {/* 2. Capa vectorial principal oficial ceñida a la calzada vial */}
+            <Polyline
+              positions={activeSendaTrack.coords || SENDA_OFICIAL_COORDS}
+              pathOptions={{
+                color: activeSendaTrack.color || '#e11d48',
+                weight: 6,
+                opacity: 0.95,
+                lineJoin: 'round',
+                lineCap: 'round',
+                className: 'drop-shadow-lg',
+              }}
+            />
 
-        {/* Marcadores de hitos emblemáticos clave de la Senda */}
-        {SENDA_EMBLEMATIC_LANDMARKS.map((landmark) => (
-          <Marker
-            key={landmark.id}
-            position={landmark.coords}
-            icon={createEmblematicLandmarkIcon(landmark)}
-          >
-            <Popup className="custom-popup">
-              <div className="p-2 min-w-[220px] max-w-[260px] font-sans text-xs bg-slate-900 text-white rounded-xl">
-                <div
-                  className="flex items-center gap-1.5 font-black border-b border-white/10 pb-1 mb-1"
-                  style={{ color: landmark.badgeColor }}
-                >
-                  <span className="text-base">{landmark.icon}</span>
-                  <span className="uppercase text-[11px]">{landmark.name}</span>
-                </div>
-                <div className="text-[10px] text-amber-300 font-bold mb-1">
-                  {landmark.role}
-                </div>
-                <p className="text-slate-300 text-[11px] leading-relaxed">
-                  {landmark.description}
-                </p>
-                <div className="mt-2 text-[10px] text-slate-400 font-mono flex justify-between border-t border-white/10 pt-1">
-                  <span>Lat: {landmark.coords[0].toFixed(4)}</span>
-                  <span>Lng: {landmark.coords[1].toFixed(4)}</span>
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+            {/* Marcadores de hitos emblemáticos clave de la Senda */}
+            {SENDA_EMBLEMATIC_LANDMARKS.map((landmark) => (
+              <Marker
+                key={landmark.id}
+                position={landmark.coords}
+                icon={createEmblematicLandmarkIcon(landmark)}
+              >
+                <Popup className="custom-popup">
+                  <div className="p-2 min-w-[220px] max-w-[260px] font-sans text-xs bg-slate-900 text-white rounded-xl">
+                    <div
+                      className="flex items-center gap-1.5 font-black border-b border-white/10 pb-1 mb-1"
+                      style={{ color: landmark.badgeColor }}
+                    >
+                      <span className="text-base">{landmark.icon}</span>
+                      <span className="uppercase text-[11px]">{landmark.name}</span>
+                    </div>
+                    <div className="text-[10px] text-amber-300 font-bold mb-1">
+                      {landmark.role}
+                    </div>
+                    <p className="text-slate-300 text-[11px] leading-relaxed">
+                      {landmark.description}
+                    </p>
+                    <div className="mt-2 text-[10px] text-slate-400 font-mono flex justify-between border-t border-white/10 pt-1">
+                      <span>Lat: {landmark.coords[0].toFixed(4)}</span>
+                      <span>Lng: {landmark.coords[1].toFixed(4)}</span>
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </>
+        )}
 
         {/* 5. Rastreo GPS en tiempo real del espectador con punto azul y anillo radar */}
         {userPosition && (
@@ -611,8 +679,8 @@ export function CarnavalMap({
           </>
         )}
 
-        {/* Círculos de aglomeración / zonas de riesgo con opacidad reducida (0.15) para no ocluir la Senda */}
-        {zones && zones.map((zone) => {
+        {/* Círculos de aglomeración / zonas de riesgo (activación reactiva bajo petición) */}
+        {showRiskZones && zones && zones.map((zone) => {
           const lat = zone.latitude || zone.coords?.[0];
           const lng = zone.longitude || zone.coords?.[1];
           if (!lat || !lng) return null;
@@ -642,38 +710,40 @@ export function CarnavalMap({
           );
         })}
 
-        {/* 6. Puntos de Interés interactivos a lo largo de la Senda */}
-        {SENDA_POINTS_OF_INTEREST.map((poi) => (
-          <Marker
-            key={poi.id}
-            position={poi.coords}
-            icon={createPoiIcon(poi)}
-          >
-            <Popup className="custom-popup">
-              <div className="p-2.5 min-w-[220px] max-w-[270px] font-sans text-xs bg-slate-900 text-white rounded-xl">
-                <div className="flex items-center gap-1.5 font-bold border-b border-white/10 pb-1 mb-1.5 text-amber-400">
-                  <span className="text-base">{poi.icon}</span>
-                  <span className="leading-tight">{poi.name}</span>
+        {/* Puntos de Interés interactivos - Visualización gobernada estrictamente por la categoría activa */}
+        {activePoiCategory && SENDA_POINTS_OF_INTEREST
+          .filter((poi) => activePoiCategory === 'todos' || poi.category === activePoiCategory)
+          .map((poi) => (
+            <Marker
+              key={poi.id}
+              position={poi.coords}
+              icon={createPoiIcon(poi)}
+            >
+              <Popup className="custom-popup">
+                <div className="p-2.5 min-w-[220px] max-w-[270px] font-sans text-xs bg-slate-900 text-white rounded-xl">
+                  <div className="flex items-center gap-1.5 font-bold border-b border-white/10 pb-1 mb-1.5 text-amber-400">
+                    <span className="text-base">{poi.icon}</span>
+                    <span className="leading-tight">{poi.name}</span>
+                  </div>
+                  <p className="text-slate-300 text-[11px] leading-relaxed mb-2">
+                    {poi.description}
+                  </p>
+                  <div className="text-[10px] text-slate-400 mb-2 font-mono">
+                    📍 {poi.address}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRouteToPoi(poi)}
+                    disabled={isRouting}
+                    className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs shadow-md transition active:scale-95 cursor-pointer disabled:opacity-50"
+                  >
+                    <span>🚶‍♂️</span>
+                    <span>{isRouting ? 'Calculando ruta...' : 'Cómo llegar a pie'}</span>
+                  </button>
                 </div>
-                <p className="text-slate-300 text-[11px] leading-relaxed mb-2">
-                  {poi.description}
-                </p>
-                <div className="text-[10px] text-slate-400 mb-2 font-mono">
-                  📍 {poi.address}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleRouteToPoi(poi)}
-                  disabled={isRouting}
-                  className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs shadow-md transition active:scale-95 cursor-pointer disabled:opacity-50"
-                >
-                  <span>🚶‍♂️</span>
-                  <span>{isRouting ? 'Calculando ruta...' : 'Cómo llegar a pie'}</span>
-                </button>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          ))}
 
         {/* 7. Polilínea peatonal calculada por OSRM hacia el punto de interés */}
         {walkingRoute && walkingRoute.coordinates && walkingRoute.coordinates.length > 1 && (
