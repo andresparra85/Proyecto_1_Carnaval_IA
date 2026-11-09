@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -6,6 +6,8 @@ import {
   Marker,
   Popup,
   Circle,
+  CircleMarker,
+  LayerGroup,
   useMap,
   useMapEvents,
 } from 'react-leaflet';
@@ -683,7 +685,7 @@ export function sanitizeLeafletCoordinates(coords: any[]): [number, number][] {
   return result;
 }
 
-// Controlador de cámara para auto-ajustar los límites (fitBounds) al recibir una polilínea
+// Controlador de cámara para auto-ajustar los límites (fitBounds / flyToBounds) al recibir una polilínea
 function RouteBoundsAutoFitter({ coordinates }: { coordinates: [number, number][] }) {
   const map = useMap();
   const prevCoordRef = useRef<string>('');
@@ -697,15 +699,45 @@ function RouteBoundsAutoFitter({ coordinates }: { coordinates: [number, number][
 
     try {
       const bounds = L.latLngBounds(coordinates);
-      map.fitBounds(bounds, {
-        padding: [60, 60],
-        maxZoom: 15,
-        animate: true,
-      });
+      if (typeof (map as any).flyToBounds === 'function') {
+        (map as any).flyToBounds(bounds, {
+          padding: [50, 50],
+          maxZoom: 16,
+          duration: 1.5,
+        });
+      } else {
+        map.fitBounds(bounds, {
+          padding: [50, 50],
+          maxZoom: 16,
+          animate: true,
+        });
+      }
     } catch (err) {
       console.warn('[CarnavalMap] Error while fitting bounds:', err);
     }
   }, [coordinates, map]);
+
+  return null;
+}
+
+// Controlador para centrar la cámara suavemente en el usuario al disparar evento
+function MapCenterOnUserController() {
+  const map = useMap();
+
+  useEffect(() => {
+    const handleCenterOnUser = (e: any) => {
+      const { lat, lng, zoom } = e.detail || {};
+      if (lat !== undefined && lng !== undefined && map) {
+        map.flyTo([lat, lng], zoom || 17, {
+          duration: 1.5,
+          animate: true,
+        });
+      }
+    };
+
+    window.addEventListener('CENTER_MAP_ON_USER', handleCenterOnUser);
+    return () => window.removeEventListener('CENTER_MAP_ON_USER', handleCenterOnUser);
+  }, [map]);
 
   return null;
 }
@@ -786,6 +818,30 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
   const [activeTitle, setActiveTitle] = useState<string>(propRouteTitle || 'Recorrido del Carnaval');
   const [activeSchedule, setActiveSchedule] = useState<CarnavalSchedule | null>(propSchedule || null);
   const [activeNearbyPlaces, setActiveNearbyPlaces] = useState<NearbyPlace[]>(propNearbyPlaces || []);
+
+  const [liveUserLocation, setLiveUserLocation] = useState<{ lat: number; lng: number; accuracy?: number } | null>(
+    userLocation || null
+  );
+
+  useEffect(() => {
+    if (userLocation) {
+      setLiveUserLocation(userLocation);
+    }
+  }, [userLocation]);
+
+  useEffect(() => {
+    const handleGpsUpdate = (e: any) => {
+      if (e.detail?.lat && e.detail?.lng) {
+        setLiveUserLocation({
+          lat: e.detail.lat,
+          lng: e.detail.lng,
+          accuracy: e.detail.accuracy,
+        });
+      }
+    };
+    window.addEventListener('USER_GPS_UPDATED', handleGpsUpdate);
+    return () => window.removeEventListener('USER_GPS_UPDATED', handleGpsUpdate);
+  }, []);
 
   // Sincronizar cambios en props
   useEffect(() => {
@@ -899,15 +955,18 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
         {/* Captura de eventos de clic */}
         <MapClickHandler onSelectCoordinates={onSelectCoordinates} />
 
-        {/* Auto-zoom y ajuste suave a los límites de la polilínea activa (padding: [60, 60], maxZoom: 15) */}
+        {/* Controlador para centrar la cámara suavemente en el usuario */}
+        <MapCenterOnUserController />
+
+        {/* Auto-zoom y ajuste suave a los límites de la polilínea activa (padding: [50, 50]) */}
         {isRouteActive && parsedRouteCoords.length >= 2 && (
           <RouteBoundsAutoFitter coordinates={parsedRouteCoords} />
         )}
 
-        {/* Polilínea de alto contraste dual-layer (Glow/Casing negro + Línea principal naranja carmesí festivo #ea580c) */}
+        {/* LayerGroup dedicado para el trazado de la Senda del Carnaval y sus hitos */}
         {isRouteActive && parsedRouteCoords.length >= 2 && (
-          <>
-            {/* Background casing line (Dark contrast glow / outline) */}
+          <LayerGroup>
+            {/* Outer Border Line for Maximum Contrast */}
             <Polyline
               key={`casing-route-${parsedRouteCoords.length}`}
               positions={parsedRouteCoords}
@@ -920,73 +979,76 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
               }}
             />
 
-            {/* Foreground main line: Carnival Red-Orange (#ea580c), weight: 6, opacity: 1.0, solid continuous */}
+            {/* Inner Glowing Carnival Line */}
             <Polyline
               key={`main-route-${parsedRouteCoords.length}`}
               positions={parsedRouteCoords}
               pathOptions={{
-                color: '#ea580c',
+                color: '#ff0055',
                 weight: 6,
-                opacity: 1.0,
+                opacity: 1,
                 lineCap: 'round',
                 lineJoin: 'round',
               }}
             />
 
-            {/* Marcador de Inicio explícito en Estadio Libertad con badge de Bandera Verde */}
-            {startCoord && (
-              <Marker position={startCoord} icon={createStartPinIcon('Estadio Libertad - Salida')}>
-                <Popup className="custom-popup">
-                  <div className="p-2.5 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl border border-emerald-500/40 shadow-xl">
-                    <div className="flex items-center gap-1.5 font-bold text-emerald-400 border-b border-white/10 pb-1.5 mb-1.5">
-                      <span className="text-base">🚩</span>
-                      <span className="uppercase text-[11px] tracking-wide">Inicio del Desfile</span>
-                    </div>
-                    <h5 className="font-bold text-white text-xs mb-1">
-                      {activeSchedule?.start_location || 'Estadio Departamental Libertad'}
-                    </h5>
-                    <p className="text-slate-300 text-[11px] leading-relaxed mb-1.5">
-                      Punto oficial de partida y concentración de carrozas, comparsas y murgas.
-                    </p>
-                    <div className="flex items-center justify-between text-[11px] bg-emerald-950/60 px-2 py-1 rounded border border-emerald-500/25 text-emerald-300 font-mono">
-                      <span>Hora de Salida:</span>
-                      <strong className="font-bold">{activeSchedule?.start_time || '10:00 AM'}</strong>
-                    </div>
-                    <div className="mt-1 text-[10px] text-slate-400 font-mono">
-                      Lat: {startCoord[0].toFixed(4)}, Lng: {startCoord[1].toFixed(4)}
-                    </div>
+            {/* Marcador de Inicio con badge "🟢 INICIO SENDA" en Estadio Libertad */}
+            <Marker
+              position={startCoord || [1.2025, -77.2762]}
+              icon={createStartPinIcon('🟢 INICIO SENDA')}
+            >
+              <Popup className="custom-popup">
+                <div className="p-2.5 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl border border-emerald-500/40 shadow-xl">
+                  <div className="flex items-center gap-1.5 font-bold text-emerald-400 border-b border-white/10 pb-1.5 mb-1.5">
+                    <span className="text-base">🚩</span>
+                    <span className="uppercase text-[11px] tracking-wide">Inicio de la Senda</span>
                   </div>
-                </Popup>
-              </Marker>
-            )}
+                  <h5 className="font-bold text-white text-xs mb-1">
+                    {activeSchedule?.start_location || 'Estadio Departamental Libertad'}
+                  </h5>
+                  <p className="text-slate-300 text-[11px] leading-relaxed mb-1.5">
+                    Punto oficial de partida y concentración de carrozas, comparsas y murgas.
+                  </p>
+                  <div className="flex items-center justify-between text-[11px] bg-emerald-950/60 px-2 py-1 rounded border border-emerald-500/25 text-emerald-300 font-mono">
+                    <span>Hora de Salida:</span>
+                    <strong className="font-bold">{activeSchedule?.start_time || '10:00 AM'}</strong>
+                  </div>
+                  <div className="mt-1 text-[10px] text-slate-400 font-mono">
+                    Lat: {(startCoord || [1.2025, -77.2762])[0].toFixed(4)}, Lng: {(startCoord || [1.2025, -77.2762])[1].toFixed(4)}
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
 
-            {/* Marcador de Llegada explícito en Fuente de la Transparencia con badge de Bandera a Cuadros */}
-            {endCoord && (
-              <Marker position={endCoord} icon={createEndPinIcon('Fuente Transparencia - Llegada')}>
-                <Popup className="custom-popup">
-                  <div className="p-2.5 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl border border-amber-500/40 shadow-xl">
-                    <div className="flex items-center gap-1.5 font-bold text-amber-400 border-b border-white/10 pb-1.5 mb-1.5">
-                      <span className="text-base">🏁</span>
-                      <span className="uppercase text-[11px] tracking-wide">Fin de la Senda</span>
-                    </div>
-                    <h5 className="font-bold text-white text-xs mb-1">
-                      {activeSchedule?.finish_location || 'Fuente de la Transparencia / Torobajo'}
-                    </h5>
-                    <p className="text-slate-300 text-[11px] leading-relaxed mb-1.5">
-                      Punto de culminación, premiación oficial y desconcentración de agrupaciones y carrozas.
-                    </p>
-                    <div className="flex items-center justify-between text-[11px] bg-amber-950/60 px-2 py-1 rounded border border-amber-500/25 text-amber-300 font-mono">
-                      <span>Hora Estimada:</span>
-                      <strong className="font-bold">{activeSchedule?.estimated_arrival_time || '03:30 PM'}</strong>
-                    </div>
-                    <div className="mt-1 text-[10px] text-slate-400 font-mono">
-                      Lat: {endCoord[0].toFixed(4)}, Lng: {endCoord[1].toFixed(4)}
-                    </div>
+            {/* Marcador de Llegada con badge "🏁 LLEGADA SENDA" en Fuente de la Transparencia */}
+            <Marker
+              position={endCoord || [1.2330, -77.2845]}
+              icon={createEndPinIcon('🏁 LLEGADA SENDA')}
+            >
+              <Popup className="custom-popup">
+                <div className="p-2.5 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl border border-amber-500/40 shadow-xl">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-400 border-b border-white/10 pb-1.5 mb-1.5">
+                    <span className="text-base">🏁</span>
+                    <span className="uppercase text-[11px] tracking-wide">Llegada de la Senda</span>
                   </div>
-                </Popup>
-              </Marker>
-            )}
-          </>
+                  <h5 className="font-bold text-white text-xs mb-1">
+                    {activeSchedule?.finish_location || 'Fuente de la Transparencia / Torobajo'}
+                  </h5>
+                  <p className="text-slate-300 text-[11px] leading-relaxed mb-1.5">
+                    Punto de culminación, premiación oficial y desconcentración de agrupaciones y carrozas.
+                  </p>
+                  <div className="flex items-center justify-between text-[11px] bg-amber-950/60 px-2 py-1 rounded border border-amber-500/25 text-amber-300 font-mono">
+                    <span>Hora Estimada:</span>
+                    <strong className="font-bold">{activeSchedule?.estimated_arrival_time || '03:30 PM'}</strong>
+                  </div>
+                  <div className="mt-1 text-[10px] text-slate-400 font-mono">
+                    Lat: {(endCoord || [1.2330, -77.2845])[0].toFixed(4)}, Lng: {(endCoord || [1.2330, -77.2845])[1].toFixed(4)}
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          </LayerGroup>
+        )}
         )}
 
         {/* Capas interactivas de Telemetría (Restrooms, Police, Health, Stages, Shopping, Restaurants, Risk Zones) */}
@@ -1049,41 +1111,41 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
           );
         })}
 
-        {/* Marcador GPS del usuario */}
-        {userLocation && (
-          <>
+        {/* Marcador GPS en tiempo real del usuario */}
+        {liveUserLocation && (
+          <LayerGroup>
+            {/* Halo de precisión / pulso animado */}
             <Circle
-              center={[userLocation.lat, userLocation.lng]}
-              radius={35}
+              center={[liveUserLocation.lat, liveUserLocation.lng]}
+              radius={liveUserLocation.accuracy ? Math.max(liveUserLocation.accuracy, 25) : 30}
               pathOptions={{
-                color: '#38bdf8',
-                fillColor: '#0284c7',
-                fillOpacity: 0.2,
+                color: '#3b82f6',
+                fillColor: '#2563eb',
+                fillOpacity: 0.18,
                 weight: 1.5,
               }}
             />
-            <Marker
-              position={[userLocation.lat, userLocation.lng]}
-              icon={L.divIcon({
-                className: 'user-gps-dot',
-                html: `
-                  <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px;">
-                    <span style="position: absolute; width: 22px; height: 22px; border-radius: 9999px; background: #38bdf8; opacity: 0.6; animation: ping 1.5s cubic-bezier(0,0,0.2,1) infinite;"></span>
-                    <span style="position: relative; width: 14px; height: 14px; border-radius: 9999px; background: #0284c7; border: 2.5px solid #ffffff; box-shadow: 0 0 10px #38bdf8;"></span>
-                  </div>
-                `,
-                iconSize: [22, 22],
-                iconAnchor: [11, 11],
-              })}
+            {/* Pin GPS principal: CircleMarker azul con borde blanco */}
+            <CircleMarker
+              center={[liveUserLocation.lat, liveUserLocation.lng]}
+              radius={9}
+              pathOptions={{
+                color: '#ffffff',
+                fillColor: '#2563eb',
+                fillOpacity: 1,
+                weight: 3,
+              }}
             >
               <Popup>
-                <div className="text-xs font-sans p-1">
-                  <strong className="text-sky-400 block font-bold">📍 Tu ubicación actual</strong>
-                  <span className="text-slate-600 text-[11px]">Turista en San Juan de Pasto</span>
+                <div className="text-xs font-sans p-1 text-slate-800">
+                  <strong className="text-blue-600 block font-bold">📍 ¡Estás aquí en tiempo real!</strong>
+                  <span className="text-slate-600 text-[11px]">
+                    Lat: {liveUserLocation.lat.toFixed(5)}, Lng: {liveUserLocation.lng.toFixed(5)}
+                  </span>
                 </div>
               </Popup>
-            </Marker>
-          </>
+            </CircleMarker>
+          </LayerGroup>
         )}
       </MapContainer>
 
