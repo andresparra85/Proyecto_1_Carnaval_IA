@@ -1,9 +1,20 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Send, Sparkles, RotateCcw, Compass, MapPin, Navigation, Bot, User } from 'lucide-react';
-import { sendMessageToGuanena, ChatHistoryTurn } from '../services/carnavalApi';
+import {
+  sendMessageToGuanena,
+  ChatHistoryTurn,
+  CarnavalSchedule,
+  NearbyPlace,
+} from '../services/carnavalApi';
 
 export interface GuanenaChatProps {
-  onRouteReceived?: (waypoints: [number, number][], shouldDrawRoute: boolean, title?: string) => void;
+  onRouteReceived?: (
+    waypoints: [number, number][],
+    shouldDrawRoute: boolean,
+    title?: string,
+    schedule?: CarnavalSchedule | null,
+    nearbyPlaces?: NearbyPlace[]
+  ) => void;
   onFocusSenda?: () => void;
   className?: string;
 }
@@ -15,6 +26,8 @@ export interface ChatMessage {
   timestamp: string;
   waypoints?: [number, number][];
   shouldDrawRoute?: boolean;
+  schedule?: CarnavalSchedule | null;
+  nearbyPlaces?: NearbyPlace[];
 }
 
 const DEFAULT_SUGGESTIONS: string[] = [
@@ -119,7 +132,12 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
     }
   }, [messages, isOpen, loading]);
 
-  const dispatchRouteToMap = useCallback((waypoints: [number, number][], title?: string) => {
+  const dispatchRouteToMap = useCallback((
+    waypoints: [number, number][],
+    title?: string,
+    schedule?: CarnavalSchedule | null,
+    nearbyPlaces?: NearbyPlace[]
+  ) => {
     if (!Array.isArray(waypoints) || waypoints.length < 2) return;
 
     // Disparar evento global para componentes de mapa
@@ -128,8 +146,11 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
         new CustomEvent('DRAW_GEMINI_ROUTE', {
           detail: {
             waypoints,
+            route_coordinates: waypoints,
             should_draw_route: true,
             title: title || 'Ruta del Carnaval',
+            schedule: schedule || null,
+            nearby_places: nearbyPlaces || [],
           },
         })
       );
@@ -139,13 +160,15 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
             targetCoords: waypoints[waypoints.length - 1],
             targetName: title || 'Destino de Carnaval',
             coords: waypoints,
+            schedule: schedule || null,
+            nearby_places: nearbyPlaces || [],
           },
         })
       );
     }
 
     if (onRouteReceived) {
-      onRouteReceived(waypoints, true, title);
+      onRouteReceived(waypoints, true, title, schedule, nearbyPlaces);
     }
   }, [onRouteReceived]);
 
@@ -183,14 +206,34 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         waypoints: response.waypoints,
         shouldDrawRoute: response.should_draw_route,
+        schedule: response.schedule,
+        nearbyPlaces: response.nearby_places,
       };
 
       setMessages((prev) => [...prev, botMessage]);
 
-      // Si GuaneñaBot retorna waypoints, pasarlos al mapa para dibujar la ruta inmediatamente
+      // Si GuaneñaBot retorna waypoints, pasarlos al mapa para dibujar la ruta inmediatamente con su telemetría
       if (response.should_draw_route && response.waypoints && response.waypoints.length >= 2) {
-        dispatchRouteToMap(response.waypoints, query);
+        dispatchRouteToMap(response.waypoints, query, response.schedule, response.nearby_places);
         if (onFocusSenda) onFocusSenda();
+      } else if (response.schedule || (response.nearby_places && response.nearby_places.length > 0)) {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('DRAW_GEMINI_ROUTE', {
+              detail: {
+                waypoints: response.waypoints || [],
+                route_coordinates: response.waypoints || [],
+                should_draw_route: response.should_draw_route,
+                title: query,
+                schedule: response.schedule,
+                nearby_places: response.nearby_places,
+              },
+            })
+          );
+        }
+        if (onRouteReceived && response.waypoints) {
+          onRouteReceived(response.waypoints, response.should_draw_route, query, response.schedule, response.nearby_places);
+        }
       }
 
       // Actualizar chips de preguntas sugeridas
@@ -329,11 +372,67 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
                     >
                       <MarkdownMessage content={msg.content} />
 
+                      {/* Resumen de Horarios de la Senda en la Burbuja */}
+                      {!isUser && msg.schedule && (
+                        <div className="my-2.5 p-3 rounded-xl bg-slate-950/80 border border-amber-500/35 shadow-lg shadow-black/50 text-white font-sans select-none">
+                          <div className="flex items-center justify-between border-b border-white/10 pb-1.5 mb-2">
+                            <div className="flex items-center gap-1.5 font-bold text-amber-400 text-xs">
+                              <span>🎭</span>
+                              <span className="uppercase tracking-wide">
+                                {msg.schedule.event_name || 'Telemetría de la Senda'}
+                              </span>
+                            </div>
+                            {msg.schedule.distance_km && (
+                              <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold">
+                                {msg.schedule.distance_km}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 text-[11px]">
+                            <div className="bg-emerald-950/40 p-2 rounded-lg border border-emerald-500/25">
+                              <div className="flex items-center gap-1 text-emerald-400 font-bold mb-0.5">
+                                <span>🚩</span>
+                                <span className="uppercase text-[9px] tracking-wider">Salida</span>
+                              </div>
+                              <p className="font-semibold text-white leading-tight truncate" title={msg.schedule.start_location}>
+                                {msg.schedule.start_location}
+                              </p>
+                              <p className="text-emerald-300 font-mono text-[10px] mt-0.5">
+                                Hora: {msg.schedule.start_time}
+                              </p>
+                            </div>
+
+                            <div className="bg-amber-950/40 p-2 rounded-lg border border-amber-500/25">
+                              <div className="flex items-center gap-1 text-amber-400 font-bold mb-0.5">
+                                <span>🏁</span>
+                                <span className="uppercase text-[9px] tracking-wider">Llegada</span>
+                              </div>
+                              <p className="font-semibold text-white leading-tight truncate" title={msg.schedule.finish_location}>
+                                {msg.schedule.finish_location}
+                              </p>
+                              <p className="text-amber-300 font-mono text-[10px] mt-0.5">
+                                Est: {msg.schedule.estimated_arrival_time}
+                              </p>
+                            </div>
+                          </div>
+
+                          {Array.isArray(msg.nearbyPlaces) && msg.nearbyPlaces.length > 0 && (
+                            <div className="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                              <span>Puntos de apoyo activos:</span>
+                              <span className="text-cyan-300 font-bold">
+                                ✨ {msg.nearbyPlaces.length} servicios en mapa
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {/* Botón interactivo para ver trazado si la respuesta trajo waypoints */}
                       {!isUser && msg.waypoints && msg.waypoints.length >= 2 && (
                         <button
                           type="button"
-                          onClick={() => dispatchRouteToMap(msg.waypoints!)}
+                          onClick={() => dispatchRouteToMap(msg.waypoints!, undefined, msg.schedule, msg.nearbyPlaces)}
                           className="mt-2.5 w-full py-1.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-slate-950 font-black text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
                         >
                           <Navigation className="w-3.5 h-3.5" />
@@ -429,3 +528,4 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
 
 export { GuanenaChat as ChatBot, GuanenaChat as GuanenaBot, GuanenaChat as GuaneñaBot };
 export default GuanenaChat;
+

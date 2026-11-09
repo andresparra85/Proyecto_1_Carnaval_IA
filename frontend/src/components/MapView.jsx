@@ -738,7 +738,7 @@ export function MapView({
   // Efecto que escucha los eventos de GuaneñaBot (Gemini 2.5 Flash)
   useEffect(() => {
     const handleDrawGeminiRoute = (e) => {
-      const { waypoints, title } = e.detail || {};
+      const { waypoints, title, schedule, nearby_places } = e.detail || {};
       if (waypoints && waypoints.length >= 2) {
         setRoutePath(waypoints);
         if (setNavRoute) {
@@ -748,6 +748,8 @@ export function MapView({
             targetName: title || 'Ruta recomendada por GuaneñaBot',
             isGeminiRoute: true,
             waypoints: waypoints,
+            schedule: schedule || null,
+            nearbyPlaces: nearby_places || [],
           });
         }
       }

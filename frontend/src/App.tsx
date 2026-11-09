@@ -69,15 +69,25 @@ export function App() {
   const [showSenda, setShowSenda] = useState(false);
   const [focusSendaTrigger, setFocusSendaTrigger] = useState(0);
 
-  // Estado para la ruta dinámica trazada por GuaneñaBot (Gemini 2.5 Flash)
+  // Estado para la ruta dinámica y telemetría trazada por GuaneñaBot (Gemini 2.5 Flash)
   const [activeRouteCoordinates, setActiveRouteCoordinates] = useState<[number, number][]>([]);
   const [shouldDrawRoute, setShouldDrawRoute] = useState<boolean>(false);
   const [routeTitle, setRouteTitle] = useState<string>('');
+  const [activeSchedule, setActiveSchedule] = useState<any>(null);
+  const [activeNearbyPlaces, setActiveNearbyPlaces] = useState<any[]>([]);
 
-  const handleRouteReceived = useCallback((waypoints: [number, number][], shouldDraw: boolean, title?: string) => {
+  const handleRouteReceived = useCallback((
+    waypoints: [number, number][],
+    shouldDraw: boolean,
+    title?: string,
+    schedule?: any,
+    nearbyPlaces?: any[]
+  ) => {
     setActiveRouteCoordinates(waypoints);
     setShouldDrawRoute(shouldDraw);
     if (title) setRouteTitle(title);
+    if (schedule) setActiveSchedule(schedule);
+    if (nearbyPlaces) setActiveNearbyPlaces(nearbyPlaces);
     setShowSenda(true);
     if (waypoints && waypoints.length >= 2) {
       setNavRoute({
@@ -86,6 +96,8 @@ export function App() {
         targetName: title || 'Ruta guiada por GuaneñaBot',
         isGeminiRoute: true,
         waypoints: waypoints,
+        schedule: schedule || null,
+        nearbyPlaces: nearbyPlaces || [],
       });
     }
   }, []);
@@ -279,6 +291,8 @@ export function App() {
             showSenda={showSenda}
             onToggleSenda={() => setShowSenda((prev) => !prev)}
             focusSendaTrigger={focusSendaTrigger}
+            schedule={activeSchedule}
+            nearbyPlaces={activeNearbyPlaces}
           />
         </ErrorBoundary>
 
