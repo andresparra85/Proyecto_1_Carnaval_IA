@@ -105,7 +105,16 @@ export function App() {
   const handleFocusSenda = useCallback(() => {
     setShowSenda(true);
     setFocusSendaTrigger((prev) => prev + 1);
-  }, []);
+    if (activeRouteCoordinates && activeRouteCoordinates.length >= 2) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('FOCUS_MAP_BOUNDS', {
+            detail: { coordinates: activeRouteCoordinates },
+          })
+        );
+      }
+    }
+  }, [activeRouteCoordinates]);
 
   // Escuchar comandos de IA emitidos desde GuaneñaBot para cambiar fecha de carnaval o trazar ruta OSRM
   useEffect(() => {

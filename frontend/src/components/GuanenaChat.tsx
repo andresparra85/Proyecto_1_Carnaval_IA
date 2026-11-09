@@ -199,30 +199,34 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
     try {
       const response = await sendMessageToGuanena(query, historyPayload);
 
+      const routeCoords = response.route_coordinates && response.route_coordinates.length >= 2
+        ? response.route_coordinates
+        : response.waypoints;
+
       const botMessage: ChatMessage = {
         id: `bot-${Date.now()}`,
         role: 'model',
         content: response.reply,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        waypoints: response.waypoints,
-        shouldDrawRoute: response.should_draw_route,
+        waypoints: routeCoords,
+        shouldDrawRoute: response.should_draw_route || Boolean(routeCoords && routeCoords.length >= 2),
         schedule: response.schedule,
         nearbyPlaces: response.nearby_places,
       };
 
       setMessages((prev) => [...prev, botMessage]);
 
-      // Si GuaneñaBot retorna waypoints, pasarlos al mapa para dibujar la ruta inmediatamente con su telemetría
-      if (response.should_draw_route && response.waypoints && response.waypoints.length >= 2) {
-        dispatchRouteToMap(response.waypoints, query, response.schedule, response.nearby_places);
+      // Sincronizar inmediatamente la telemetría GIS (línea y pines) al mapa sin requerir clics adicionales
+      if (routeCoords && routeCoords.length >= 2) {
+        dispatchRouteToMap(routeCoords, query, response.schedule, response.nearby_places);
         if (onFocusSenda) onFocusSenda();
       } else if (response.schedule || (response.nearby_places && response.nearby_places.length > 0)) {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(
             new CustomEvent('DRAW_GEMINI_ROUTE', {
               detail: {
-                waypoints: response.waypoints || [],
-                route_coordinates: response.waypoints || [],
+                waypoints: routeCoords || [],
+                route_coordinates: routeCoords || [],
                 should_draw_route: response.should_draw_route,
                 title: query,
                 schedule: response.schedule,
@@ -231,8 +235,8 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
             })
           );
         }
-        if (onRouteReceived && response.waypoints) {
-          onRouteReceived(response.waypoints, response.should_draw_route, query, response.schedule, response.nearby_places);
+        if (onRouteReceived) {
+          onRouteReceived(routeCoords || [], response.should_draw_route, query, response.schedule, response.nearby_places);
         }
       }
 
@@ -428,14 +432,27 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
                         </div>
                       )}
 
-                      {/* Botón interactivo para ver trazado si la respuesta trajo waypoints */}
+                      {/* Botón interactivo para ver trazado y reenfocar la vista del mapa */}
                       {!isUser && msg.waypoints && msg.waypoints.length >= 2 && (
                         <button
                           type="button"
-                          onClick={() => dispatchRouteToMap(msg.waypoints!, undefined, msg.schedule, msg.nearbyPlaces)}
-                          className="mt-2.5 w-full py-1.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-slate-950 font-black text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                          onClick={() => {
+                            dispatchRouteToMap(msg.waypoints!, undefined, msg.schedule, msg.nearbyPlaces);
+                            if (onFocusSenda) onFocusSenda();
+                            if (typeof window !== 'undefined') {
+                              window.dispatchEvent(
+                                new CustomEvent('FOCUS_MAP_BOUNDS', {
+                                  detail: {
+                                    coordinates: msg.waypoints,
+                                    title: msg.schedule?.event_name || 'Senda del Carnaval',
+                                  },
+                                })
+                              );
+                            }
+                          }}
+                          className="mt-2.5 w-full py-2 px-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-slate-950 font-black text-xs shadow-md shadow-orange-600/30 transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
                         >
-                          <Navigation className="w-3.5 h-3.5" />
+                          <Navigation className="w-3.5 h-3.5 text-slate-950 stroke-[2.5]" />
                           <span>📍 Ver trazado en el mapa</span>
                         </button>
                       )}

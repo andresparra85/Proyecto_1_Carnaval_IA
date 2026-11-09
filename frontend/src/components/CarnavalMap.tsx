@@ -845,14 +845,24 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
       if (onRouteClear) onRouteClear();
     };
 
+    const handleFocusBounds = (e: any) => {
+      const coords = e?.detail?.coordinates || activeRouteCoordinates;
+      if (Array.isArray(coords) && coords.length >= 2) {
+        setActiveRouteCoordinates(coords);
+        setIsRouteActive(true);
+      }
+    };
+
     window.addEventListener('DRAW_GEMINI_ROUTE', handleDrawGeminiRoute);
     window.addEventListener('CLEAR_MAP_ROUTE', handleClearRoute);
     window.addEventListener('route-to-poi', handleDrawGeminiRoute);
+    window.addEventListener('FOCUS_MAP_BOUNDS', handleFocusBounds);
 
     return () => {
       window.removeEventListener('DRAW_GEMINI_ROUTE', handleDrawGeminiRoute);
       window.removeEventListener('CLEAR_MAP_ROUTE', handleClearRoute);
       window.removeEventListener('route-to-poi', handleDrawGeminiRoute);
+      window.removeEventListener('FOCUS_MAP_BOUNDS', handleFocusBounds);
     };
   }, [onRouteClear]);
 
