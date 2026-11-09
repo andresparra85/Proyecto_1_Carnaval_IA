@@ -22,7 +22,7 @@ export function Header({
   const isTurista = user?.role === 'turista' || displayName.toLowerCase().includes('turista');
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-slate-950/75 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-2.5 sm:py-3 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.5)] select-none">
+    <header className="sticky top-0 z-30 w-full bg-[#180a33]/70 backdrop-blur-2xl border-b border-fuchsia-500/20 px-4 sm:px-6 py-2.5 sm:py-3 transition-all shadow-[0_10px_35px_rgba(244,63,94,0.15)] select-none">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
         
         {/* 1. Lado Izquierdo: Logotipo, Antifaz y Badge de Estado en Vivo */}
@@ -67,7 +67,7 @@ export function Header({
             onClick={onSelectSenda}
             className={`flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer whitespace-nowrap ${
               activeView === 'senda'
-                ? 'bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white shadow-md shadow-rose-600/30 andean-glow-crimson'
+                ? 'bg-gradient-to-r from-rose-500 via-fuchsia-500 to-amber-500 text-white shadow-[0_0_20px_rgba(244,63,94,0.45)]'
                 : 'text-slate-300 hover:text-white hover:bg-white/10'
             }`}
             title="Ver mapa de la Senda del Carnaval"
@@ -82,7 +82,7 @@ export function Header({
             onClick={onOpenCalendar}
             className={`flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer whitespace-nowrap ${
               activeView === 'calendario'
-                ? 'bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white shadow-md shadow-rose-600/30 andean-glow-crimson'
+                ? 'bg-gradient-to-r from-rose-500 via-fuchsia-500 to-amber-500 text-white shadow-[0_0_20px_rgba(244,63,94,0.45)]'
                 : 'text-slate-300 hover:text-white hover:bg-white/10'
             }`}
             title="Abrir programación y calendario oficial"
@@ -98,7 +98,7 @@ export function Header({
             onClick={onOpenReports}
             className={`flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer whitespace-nowrap ${
               activeView === 'reportes'
-                ? 'bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white shadow-md shadow-rose-600/30 andean-glow-crimson'
+                ? 'bg-gradient-to-r from-rose-500 via-fuchsia-500 to-amber-500 text-white shadow-[0_0_20px_rgba(244,63,94,0.45)]'
                 : 'text-slate-300 hover:text-white hover:bg-white/10'
             }`}
             title="Ver incidencias y reportes ciudadanos"
@@ -122,7 +122,7 @@ export function Header({
           <button
             type="button"
             onClick={onOpenReportModal}
-            className="flex items-center gap-1.5 bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 hover:brightness-110 text-white shadow-lg shadow-rose-600/30 rounded-full px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            className="flex items-center gap-1.5 bg-gradient-to-r from-rose-500 via-red-500 to-amber-500 hover:brightness-110 text-white shadow-lg shadow-rose-600/40 rounded-full px-5 py-2.5 text-xs sm:text-sm font-extrabold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             title="Crear un reporte rápido de incidencia en la senda"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
@@ -171,7 +171,7 @@ export function Header({
             <button
               type="button"
               onClick={() => onOpenAuth && onOpenAuth('login')}
-              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-bold text-white bg-slate-900/80 hover:bg-slate-800 border border-white/10 shadow-sm transition active:scale-95 cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-bold text-white bg-[#220d45]/70 hover:bg-[#2c1358] border border-fuchsia-500/25 shadow-sm transition active:scale-95 cursor-pointer"
               title="Iniciar sesión"
             >
               <LogIn className="w-4 h-4 text-amber-400" />
