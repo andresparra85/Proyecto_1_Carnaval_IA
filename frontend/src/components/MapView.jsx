@@ -1001,7 +1001,7 @@ export function MapView({
   const showZones = activeFilter === 'todos' || activeFilter === 'zonas';
 
   return (
-    <div className="relative w-full h-full min-h-[500px] overflow-hidden shadow-2xl bg-slate-950">
+    <div className="relative w-full h-full min-h-[500px] overflow-hidden shadow-2xl bg-[#0d041a]">
       {/* 1. Contenedor Superior Fijo: Banner de Evento Activo y Chips de Filtros Tipo Píldora */}
       <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none">
         {/* Banner Superior Dinámico de Evento Oficial controlado por GuaneñaBot */}
@@ -1094,8 +1094,8 @@ export function MapView({
             </button>
           ) : (
             /* Estado Expandido: Tarjeta limpia y compacta */
-            <div className="max-w-xs sm:max-w-sm w-[calc(100vw-2rem)] sm:w-auto backdrop-blur-md bg-white/85 dark:bg-slate-900/85 p-3.5 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-sm text-slate-700 dark:text-slate-200 transition-all">
-              <div className="flex items-start justify-between gap-2 border-b border-slate-100 dark:border-white/5 pb-2 mb-2">
+            <div className="max-w-xs sm:max-w-sm w-[calc(100vw-2rem)] sm:w-auto backdrop-blur-2xl bg-[#180a33]/85 p-4 rounded-3xl border border-amber-400/30 shadow-[0_10px_30px_rgba(0,0,0,0.6)] text-slate-200 transition-all">
+              <div className="flex items-start justify-between gap-2 border-b border-white/10 pb-2 mb-2">
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5 mb-0.5">
                     <span
@@ -1109,7 +1109,7 @@ export function MapView({
                       {currentEvent.hours}
                     </span>
                   </div>
-                  <h3 className="text-xs sm:text-sm font-bold text-white leading-tight truncate">
+                  <h3 className="text-xs sm:text-sm font-black text-amber-300 leading-tight truncate">
                     {currentEvent.name}
                   </h3>
                 </div>
@@ -1125,7 +1125,7 @@ export function MapView({
               </div>
 
               <div className="space-y-2 text-xs">
-                <p className="text-slate-400 text-[11px] leading-snug line-clamp-2">
+                <p className="text-slate-200 text-[11px] leading-snug line-clamp-2">
                   {currentEvent.description}
                 </p>
 
@@ -1190,10 +1190,11 @@ export function MapView({
         </div>
       )}
 
-      {/* 2.5 Orbes de luz ambiental difuminada (Midnight Carnival Neón) */}
+      {/* 2.5 Orbes de luz ambiental multicromáticos (Carnaval Vivo) */}
       <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
-        <div className="absolute -top-24 -left-24 h-[26rem] w-[26rem] rounded-full bg-fuchsia-600/20 blur-[120px]" />
-        <div className="absolute -bottom-32 -right-24 h-[30rem] w-[30rem] rounded-full bg-cyan-500/15 blur-[120px]" />
+        <div className="absolute -top-24 -left-24 h-[28rem] w-[28rem] rounded-full bg-rose-500/25 blur-[120px]" />
+        <div className="absolute -top-20 -right-24 h-[26rem] w-[26rem] rounded-full bg-amber-400/20 blur-[130px]" />
+        <div className="absolute bottom-[-8rem] left-1/3 h-[32rem] w-[32rem] rounded-full bg-cyan-500/20 blur-[140px]" />
       </div>
 
       {/* 3. Contenedor de Leaflet con Mosaicos de Calles Reales */}
