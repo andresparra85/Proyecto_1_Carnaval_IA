@@ -1029,9 +1029,9 @@ export function MapView({
           <button
             type="button"
             onClick={toggleSenda}
-            className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-sm ${showSenda
-                ? 'bg-amber-500 hover:bg-amber-400 text-white shadow-md ring-2 ring-amber-400/50'
-                : 'bg-white/90 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+            className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md ${showSenda
+                ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-md ring-2 ring-amber-400/50 glow-gold'
+                : 'bg-slate-900/50 border border-white/10 text-slate-200 hover:text-white hover:border-amber-400/40'
               }`}
             title={showSenda ? 'Ocultar Senda del Carnaval' : 'Mostrar Senda del Carnaval'}
           >
@@ -1045,15 +1045,24 @@ export function MapView({
 
           {filterOptions.map((f) => {
             const isActive = activeFilter === f.id;
+            const activeGlow = {
+              todos: 'ring-rose-400/50 glow-fuchsia',
+              restaurantes: 'ring-amber-400/50 glow-gold',
+              salud: 'ring-emerald-400/50',
+              policia: 'ring-cyan-400/50 glow-cyan',
+              banio: 'ring-cyan-400/50 glow-cyan',
+              tarima: 'ring-fuchsia-400/50 glow-fuchsia',
+              zonas: 'ring-amber-400/50 glow-gold',
+            }[f.id];
             return (
               <button
                 key={f.id}
                 type="button"
                 onClick={() => setActiveFilter(f.id)}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md ${
+                className={`rounded-full px-3.5 py-1.5 text-xs transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md ${
                   isActive
-                    ? 'bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white shadow-md andean-glow-crimson font-bold ring-1 ring-white/20'
-                    : 'bg-slate-900/60 backdrop-blur-md border border-white/5 text-slate-300 hover:text-white hover:bg-slate-800/80'
+                    ? `bg-gradient-to-r from-rose-600/95 via-fuchsia-600/90 to-amber-500/95 text-white font-bold shadow-md ring-2 ${activeGlow}`
+                    : 'bg-slate-900/50 border border-white/10 text-slate-200 font-medium hover:text-white hover:border-cyan-400/40 hover:bg-slate-800/80'
                 }`}
               >
                 <span className="text-sm">{f.icon}</span>
