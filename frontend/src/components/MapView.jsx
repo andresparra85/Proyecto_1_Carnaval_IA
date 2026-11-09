@@ -181,14 +181,14 @@ const createStartPointIcon = () => {
     className: 'carnival-start-marker',
     html: `
       <div style="
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background: linear-gradient(135deg, #a8a29e 0%, #78716c 100%);
         padding: 5px 10px;
         border-radius: 9999px;
         display: flex;
         align-items: center;
         gap: 5px;
         border: 2px solid #ffffff;
-        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.7), 0 2px 8px rgba(0,0,0,0.5);
+        box-shadow: 0 4px 16px rgba(168, 162, 158, 0.7), 0 2px 8px rgba(0,0,0,0.5);
         color: #ffffff;
         font-weight: 800;
         font-size: 11px;
@@ -212,14 +212,14 @@ const createEndPointIcon = () => {
     className: 'carnival-end-marker',
     html: `
       <div style="
-        background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
         padding: 5px 10px;
         border-radius: 9999px;
         display: flex;
         align-items: center;
         gap: 5px;
         border: 2px solid #ffffff;
-        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.7), 0 2px 8px rgba(0,0,0,0.5);
+        box-shadow: 0 4px 16px rgba(220, 38, 38, 0.7), 0 2px 8px rgba(0,0,0,0.5);
         color: #ffffff;
         font-weight: 800;
         font-size: 11px;
@@ -271,7 +271,7 @@ const createRestaurantIcon = (isOpen) => {
     className: 'custom-restaurant-marker',
     html: `
       <div style="
-        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        background: linear-gradient(135deg, #be123c 0%, #7f1d1d 100%);
         width: 38px;
         height: 38px;
         border-radius: 14px;
@@ -279,7 +279,7 @@ const createRestaurantIcon = (isOpen) => {
         align-items: center;
         justify-content: center;
         border: 2px solid rgba(255, 255, 255, 0.95);
-        box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.65), 0 0 16px rgba(249, 115, 22, 0.6);
+        box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.65), 0 0 16px rgba(190, 18, 60, 0.65);
         color: #ffffff;
         font-size: 18px;
         position: relative;
@@ -293,9 +293,9 @@ const createRestaurantIcon = (isOpen) => {
           width: 10px;
           height: 10px;
           border-radius: 50%;
-          background: ${isOpen ? '#22c55e' : '#ef4444'};
+          background: ${isOpen ? '#a8a29e' : '#dc2626'};
           border: 1.5px solid #ffffff;
-          box-shadow: 0 0 6px ${isOpen ? '#22c55e' : '#ef4444'};
+          box-shadow: 0 0 6px ${isOpen ? '#a8a29e' : '#dc2626'};
         "></span>
         <span style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🍽️</span>
       </div>
@@ -310,20 +310,20 @@ const createRestaurantIcon = (isOpen) => {
 const getPoiIcon = (category) => {
   switch (category?.toLowerCase()) {
     case 'salud':
-      return createCustomIcon('linear-gradient(135deg, #ff2a6d 0%, #e11d48 100%)', '🏥', false, 'rgba(255, 42, 109, 0.6)');
+      return createCustomIcon('linear-gradient(135deg, #dc2626 0%, #991b1b 100%)', '🏥', false, 'rgba(220, 38, 38, 0.6)');
     case 'policia':
     case 'cai':
       return createCustomIcon('linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', '👮', false, 'rgba(59, 130, 246, 0.6)');
     case 'tarima':
-      return createCustomIcon('linear-gradient(135deg, #c084fc 0%, #9333ea 100%)', '🎭', false, 'rgba(192, 132, 252, 0.6)');
+      return createCustomIcon('linear-gradient(135deg, #f87171 0%, #dc2626 100%)', '🎭', false, 'rgba(220, 38, 38, 0.6)');
     case 'banio':
     case 'bano':
-      return createCustomIcon('linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)', '🚻', false, 'rgba(6, 182, 212, 0.6)');
+      return createCustomIcon('linear-gradient(135deg, #a8a29e 0%, #78716c 100%)', '🚻', false, 'rgba(168, 162, 158, 0.6)');
     case 'restaurante':
     case 'restaurantes':
-      return createCustomIcon('linear-gradient(135deg, #f97316 0%, #ea580c 100%)', '🍽️', false, 'rgba(249, 115, 22, 0.6)');
+      return createCustomIcon('linear-gradient(135deg, #be123c 0%, #7f1d1d 100%)', '🍽️', false, 'rgba(190, 18, 60, 0.6)');
     case 'salida':
-      return createCustomIcon('linear-gradient(135deg, #34d399 0%, #059669 100%)', '🚪', false, 'rgba(52, 211, 153, 0.6)');
+      return createCustomIcon('linear-gradient(135deg, #a8a29e 0%, #78716c 100%)', '🚪', false, 'rgba(168, 162, 158, 0.6)');
     default:
       return createCustomIcon('linear-gradient(135deg, #94a3b8 0%, #475569 100%)', '📍', false, 'rgba(148, 163, 184, 0.5)');
   }
@@ -333,12 +333,12 @@ const getPoiIcon = (category) => {
 const getReportIcon = (riskLevel) => {
   switch (riskLevel?.toLowerCase()) {
     case 'alto':
-      return createCustomIcon('linear-gradient(135deg, #f43f5e 0%, #dc2626 100%)', '⚠️', true, 'rgba(244, 63, 94, 0.7)');
+      return createCustomIcon('linear-gradient(135deg, #dc2626 0%, #991b1b 100%)', '⚠️', true, 'rgba(220, 38, 38, 0.7)');
     case 'medio':
-      return createCustomIcon('linear-gradient(135deg, #fbbf24 0%, #d97706 100%)', '⚡', true, 'rgba(251, 191, 36, 0.7)');
+      return createCustomIcon('linear-gradient(135deg, #f87171 0%, #dc2626 100%)', '⚡', true, 'rgba(220, 38, 38, 0.7)');
     case 'bajo':
     default:
-      return createCustomIcon('linear-gradient(135deg, #10b981 0%, #059669 100%)', 'ℹ️', false, 'rgba(16, 185, 129, 0.5)');
+      return createCustomIcon('linear-gradient(135deg, #a8a29e 0%, #78716c 100%)', 'ℹ️', false, 'rgba(168, 162, 158, 0.5)');
   }
 };
 
@@ -349,8 +349,8 @@ const getZoneColors = (riskLevel, congestionPercentage) => {
 
   if (normRisk === 'alto' || cong >= 70) {
     return {
-      border: '#f43f5e',
-      fill: '#f43f5e',
+      border: '#dc2626',
+      fill: '#dc2626',
       badge: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
       label: 'Alta Congestión / Riesgo Alto',
       fillOpacity: 0.28,
@@ -358,17 +358,17 @@ const getZoneColors = (riskLevel, congestionPercentage) => {
   }
   if (normRisk === 'medio' || cong >= 40) {
     return {
-      border: '#fbbf24',
-      fill: '#fbbf24',
-      badge: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+      border: '#dc2626',
+      fill: '#dc2626',
+      badge: 'bg-coral-500/20 text-coral-300 border-coral-500/40',
       label: 'Aglomeración Media',
       fillOpacity: 0.22,
     };
   }
   return {
-    border: '#10b981',
-    fill: '#10b981',
-    badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+    border: '#a8a29e',
+    fill: '#a8a29e',
+    badge: 'bg-aqua-500/20 text-aqua-300 border-aqua-500/40',
     label: 'Tráfico Fluido',
     fillOpacity: 0.16,
   };
@@ -735,9 +735,36 @@ export function MapView({
   const [routePath, setRoutePath] = useState(null);
   const [isRouting, setIsRouting] = useState(false);
 
+  // Efecto que escucha los eventos de GuaneñaBot (Gemini 2.5 Flash)
+  useEffect(() => {
+    const handleDrawGeminiRoute = (e) => {
+      const { waypoints, title } = e.detail || {};
+      if (waypoints && waypoints.length >= 2) {
+        setRoutePath(waypoints);
+        if (setNavRoute) {
+          setNavRoute({
+            startCoords: waypoints[0],
+            targetCoords: waypoints[waypoints.length - 1],
+            targetName: title || 'Ruta recomendada por GuaneñaBot',
+            isGeminiRoute: true,
+            waypoints: waypoints,
+          });
+        }
+      }
+    };
+    window.addEventListener('DRAW_GEMINI_ROUTE', handleDrawGeminiRoute);
+    return () => window.removeEventListener('DRAW_GEMINI_ROUTE', handleDrawGeminiRoute);
+  }, [setNavRoute]);
+
   // Efecto que escucha los cambios de navRoute: invoca fetchRealRoute o limpia routePath
   useEffect(() => {
     if (navRoute && navRoute.targetCoords) {
+      if (navRoute.isGeminiRoute && navRoute.waypoints && navRoute.waypoints.length >= 2) {
+        setRoutePath(navRoute.waypoints);
+        setIsRouting(false);
+        return;
+      }
+
       const start = navRoute.startCoords || (userGps ? [userGps.lat, userGps.lng] : PASTO_CENTER);
       let isMounted = true;
       setIsRouting(true);
@@ -824,14 +851,14 @@ export function MapView({
   const dayRouteColor = useMemo(() => {
     switch (selectedDay) {
       case '03-ene':
-        return '#F59E0B'; // Ámbar (3 de Enero - Canto a la Tierra)
+        return '#dc2626'; // Carmín (3 de Enero - Canto a la Tierra)
       case '04-ene':
-        return '#D946EF'; // Magenta (4 de Enero - Familia Castañeda)
+        return '#dc2626'; // Carmín profundo (4 de Enero - Familia Castañeda)
       case '05-ene':
-        return '#38BDF8'; // Cyan festivo (5 de Enero - Día de Negros)
+        return '#a8a29e'; // Platino (5 de Enero - Día de Negros)
       case '06-ene':
       default:
-        return '#E11D48'; // Rojo Carmesí (6 de Enero - Desfile Magno)
+        return '#dc2626'; // Carmín (6 de Enero - Desfile Magno)
     }
   }, [selectedDay]);
 
@@ -1001,14 +1028,14 @@ export function MapView({
   const showZones = activeFilter === 'todos' || activeFilter === 'zonas';
 
   return (
-    <div className="relative w-full h-full min-h-[500px] overflow-hidden shadow-2xl bg-[#0d041a]">
+    <div className="relative w-full h-full min-h-[500px] overflow-hidden shadow-2xl bg-[#0a0a0b]">
       {/* 1. Contenedor Superior Fijo: Banner de Evento Activo y Chips de Filtros Tipo Píldora */}
       <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none">
         {/* Banner Superior Dinámico de Evento Oficial controlado por GuaneñaBot */}
-        <div className="pointer-events-auto flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-full bg-[#180a33]/80 backdrop-blur-2xl border border-fuchsia-500/20 shadow-[0_0_25px_rgba(168,85,247,0.25)] text-xs max-w-lg">
+        <div className="pointer-events-auto flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-full bg-[#101012]/80 backdrop-blur-2xl border border-rose-500/20 shadow-[0_0_25px_rgba(220,38,38,0.25)] text-xs max-w-lg">
           <div className="flex items-center gap-2 min-w-0">
             <span
-              className={`w-2 h-2 rounded-full shrink-0 ${currentEvent ? 'bg-amber-500' : 'bg-slate-500'}`}
+              className={`w-2 h-2 rounded-full shrink-0 ${currentEvent ? 'bg-coral-500' : 'bg-slate-500'}`}
               style={currentEvent?.color ? { backgroundColor: currentEvent.color } : {}}
             />
             <div className="truncate text-slate-300">
@@ -1018,7 +1045,7 @@ export function MapView({
               </strong>
             </div>
           </div>
-          <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-amber-300">
+          <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-rose-300">
             🎭 GuaneñaBot AI
           </span>
         </div>
@@ -1030,8 +1057,8 @@ export function MapView({
             type="button"
             onClick={toggleSenda}
             className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md ${showSenda
-                ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-md ring-2 ring-amber-400/50 glow-gold'
-                : 'bg-slate-900/50 border border-white/10 text-slate-200 hover:text-white hover:border-amber-400/40'
+                ? 'bg-gradient-to-r from-coral-600 to-rose-500 text-white shadow-md ring-2 ring-coral-400/50 glow-coral'
+                : 'bg-slate-900/50 border border-white/10 text-slate-200 hover:text-white hover:border-rose-400/50'
               }`}
             title={showSenda ? 'Ocultar Senda del Carnaval' : 'Mostrar Senda del Carnaval'}
           >
@@ -1046,13 +1073,13 @@ export function MapView({
           {filterOptions.map((f) => {
             const isActive = activeFilter === f.id;
             const activeChip = {
-              todos: 'bg-gradient-to-r from-rose-600 to-amber-500 text-white border-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.5)]',
-              restaurantes: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)]',
-              salud: 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.4)]',
-              policia: 'bg-gradient-to-r from-cyan-500 to-sky-500 text-white border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]',
-              banio: 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]',
-              tarima: 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.4)]',
-              zonas: 'bg-gradient-to-r from-amber-500 to-rose-500 text-white border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)]',
+              todos: 'bg-gradient-to-r from-coral-600 to-rose-500 text-white border-coral-400 shadow-[0_0_20px_rgba(220,38,38,0.55)]',
+              restaurantes: 'bg-gradient-to-r from-rose-600 to-rose-800 text-white border-rose-400 shadow-[0_0_15px_rgba(190,18,60,0.45)]',
+              salud: 'bg-gradient-to-r from-aqua-500 to-aqua-700 text-white border-aqua-400 shadow-[0_0_15px_rgba(168,162,158,0.4)]',
+              policia: 'bg-gradient-to-r from-aqua-500 to-aqua-600 text-white border-aqua-400 shadow-[0_0_15px_rgba(168,162,158,0.4)]',
+              banio: 'bg-gradient-to-r from-aqua-500 to-aqua-700 text-white border-aqua-400 shadow-[0_0_15px_rgba(168,162,158,0.4)]',
+              tarima: 'bg-gradient-to-r from-coral-600 to-rose-500 text-white border-coral-400 shadow-[0_0_15px_rgba(220,38,38,0.4)]',
+              zonas: 'bg-gradient-to-r from-rose-600 to-coral-500 text-white border-rose-400 shadow-[0_0_15px_rgba(190,18,60,0.45)]',
             }[f.id];
             return (
               <button
@@ -1062,7 +1089,7 @@ export function MapView({
                 className={`rounded-full px-3.5 py-1.5 text-xs transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md border ${
                   isActive
                     ? `font-bold ${activeChip}`
-                    : 'bg-[#220d45]/60 border-white/15 text-slate-200 font-medium hover:border-amber-400/50 hover:text-white'
+                    : 'bg-[#181819]/60 border-white/15 text-slate-200 font-medium hover:border-rose-400/50 hover:text-white'
                 }`}
               >
                 <span className="text-sm">{f.icon}</span>
@@ -1081,7 +1108,7 @@ export function MapView({
             <button
               type="button"
               onClick={() => setIsCardMinimized(false)}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-2xl backdrop-blur-2xl bg-slate-950/85 border border-white/10 shadow-2xl hover:shadow-md text-xs font-bold text-slate-100 hover:scale-[1.02] transition cursor-pointer"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-2xl backdrop-blur-2xl bg-[#101012]/85 border border-rose-500/25 shadow-2xl hover:shadow-md text-xs font-bold text-slate-100 hover:scale-[1.02] transition cursor-pointer"
               title="Expandir información del evento"
             >
               <span
@@ -1090,11 +1117,11 @@ export function MapView({
               />
               <span className="truncate max-w-[170px] sm:max-w-none">{currentEvent.name}</span>
               <span className="text-[10px] text-slate-400 font-mono">({currentEvent.hours})</span>
-              <ChevronUp className="w-3.5 h-3.5 text-amber-500 ml-1 shrink-0" />
+              <ChevronUp className="w-3.5 h-3.5 text-rose-400 ml-1 shrink-0" />
             </button>
           ) : (
             /* Estado Expandido: Tarjeta limpia y compacta */
-            <div className="max-w-xs sm:max-w-sm w-[calc(100vw-2rem)] sm:w-auto backdrop-blur-2xl bg-[#180a33]/85 p-4 rounded-3xl border border-amber-400/30 shadow-[0_10px_30px_rgba(0,0,0,0.6)] text-slate-200 transition-all">
+            <div className="max-w-xs sm:max-w-sm w-[calc(100vw-2rem)] sm:w-auto backdrop-blur-2xl bg-[#101012]/85 p-4 rounded-3xl border border-coral-400/30 shadow-[0_10px_30px_rgba(0,0,0,0.6)] text-slate-200 transition-all">
               <div className="flex items-start justify-between gap-2 border-b border-white/10 pb-2 mb-2">
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5 mb-0.5">
@@ -1102,14 +1129,14 @@ export function MapView({
                       className="w-2 h-2 rounded-full shrink-0"
                       style={{ backgroundColor: currentEvent.color }}
                     />
-                    <span className="text-[10px] font-black uppercase tracking-wider text-amber-500">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-rose-400">
                       Evento Oficial
                     </span>
                     <span className="text-[10px] font-mono text-slate-300 bg-white/5 px-1.5 py-0.5 rounded-md border border-white/10">
                       {currentEvent.hours}
                     </span>
                   </div>
-                  <h3 className="text-xs sm:text-sm font-black text-amber-300 leading-tight truncate">
+                  <h3 className="text-xs sm:text-sm font-black text-rose-200 leading-tight truncate">
                     {currentEvent.name}
                   </h3>
                 </div>
@@ -1137,7 +1164,7 @@ export function MapView({
                       <span>{currentEvent.closedPoints.length} Puntos Cierre</span>
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-[10px] font-bold">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-aqua-500/20 border border-aqua-400/40 text-aqua-200 text-[10px] font-bold">
                       <span>✅</span>
                       <span>Vías Despejadas</span>
                     </span>
@@ -1163,17 +1190,17 @@ export function MapView({
 
       {/* 2.1 Tarjeta Flotante de Navegación Activa por Calles */}
       {navRoute && (
-        <div className="absolute bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-[1100] flex items-center gap-3.5 px-4 py-3 backdrop-blur-2xl bg-slate-950/85 border border-white/10 rounded-2xl shadow-2xl text-white pointer-events-auto animate-in fade-in">
+        <div className="absolute bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-[1100] flex items-center gap-3.5 px-4 py-3 backdrop-blur-2xl bg-[#101012]/85 border border-aqua-400/30 rounded-2xl shadow-[0_0_25px_rgba(168,162,158,0.25)] text-white pointer-events-auto animate-in fade-in">
           <div className="flex items-center gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
+            <span className="w-2.5 h-2.5 rounded-full bg-aqua-400 animate-pulse shrink-0" />
             <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
               <span className="text-xs sm:text-sm font-bold whitespace-nowrap">
-                🧭 Navegando hacia: <span className="text-amber-400 font-black">{navRoute.targetName}</span>
+                🧭 Navegando hacia: <span className="text-aqua-400 font-black">{navRoute.targetName}</span>
               </span>
               {displayDistance && (
                 <span className="text-[11px] font-medium px-2 py-0.5 rounded-xl bg-white/5 text-slate-300 border border-white/10 w-max flex items-center gap-1">
                   <span>🚶 {displayDistance}</span>
-                  {isRouting && <span className="text-[10px] text-amber-400 animate-pulse">(trazando...)</span>}
+                  {isRouting && <span className="text-[10px] text-aqua-400 animate-pulse">(trazando...)</span>}
                 </span>
               )}
             </div>
@@ -1192,9 +1219,9 @@ export function MapView({
 
       {/* 2.5 Orbes de luz ambiental multicromáticos (Carnaval Vivo) */}
       <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
-        <div className="absolute -top-24 -left-24 h-[28rem] w-[28rem] rounded-full bg-rose-500/25 blur-[120px]" />
-        <div className="absolute -top-20 -right-24 h-[26rem] w-[26rem] rounded-full bg-amber-400/20 blur-[130px]" />
-        <div className="absolute bottom-[-8rem] left-1/3 h-[32rem] w-[32rem] rounded-full bg-cyan-500/20 blur-[140px]" />
+        <div className="absolute -top-24 -left-24 h-[28rem] w-[28rem] rounded-full bg-coral-600/30 blur-[120px]" />
+        <div className="absolute -top-20 -right-24 h-[26rem] w-[26rem] rounded-full bg-rose-500/25 blur-[130px]" />
+        <div className="absolute bottom-[-8rem] left-1/3 h-[32rem] w-[32rem] rounded-full bg-aqua-500/20 blur-[140px]" />
       </div>
 
       {/* 3. Contenedor de Leaflet con Mosaicos de Calles Reales */}
@@ -1290,8 +1317,8 @@ export function MapView({
                   center={[1.21540, -77.28410]}
                   radius={180}
                   pathOptions={{
-                    color: '#38bdf8',
-                    fillColor: '#0284c7',
+                    color: '#dc2626',
+                    fillColor: '#991b1b',
                     fillOpacity: 0.35,
                     weight: 3,
                     dashArray: '6, 6',
@@ -1299,7 +1326,7 @@ export function MapView({
                 >
                   <Popup>
                     <div className="text-xs p-1 font-sans">
-                      <strong className="text-sky-400 block font-black">🎭 Tablado Principal - Plaza del Carnaval</strong>
+                      <strong className="text-aqua-300 block font-black">🎭 Tablado Principal - Plaza del Carnaval</strong>
                       <p className="text-slate-200 mt-1">Conciertos en vivo y zona neurálgica de juego con cosmético negro.</p>
                     </div>
                   </Popup>
@@ -1308,8 +1335,8 @@ export function MapView({
                   center={[1.21380, -77.28180]}
                   radius={160}
                   pathOptions={{
-                    color: '#38bdf8',
-                    fillColor: '#0284c7',
+                    color: '#dc2626',
+                    fillColor: '#991b1b',
                     fillOpacity: 0.35,
                     weight: 3,
                     dashArray: '6, 6',
@@ -1317,7 +1344,7 @@ export function MapView({
                 >
                   <Popup>
                     <div className="text-xs p-1 font-sans">
-                      <strong className="text-sky-400 block font-black">🎭 Tablado Histórico - Plaza de Nariño</strong>
+                      <strong className="text-aqua-300 block font-black">🎭 Tablado Histórico - Plaza de Nariño</strong>
                       <p className="text-slate-200 mt-1">Presentaciones de orquestas y concentración de juego de la pintica.</p>
                     </div>
                   </Popup>
@@ -1340,10 +1367,10 @@ export function MapView({
                     <div
                       className={`font-black flex items-center gap-1.5 pb-1.5 mb-1.5 border-b ${
                         hito.tipo === 'inicio'
-                          ? 'text-emerald-400 border-emerald-500/25'
+                          ? 'text-aqua-400 border-aqua-500/25'
                           : hito.tipo === 'fin'
                             ? 'text-rose-400 border-rose-500/25'
-                            : 'text-amber-400 border-amber-500/25'
+                            : 'text-rose-400 border-rose-500/25'
                       }`}
                     >
                       <span className="text-sm">{hito.tipo === 'inicio' ? '🚩' : hito.tipo === 'fin' ? '🏁' : '👑'}</span>
@@ -1361,11 +1388,17 @@ export function MapView({
           </>
         )}
 
-        {/* Renderizado de la ruta peatonal en Leaflet con OSRM blindado */}
+        {/* Renderizado de la ruta peatonal en Leaflet con OSRM blindado o GuaneñaBot (Gemini 2.5 Flash) */}
         {Array.isArray(routePath) && routePath.length >= 2 && (
           <Polyline
+            key={`route-${routePath.length}-${navRoute?.isGeminiRoute ? 'gemini' : 'osrm'}`}
             positions={routePath}
-            pathOptions={{ color: '#2563eb', weight: 6, opacity: 0.85 }}
+            pathOptions={{
+              color: navRoute?.isGeminiRoute ? '#f59e0b' : '#2563eb',
+              weight: navRoute?.isGeminiRoute ? 6 : 6,
+              opacity: 0.9,
+              dashArray: navRoute?.isGeminiRoute ? '10, 10' : undefined,
+            }}
           />
         )}
 
@@ -1407,7 +1440,7 @@ export function MapView({
               >
                 <Popup>
                   <div className="p-1 min-w-[210px] font-sans">
-                    <div className="flex items-center gap-1.5 text-emerald-400 font-black text-xs border-b border-emerald-500/20 pb-1 mb-1.5">
+                    <div className="flex items-center gap-1.5 text-aqua-400 font-black text-xs border-b border-aqua-500/20 pb-1 mb-1.5">
                       <span>🏁</span>
                       <span>Punto de Inicio / Salida</span>
                     </div>
@@ -1565,8 +1598,8 @@ export function MapView({
                 </div>
                 <h4 className="font-black text-sm text-white mt-1">{poi.name}</h4>
                 {poi.address && (
-                  <p className="text-[11px] text-amber-300 font-medium mt-0.5 flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-amber-400 shrink-0" />
+                  <p className="text-[11px] text-aqua-300 font-medium mt-0.5 flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-aqua-400 shrink-0" />
                     <span>{poi.address}</span>
                   </p>
                 )}
@@ -1588,7 +1621,7 @@ export function MapView({
                         targetName: poi.name,
                       });
                     }}
-                    className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+                    className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-gradient-to-r from-coral-500 to-rose-700 hover:from-coral-400 hover:to-rose-800 text-white font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
                     title="Calcular ruta a pie con OSRM"
                   >
                     <Navigation className="w-3.5 h-3.5" />
@@ -1597,7 +1630,7 @@ export function MapView({
                 )}
 
                 <div className="mt-2.5 pt-1.5 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
-                  <span className="text-amber-400/80 font-medium">Senda del Carnaval</span>
+                  <span className="text-rose-400/80 font-medium">Senda del Carnaval</span>
                   <span>{poi.latitude.toFixed(4)}, {poi.longitude.toFixed(4)}</span>
                 </div>
               </div>
@@ -1628,7 +1661,7 @@ export function MapView({
                 <Popup>
                   <div className="p-1 min-w-[240px] font-sans">
                     <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-1.5 mb-1.5">
-                      <span className="text-[10px] uppercase font-black text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
+                      <span className="text-[10px] uppercase font-black text-rose-300 bg-rose-500/20 px-2.5 py-0.5 rounded-full border border-rose-500/30 flex items-center gap-1">
                         <span>🍽️</span>
                         <span>Gastronomía Típica</span>
                       </span>
@@ -1640,7 +1673,7 @@ export function MapView({
                     </div>
 
                     <h4 className="font-black text-sm text-white">{restaurant.name}</h4>
-                    <p className="text-xs text-amber-300 font-semibold mt-0.5">
+                    <p className="text-xs text-rose-300 font-semibold mt-0.5">
                       {restaurant.specialty}
                     </p>
                     <p className="text-xs text-slate-300 mt-1 leading-snug">
@@ -1657,9 +1690,9 @@ export function MapView({
                         <span className="font-semibold text-slate-200">{restaurant.hours}</span>
                       </div>
                       {distStr && (
-                        <div className="flex items-center justify-between text-cyan-300 font-bold bg-cyan-950/40 px-2.5 py-1 rounded-lg border border-cyan-500/30 mt-1 text-[11px]">
+                        <div className="flex items-center justify-between text-aqua-300 font-bold bg-aqua-950/40 px-2.5 py-1 rounded-lg border border-aqua-500/30 mt-1 text-[11px]">
                           <span className="flex items-center gap-1">
-                            <Navigation className="w-3 h-3 text-cyan-400" />
+                            <Navigation className="w-3 h-3 text-aqua-400" />
                             <span>Distancia estimada:</span>
                           </span>
                           <span>A {distStr} de ti</span>
@@ -1678,7 +1711,7 @@ export function MapView({
                               targetName: restaurant.name,
                             });
                           }}
-                          className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+                          className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-gradient-to-r from-rose-600 to-rose-800 hover:from-coral-500 hover:to-rose-700 text-white font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
                           title="Calcular ruta a pie con OSRM"
                         >
                           <Navigation className="w-3.5 h-3.5" />
@@ -1709,8 +1742,8 @@ export function MapView({
                     className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${report.ai_risk_level === 'Alto'
                         ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
                         : report.ai_risk_level === 'Medio'
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                          : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                          ? 'bg-coral-500/20 text-coral-300 border-coral-500/40'
+                          : 'bg-aqua-500/20 text-aqua-300 border-aqua-500/40'
                       }`}
                   >
                     Riesgo {report.ai_risk_level || 'Bajo'}
@@ -1741,11 +1774,11 @@ export function MapView({
         {selectedLocation && (
           <Marker
             position={[selectedLocation.lat, selectedLocation.lng]}
-            icon={createCustomIcon('linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)', '📍', true, 'rgba(251, 191, 36, 0.7)')}
+            icon={createCustomIcon('linear-gradient(135deg, #f87171 0%, #dc2626 100%)', '📍', true, 'rgba(220, 38, 38, 0.7)')}
           >
             <Popup>
               <div className="text-xs p-1 font-sans">
-                <strong className="text-amber-400 block font-black text-sm">
+                <strong className="text-rose-300 block font-black text-sm">
                   Ubicación Seleccionada
                 </strong>
                 <p className="text-slate-300 mt-1">

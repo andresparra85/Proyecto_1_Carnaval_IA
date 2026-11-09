@@ -5,6 +5,7 @@ import ReportModal from './components/ReportModal';
 import CitizenReportsModal from './components/CitizenReportsModal';
 import EventsCalendarModal from './components/EventsCalendarModal';
 import ChatBot from './components/ChatBot';
+import GuanenaChat from './components/GuanenaChat';
 import InstallPwaPrompt from './components/InstallPwaPrompt';
 import LoginView from './components/LoginView';
 import Toast from './components/Toast';
@@ -67,6 +68,27 @@ export function App() {
   // Estado para la capa y foco de la Senda del Carnaval
   const [showSenda, setShowSenda] = useState(false);
   const [focusSendaTrigger, setFocusSendaTrigger] = useState(0);
+
+  // Estado para la ruta dinámica trazada por GuaneñaBot (Gemini 2.5 Flash)
+  const [activeRouteCoordinates, setActiveRouteCoordinates] = useState<[number, number][]>([]);
+  const [shouldDrawRoute, setShouldDrawRoute] = useState<boolean>(false);
+  const [routeTitle, setRouteTitle] = useState<string>('');
+
+  const handleRouteReceived = useCallback((waypoints: [number, number][], shouldDraw: boolean, title?: string) => {
+    setActiveRouteCoordinates(waypoints);
+    setShouldDrawRoute(shouldDraw);
+    if (title) setRouteTitle(title);
+    setShowSenda(true);
+    if (waypoints && waypoints.length >= 2) {
+      setNavRoute({
+        startCoords: waypoints[0],
+        targetCoords: waypoints[waypoints.length - 1],
+        targetName: title || 'Ruta guiada por GuaneñaBot',
+        isGeminiRoute: true,
+        waypoints: waypoints,
+      });
+    }
+  }, []);
 
   const handleFocusSenda = useCallback(() => {
     setShowSenda(true);
@@ -187,8 +209,8 @@ export function App() {
   // 1. Pantalla de carga mientras se verifica sesión local
   if (authLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen w-screen bg-[#0d041a] text-slate-100">
-        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white text-2xl shadow-lg shadow-orange-500/20 animate-bounce">
+      <div className="flex flex-col items-center justify-center h-screen w-screen bg-[#0a0a0b] text-slate-100">
+        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-coral-500 via-coral-600 to-rose-800 text-white text-2xl shadow-lg shadow-rose-500/30 animate-bounce">
           🎭
         </div>
         <p className="text-xs font-bold tracking-widest uppercase text-slate-400 mt-4">
@@ -205,12 +227,12 @@ export function App() {
 
   // 3. Una vez autenticado con sesión activa, renderizar la aplicación completa
   return (
-    <div className="relative flex flex-col h-screen w-screen overflow-hidden bg-[#0d041a] text-slate-100">
+    <div className="relative flex flex-col h-screen w-screen overflow-hidden bg-[#0a0a0b] text-slate-100">
       {/* 0. Orbes de luz ambiental multicromáticos (Carnaval Vivo) */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-32 -left-32 h-[34rem] w-[34rem] rounded-full bg-rose-500/25 blur-[120px]" />
-        <div className="absolute -top-24 -right-32 h-[32rem] w-[32rem] rounded-full bg-amber-400/20 blur-[130px]" />
-        <div className="absolute bottom-[-10rem] left-1/3 h-[38rem] w-[38rem] rounded-full bg-cyan-500/20 blur-[140px]" />
+        <div className="absolute -top-32 -left-32 h-[34rem] w-[34rem] rounded-full bg-coral-600/30 blur-[120px]" />
+        <div className="absolute -top-24 -right-32 h-[32rem] w-[32rem] rounded-full bg-rose-500/25 blur-[130px]" />
+        <div className="absolute bottom-[-10rem] left-1/3 h-[38rem] w-[38rem] rounded-full bg-aqua-500/20 blur-[140px]" />
       </div>
 
       {/* 1. Barra de Navegación Superior Glassmorphic */}
@@ -275,19 +297,19 @@ export function App() {
           )}
 
           {/* Tarjeta Cápsula de Resumen Rápido Glassmorphic */}
-          <div className="flex items-center gap-3 px-3.5 py-1.5 rounded-2xl backdrop-blur-md bg-[#160a2e]/80 border border-fuchsia-500/25 shadow-[0_0_20px_rgba(168,85,247,0.25)] text-xs text-slate-200">
+          <div className="flex items-center gap-3 px-3.5 py-1.5 rounded-2xl backdrop-blur-md bg-[#101012]/80 border border-rose-500/25 shadow-[0_0_20px_rgba(220,38,38,0.25)] text-xs text-slate-200">
             <div className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-amber-400" />
+              <MapPin className="w-3.5 h-3.5 text-aqua-400" />
               <span><strong className="text-white font-bold">{pois.length}</strong> Puntos</span>
             </div>
             <span className="text-slate-500">•</span>
             <button
               type="button"
               onClick={() => setReportsModalOpen(true)}
-              className="flex items-center gap-1.5 hover:text-amber-400 transition cursor-pointer"
+              className="flex items-center gap-1.5 hover:text-aqua-300 transition cursor-pointer"
               title="Abrir panel de reportes ciudadanos"
             >
-              <ShieldAlert className="w-3.5 h-3.5 text-orange-400" />
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
               <span><strong className="text-white font-bold">{reports.length}</strong> Reportes</span>
             </button>
             <span className="text-slate-500">•</span>
@@ -298,7 +320,7 @@ export function App() {
               title={`Actualizar datos (Última: ${lastUpdated.toLocaleTimeString()})`}
               aria-label="Actualizar datos"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-amber-400' : 'hover:text-amber-400'}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-aqua-400' : 'hover:text-aqua-300'}`} />
             </button>
           </div>
         </div>
@@ -306,8 +328,8 @@ export function App() {
         {/* Prompt para Instalar PWA */}
         <InstallPwaPrompt />
 
-        {/* Componente del Asistente GuaneñaBot (Chatbot UI Flotante en esquina inferior derecha) */}
-        <ChatBot onFocusSenda={handleFocusSenda} />
+        {/* Componente del Asistente GuaneñaBot (Chatbot UI Flotante con Gemini 2.5 Flash y Trazado de Rutas) */}
+        <GuanenaChat onRouteReceived={handleRouteReceived} onFocusSenda={handleFocusSenda} />
       </main>
 
       {/* Modal para Registro de Reportes */}
