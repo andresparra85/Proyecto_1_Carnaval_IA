@@ -29,6 +29,8 @@ export interface NearbyPlace {
   category: 'restroom' | 'police' | 'health' | 'stage' | 'restaurant' | 'shopping' | 'risk_zone' | string;
   coordinates: [number, number];
   description?: string;
+  address?: string;
+  reference?: string;
   schedule?: string;
   status?: string;
 }
@@ -606,6 +608,38 @@ export function formatCategoryTitle(category: string): string {
   }
 }
 
+// Helper para clases de estilo neón del badge de categoría
+export function getCategoryBadgeStyle(category: string): string {
+  const cat = (category || '').toLowerCase();
+  switch (cat) {
+    case 'restroom':
+    case 'baño':
+    case 'bano':
+      return 'bg-blue-500/20 text-blue-300 border-blue-500/40';
+    case 'police':
+    case 'policia':
+    case 'cai':
+    case 'seguridad':
+      return 'bg-slate-700/50 text-sky-300 border-sky-400/40';
+    case 'health':
+    case 'salud':
+    case 'medico':
+    case 'hospital':
+    case 'urgencias':
+      return 'bg-red-500/20 text-red-300 border-red-500/40';
+    case 'restaurant':
+    case 'restaurante':
+    case 'comida':
+      return 'bg-orange-500/20 text-orange-300 border-orange-500/40';
+    case 'stage':
+    case 'tarima':
+    case 'concierto':
+      return 'bg-purple-500/20 text-purple-300 border-purple-500/40';
+    default:
+      return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+  }
+}
+
 /**
  * Normaliza y valida pares de coordenadas estrictamente en formato [lat, lng] (estándar de Leaflet).
  * Corrige automáticamente cualquier inversión de longitud/latitud originada por GeoJSON o servicios OSRM.
@@ -944,27 +978,6 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
             )}
           </>
         )}
-                    <h5 className="font-bold text-white text-xs mb-1">
-                      {activeSchedule?.finish_location || 'Avenida de los Estudiantes / Torobajo'}
-                    </h5>
-                    <p className="text-slate-300 text-[11px] leading-relaxed mb-1.5">
-                      Llegada, premiación oficial y desconcentración de agrupaciones y carrozas.
-                    </p>
-                    {activeSchedule?.estimated_arrival_time && (
-                      <div className="flex items-center justify-between text-[11px] bg-amber-950/50 px-2 py-1 rounded border border-amber-500/20 text-amber-300 font-mono">
-                        <span>Hora Estimada:</span>
-                        <strong className="font-bold">{activeSchedule.estimated_arrival_time}</strong>
-                      </div>
-                    )}
-                    <div className="mt-1 text-[10px] text-slate-400 font-mono">
-                      Lat: {endCoord[0].toFixed(4)}, Lng: {endCoord[1].toFixed(4)}
-                    </div>
-                  </div>
-                </Popup>
-              </Marker>
-            )}
-          </>
-        )}
 
         {/* Capas interactivas de Telemetría (Restrooms, Police, Health, Stages, Shopping, Restaurants, Risk Zones) */}
         {Array.isArray(activeNearbyPlaces) && activeNearbyPlaces.map((place, idx) => {
@@ -982,23 +995,42 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
               icon={getNearbyPlaceIcon(place.category, place.name)}
             >
               <Popup className="custom-popup">
-                <div className="p-2.5 min-w-[200px] max-w-[260px] font-sans text-xs bg-slate-950 text-white rounded-xl border border-white/15 shadow-2xl">
-                  <div className="flex items-center gap-2 font-bold text-cyan-400 border-b border-white/10 pb-1.5 mb-1.5">
-                    <span className="text-base">{getCategoryEmoji(place.category)}</span>
-                    <span className="uppercase text-[11px] tracking-wide">
-                      {formatCategoryTitle(place.category)}
-                    </span>
+                <div className="p-3 min-w-[210px] max-w-[270px] font-sans text-xs bg-slate-950/95 text-white rounded-2xl border border-white/20 shadow-2xl backdrop-blur-md">
+                  {/* Category badge */}
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                    <div className="flex items-center gap-1.5 font-bold">
+                      <span className="text-base">{getCategoryEmoji(place.category)}</span>
+                      <span className={`uppercase text-[10px] tracking-wider px-2 py-0.5 rounded-full font-extrabold border ${getCategoryBadgeStyle(place.category)}`}>
+                        {formatCategoryTitle(place.category)}
+                      </span>
+                    </div>
                   </div>
-                  <h5 className="font-bold text-white text-xs mb-1">{place.name}</h5>
+
+                  {/* Title: Place name */}
+                  <h4 className="font-extrabold text-white text-sm leading-snug mb-1">
+                    {place.name}
+                  </h4>
+
+                  {/* Address / reference */}
+                  {(place.address || place.reference || place.schedule) && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-amber-300 font-medium mb-1.5">
+                      <span>📍</span>
+                      <span className="truncate">{place.address || place.reference || place.schedule}</span>
+                    </div>
+                  )}
+
+                  {/* Description provided by Gemini */}
                   {place.description && (
-                    <p className="text-slate-300 text-[11px] leading-relaxed mb-1.5">
+                    <p className="text-slate-300 text-[11px] leading-relaxed mb-2 bg-slate-900/80 p-2 rounded-xl border border-white/5">
                       {place.description}
                     </p>
                   )}
-                  <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1.5 border-t border-white/10">
-                    <span>Disponibilidad / Estado:</span>
-                    <span className="text-emerald-400 font-bold font-mono">
-                      {place.status || place.schedule || 'Servicio Activo'}
+
+                  {/* Status / Availability footer */}
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1.5 border-t border-white/10 font-mono">
+                    <span>Estado:</span>
+                    <span className="text-emerald-400 font-bold">
+                      {place.status || 'Habilitado Carnaval'}
                     </span>
                   </div>
                 </div>
