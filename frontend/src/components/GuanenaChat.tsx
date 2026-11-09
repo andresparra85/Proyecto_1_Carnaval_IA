@@ -6,6 +6,7 @@ import {
   CarnavalSchedule,
   NearbyPlace,
 } from '../services/carnavalApi';
+import { useRealtimeLocation } from '../hooks/useRealtimeLocation';
 
 export interface GuanenaChatProps {
   onRouteReceived?: (
@@ -107,6 +108,7 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
   onFocusSenda,
   className = '',
 }) => {
+  const { location, centerOnMe } = useRealtimeLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -197,7 +199,10 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
       }));
 
     try {
-      const response = await sendMessageToGuanena(query, historyPayload);
+      const response = await sendMessageToGuanena(query, historyPayload, {
+        lat: location.lat,
+        lng: location.lng,
+      });
 
       const routeCoords = response.route_coordinates && response.route_coordinates.length >= 2
         ? response.route_coordinates
@@ -216,9 +221,16 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
 
       setMessages((prev) => [...prev, botMessage]);
 
-      // Sincronizar inmediatamente la telemetría GIS (línea y pines) al mapa sin requerir clics adicionales
+      // Sincronizar inmediatamente la telemetría GIS (línea y pines) al mapa y auto-centrar límites con flyToBounds
       if (routeCoords && routeCoords.length >= 2) {
         dispatchRouteToMap(routeCoords, query, response.schedule, response.nearby_places);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('FOCUS_MAP_BOUNDS', {
+              detail: { coordinates: routeCoords },
+            })
+          );
+        }
         if (onFocusSenda) onFocusSenda();
       } else if (response.schedule || (response.nearby_places && response.nearby_places.length > 0)) {
         if (typeof window !== 'undefined') {

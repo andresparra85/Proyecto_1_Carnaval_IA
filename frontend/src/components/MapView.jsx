@@ -678,6 +678,23 @@ function NavRouteController({ routePath }) {
   return null;
 }
 
+// Controlador para centrar suavemente en el usuario al disparar evento global CENTER_MAP_ON_USER
+function MapCenterOnUserListener() {
+  const map = useMap();
+  useEffect(() => {
+    const handleCenter = (e) => {
+      const { lat, lng, zoom } = e.detail || {};
+      if (lat !== undefined && lng !== undefined && map) {
+        map.flyTo([lat, lng], zoom || 17, { duration: 1.5, animate: true });
+      }
+    };
+    window.addEventListener('CENTER_MAP_ON_USER', handleCenter);
+    return () => window.removeEventListener('CENTER_MAP_ON_USER', handleCenter);
+  }, [map]);
+
+  return null;
+}
+
 export function MapView({
   pois = [],
   reports = [],
@@ -1261,6 +1278,9 @@ export function MapView({
 
         {/* Controlador para centrar y animar la vista al trazar una ruta de navegación */}
         <NavRouteController routePath={routePath} />
+
+        {/* Controlador para centrar la cámara sobre la ubicación en tiempo real del usuario */}
+        <MapCenterOnUserListener />
 
         {/* Controles de navegación estilo Google Maps (Mi Ubicación + Zoom) */}
         <GoogleMapsNavigationControls

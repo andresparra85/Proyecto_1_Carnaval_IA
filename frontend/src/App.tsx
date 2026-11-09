@@ -13,7 +13,8 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { api } from './services/api';
 import { fetchActiveReports, submitIncidentReport } from './services/reportService';
 import { useAuth } from './context/AuthContext';
-import { RefreshCw, ShieldAlert, MapPin } from 'lucide-react';
+import { RefreshCw, ShieldAlert, MapPin, Crosshair } from 'lucide-react';
+import { useRealtimeLocation } from './hooks/useRealtimeLocation';
 
 export function App() {
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -56,11 +57,18 @@ export function App() {
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [currentCarnivalDay, setCurrentCarnivalDay] = useState('06-ene');
+  const { centerOnMe, location: realtimeLocation } = useRealtimeLocation();
   const [userGps, setUserGps] = useState<any>(null);
   const userGpsRef = useRef<any>(null);
   useEffect(() => {
     userGpsRef.current = userGps;
   }, [userGps]);
+
+  useEffect(() => {
+    if (realtimeLocation) {
+      setUserGps(realtimeLocation);
+    }
+  }, [realtimeLocation]);
 
   const [navRoute, setNavRoute] = useState<any>(null);
   const [lastUpdated, setLastUpdated] = useState(new Date());
@@ -350,6 +358,18 @@ export function App() {
 
         {/* Prompt para Instalar PWA */}
         <InstallPwaPrompt />
+
+        {/* Botón flotante "Centrar en mi ubicación" (Crosshair) */}
+        <button
+          type="button"
+          onClick={() => centerOnMe()}
+          className="absolute bottom-6 left-4 z-[900] flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-slate-950/85 hover:bg-slate-900/95 backdrop-blur-xl border border-sky-500/40 hover:border-sky-400 text-sky-400 hover:text-sky-300 font-bold text-xs shadow-2xl shadow-black/80 transition-all duration-200 active:scale-95 cursor-pointer group"
+          title="Centrar mapa en mi ubicación GPS en tiempo real"
+          aria-label="Centrar en mi ubicación"
+        >
+          <Crosshair className="w-4 h-4 text-sky-400 group-hover:rotate-45 transition-transform duration-300" />
+          <span className="hidden sm:inline font-semibold">Centrar en mi ubicación</span>
+        </button>
 
         {/* Componente del Asistente GuaneñaBot (Chatbot UI Flotante con Gemini 2.5 Flash y Trazado de Rutas) */}
         <GuanenaChat onRouteReceived={handleRouteReceived} onFocusSenda={handleFocusSenda} />

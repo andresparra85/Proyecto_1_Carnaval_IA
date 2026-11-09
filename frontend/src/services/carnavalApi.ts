@@ -67,11 +67,13 @@ const resolveBaseUrl = (): string => {
  * Sends a message and chat history to GuaneñaBot powered by Gemini 2.5 Flash.
  * @param message Natural language query from the user
  * @param history Conversation history turns
+ * @param userCoords Current real-time user GPS coordinates [lat, lng]
  * @returns Promise with reply, should_draw_route flag, waypoints, and suggested questions
  */
 export async function sendMessageToGuanena(
   message: string,
-  history: ChatHistoryTurn[] = []
+  history: ChatHistoryTurn[] = [],
+  userCoords?: { lat: number; lng: number } | null
 ): Promise<CarnavalChatResponse> {
   const trimmedMessage = (message || '').trim();
   if (!trimmedMessage) {
@@ -90,7 +92,7 @@ export async function sendMessageToGuanena(
   const baseUrl = resolveBaseUrl();
   const endpoint = `${baseUrl}/api/v1/carnaval/chat`;
 
-  const payload = {
+  const payload: Record<string, any> = {
     message: trimmedMessage,
     history: Array.isArray(history)
       ? history.map((turn) => ({
@@ -99,6 +101,11 @@ export async function sendMessageToGuanena(
         }))
       : [],
   };
+
+  if (userCoords && typeof userCoords.lat === 'number' && typeof userCoords.lng === 'number') {
+    payload.user_lat = userCoords.lat;
+    payload.user_lng = userCoords.lng;
+  }
 
   try {
     const controller = new AbortController();
