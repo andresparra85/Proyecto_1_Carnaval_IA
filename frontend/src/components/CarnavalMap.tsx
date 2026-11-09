@@ -24,10 +24,30 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
+export interface NearbyPlace {
+  name: string;
+  category: 'restroom' | 'police' | 'health' | 'stage' | 'restaurant' | 'shopping' | 'risk_zone' | string;
+  coordinates: [number, number];
+  description?: string;
+  schedule?: string;
+  status?: string;
+}
+
+export interface CarnavalSchedule {
+  start_time: string;
+  estimated_arrival_time: string;
+  start_location: string;
+  finish_location: string;
+  event_name?: string;
+  distance_km?: number | string;
+}
+
 export interface CarnavalMapProps {
   routeCoordinates?: [number, number][];
   shouldDrawRoute?: boolean;
   routeTitle?: string;
+  schedule?: CarnavalSchedule | null;
+  nearbyPlaces?: NearbyPlace[];
   onRouteClear?: () => void;
   userLocation?: { lat: number; lng: number } | null;
   center?: [number, number];
@@ -44,7 +64,7 @@ const DEFAULT_CENTER: [number, number] = [1.2168, -77.2805];
 const DEFAULT_ZOOM = 15;
 
 // Generador de pin de inicio (bandera verde con destello)
-function createStartPinIcon(label: string = 'Punto de Salida') {
+export function createStartPinIcon(label: string = 'Punto de Salida') {
   const html = `
     <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); cursor: pointer;">
       <div style="
@@ -90,7 +110,7 @@ function createStartPinIcon(label: string = 'Punto de Salida') {
 }
 
 // Generador de pin de llegada (cuadriculado/antifaz festivo)
-function createEndPinIcon(label: string = 'Punto de Llegada') {
+export function createEndPinIcon(label: string = 'Punto de Llegada') {
   const html = `
     <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); cursor: pointer;">
       <div style="
@@ -133,6 +153,377 @@ function createEndPinIcon(label: string = 'Punto de Llegada') {
     iconAnchor: [20, 56],
     popupAnchor: [0, -58],
   });
+}
+
+// ---------------------------------------------------------------------------
+// Iconos especializados para capas de telemetría urbana de GuaneñaBot
+// ---------------------------------------------------------------------------
+
+// 1. Restroom: Blue pin with 🚻 icon
+export function createRestroomPinIcon(label: string = 'Baños') {
+  const html = `
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); cursor: pointer;">
+      <div style="
+        width: 38px;
+        height: 38px;
+        border-radius: 50% 50% 50% 0;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        transform: rotate(-45deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #ffffff;
+        box-shadow: 0 0 18px rgba(59, 130, 246, 0.8), 0 4px 10px rgba(0,0,0,0.5);
+      ">
+        <div style="transform: rotate(45deg); font-size: 17px;">
+          🚻
+        </div>
+      </div>
+      <div style="
+        background: rgba(15, 23, 42, 0.95);
+        color: #93c5fd;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 10px;
+        border: 1px solid rgba(59, 130, 246, 0.45);
+        margin-top: 4px;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      ">
+        ${label}
+      </div>
+    </div>
+  `;
+  return L.divIcon({
+    className: 'telemetry-restroom-marker',
+    html,
+    iconSize: [38, 54],
+    iconAnchor: [19, 54],
+    popupAnchor: [0, -56],
+  });
+}
+
+// 2. Police: Navy shield with 👮 icon
+export function createPolicePinIcon(label: string = 'CAI Policial') {
+  const html = `
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); cursor: pointer;">
+      <div style="
+        width: 38px;
+        height: 42px;
+        clip-path: polygon(50% 0%, 100% 15%, 100% 70%, 50% 100%, 0% 70%, 0% 15%);
+        background: linear-gradient(145deg, #1e3a8a 0%, #0f172a 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #60a5fa;
+        box-shadow: 0 0 20px rgba(30, 58, 138, 0.8), 0 4px 10px rgba(0,0,0,0.6);
+      ">
+        <span style="font-size: 19px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));">👮</span>
+      </div>
+      <div style="
+        background: rgba(15, 23, 42, 0.95);
+        color: #93c5fd;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 10px;
+        border: 1px solid rgba(96, 165, 250, 0.4);
+        margin-top: 4px;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+      ">
+        ${label}
+      </div>
+    </div>
+  `;
+  return L.divIcon({
+    className: 'telemetry-police-marker',
+    html,
+    iconSize: [40, 58],
+    iconAnchor: [20, 58],
+    popupAnchor: [0, -60],
+  });
+}
+
+// 3. Health: Red cross / Emergency pin with 🚑 icon
+export function createHealthPinIcon(label: string = 'Salud / Socorro') {
+  const html = `
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); cursor: pointer;">
+      <div style="
+        width: 40px;
+        height: 40px;
+        border-radius: 50% 50% 50% 0;
+        background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+        transform: rotate(-45deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2.5px solid #ffffff;
+        box-shadow: 0 0 22px rgba(239, 68, 68, 0.85), 0 6px 12px rgba(0,0,0,0.6);
+      ">
+        <div style="transform: rotate(45deg); font-size: 19px;">
+          🚑
+        </div>
+      </div>
+      <div style="
+        background: rgba(15, 23, 42, 0.95);
+        color: #fca5a5;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 10px;
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        margin-top: 4px;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+      ">
+        ${label}
+      </div>
+    </div>
+  `;
+  return L.divIcon({
+    className: 'telemetry-health-marker',
+    html,
+    iconSize: [40, 56],
+    iconAnchor: [20, 56],
+    popupAnchor: [0, -58],
+  });
+}
+
+// 4. Stage: Purple star with 🎪 icon
+export function createStagePinIcon(label: string = 'Tarima Oficial') {
+  const html = `
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); cursor: pointer;">
+      <div style="
+        width: 40px;
+        height: 40px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #a855f7 0%, #6b21a8 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2.5px solid #f3e8ff;
+        box-shadow: 0 0 22px rgba(168, 85, 247, 0.85), 0 6px 14px rgba(0,0,0,0.6);
+        transform: rotate(45deg);
+      ">
+        <div style="transform: rotate(-45deg); font-size: 19px;">
+          🎪
+        </div>
+      </div>
+      <div style="
+        background: rgba(15, 23, 42, 0.95);
+        color: #d8b4fe;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 10px;
+        border: 1px solid rgba(168, 85, 247, 0.5);
+        margin-top: 6px;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+      ">
+        ${label}
+      </div>
+    </div>
+  `;
+  return L.divIcon({
+    className: 'telemetry-stage-marker',
+    html,
+    iconSize: [42, 58],
+    iconAnchor: [21, 58],
+    popupAnchor: [0, -60],
+  });
+}
+
+// 5. Risk Zone: Amber/Red pulsing hazard marker with ⚠️ icon
+export function createRiskZonePinIcon(label: string = 'Zona de Aglomeración') {
+  const html = `
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%); cursor: pointer;">
+      <span style="
+        position: absolute;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: rgba(239, 68, 68, 0.45);
+        animation: ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+      "></span>
+      <div style="
+        position: relative;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2.5px solid #ffffff;
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.9), 0 4px 10px rgba(0,0,0,0.6);
+      ">
+        <span style="font-size: 18px;">⚠️</span>
+      </div>
+      <div style="
+        background: rgba(15, 23, 42, 0.95);
+        color: #fca5a5;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 9px;
+        padding: 2px 6px;
+        border-radius: 8px;
+        border: 1px solid rgba(239, 68, 68, 0.6);
+        margin-top: 4px;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      ">
+        ${label}
+      </div>
+    </div>
+  `;
+  return L.divIcon({
+    className: 'telemetry-risk-zone-marker',
+    html,
+    iconSize: [46, 54],
+    iconAnchor: [23, 27],
+    popupAnchor: [0, -28],
+  });
+}
+
+// 6. Shopping: Green bag with 🛍️ icon
+export function createShoppingPinIcon(label: string = 'Comercio') {
+  const html = `
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); cursor: pointer;">
+      <div style="
+        width: 38px;
+        height: 38px;
+        border-radius: 50% 50% 50% 0;
+        background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+        transform: rotate(-45deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2.5px solid #ffffff;
+        box-shadow: 0 0 18px rgba(16, 185, 129, 0.8), 0 4px 10px rgba(0,0,0,0.5);
+      ">
+        <div style="transform: rotate(45deg); font-size: 18px;">
+          🛍️
+        </div>
+      </div>
+      <div style="
+        background: rgba(15, 23, 42, 0.95);
+        color: #6ee7b7;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 10px;
+        border: 1px solid rgba(16, 185, 129, 0.5);
+        margin-top: 4px;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      ">
+        ${label}
+      </div>
+    </div>
+  `;
+  return L.divIcon({
+    className: 'telemetry-shopping-marker',
+    html,
+    iconSize: [38, 54],
+    iconAnchor: [19, 54],
+    popupAnchor: [0, -56],
+  });
+}
+
+// 7. Restaurant: Orange pin with 🍴 icon
+export function createRestaurantPinIcon(label: string = 'Gastronomía') {
+  const html = `
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); cursor: pointer;">
+      <div style="
+        width: 38px;
+        height: 38px;
+        border-radius: 50% 50% 50% 0;
+        background: linear-gradient(135deg, #f97316 0%, #c2410c 100%);
+        transform: rotate(-45deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2.5px solid #ffffff;
+        box-shadow: 0 0 18px rgba(249, 115, 22, 0.8), 0 4px 10px rgba(0,0,0,0.5);
+      ">
+        <div style="transform: rotate(45deg); font-size: 18px;">
+          🍴
+        </div>
+      </div>
+      <div style="
+        background: rgba(15, 23, 42, 0.95);
+        color: #fed7aa;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 10px;
+        border: 1px solid rgba(249, 115, 22, 0.5);
+        margin-top: 4px;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      ">
+        ${label}
+      </div>
+    </div>
+  `;
+  return L.divIcon({
+    className: 'telemetry-restaurant-marker',
+    html,
+    iconSize: [38, 54],
+    iconAnchor: [19, 54],
+    popupAnchor: [0, -56],
+  });
+}
+
+// Helper para seleccionar el icono adecuado según categoría
+export function getNearbyPlaceIcon(category: string, name?: string) {
+  const cat = (category || '').toLowerCase();
+  switch (cat) {
+    case 'restroom':
+    case 'baño':
+    case 'bano':
+      return createRestroomPinIcon(name);
+    case 'police':
+    case 'policia':
+    case 'cai':
+    case 'seguridad':
+      return createPolicePinIcon(name);
+    case 'health':
+    case 'salud':
+    case 'medico':
+    case 'hospital':
+    case 'urgencias':
+      return createHealthPinIcon(name);
+    case 'stage':
+    case 'tarima':
+    case 'concierto':
+      return createStagePinIcon(name);
+    case 'shopping':
+    case 'comercio':
+    case 'tienda':
+      return createShoppingPinIcon(name);
+    case 'restaurant':
+    case 'restaurante':
+    case 'comida':
+      return createRestaurantPinIcon(name);
+    case 'risk_zone':
+    case 'riesgo':
+    case 'aglomeracion':
+      return createRiskZonePinIcon(name);
+    default:
+      return createShoppingPinIcon(name);
+  }
 }
 
 // Controlador de cámara para auto-ajustar los límites (fitBounds) al recibir una polilínea
@@ -427,3 +818,4 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
 };
 
 export default CarnavalMap;
+
