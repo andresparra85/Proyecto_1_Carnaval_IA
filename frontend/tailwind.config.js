@@ -14,6 +14,8 @@ export default {
         'carnaval-cyan': '#06b6d4',    // Cyan Glaciar
         'carnaval-primary': '#E11D48', // Carmesí festivo oficial
         'carnaval-magenta': '#D946EF', // Magenta Familia Castañeda
+        'carnaval-fuchsia': '#d946ef', // Fucsia Neón Midnight Carnival
+        'dark-obsidian': '#050811',    // Base nocturna Obsidian Night
         carnaval: {
           dark: '#070a12',
           card: 'rgba(15, 23, 42, 0.75)',
@@ -46,6 +48,10 @@ export default {
         'glow-festive': '0 0 30px -4px rgba(225, 29, 72, 0.45), 0 0 20px -2px rgba(245, 158, 11, 0.35)',
         'carnaval-deep': '0 25px 50px -12px rgba(15, 23, 42, 0.9), 0 0 30px -5px rgba(225, 29, 72, 0.2)',
         'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.45)',
+        'neon-diffuse-fuchsia': '0 0 60px -12px rgba(217, 70, 239, 0.45)',
+        'neon-diffuse-cyan': '0 0 60px -12px rgba(6, 182, 212, 0.45)',
+        'neon-diffuse-gold': '0 0 60px -12px rgba(245, 158, 11, 0.45)',
+        'hud-glass': '0 10px 30px rgba(0, 0, 0, 0.5)',
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

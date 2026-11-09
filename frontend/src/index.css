@@ -10,7 +10,7 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #0b1120;
+  background-color: #050811;
   color: #f8fafc;
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   overflow-x: hidden;
@@ -264,5 +264,39 @@ body {
   to {
     stroke-dashoffset: -20;
   }
+}
+
+/* ===== Midnight Carnival Neón: utilidades de cristal y glows difusos ===== */
+.glass-border {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 24px -10px rgba(217, 70, 239, 0.45);
+}
+
+.glass-border-cyan {
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 24px -8px rgba(6, 182, 212, 0.5);
+}
+
+.glass-smoked {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glow-fuchsia {
+  box-shadow: 0 0 30px -6px rgba(217, 70, 239, 0.55);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 30px -6px rgba(6, 182, 212, 0.55);
+}
+
+.glow-gold {
+  box-shadow: 0 0 30px -6px rgba(245, 158, 11, 0.55);
 }
 
