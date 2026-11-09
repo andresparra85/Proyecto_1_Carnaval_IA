@@ -1005,20 +1005,20 @@ export function MapView({
       {/* 1. Contenedor Superior Fijo: Banner de Evento Activo y Chips de Filtros Tipo Píldora */}
       <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none">
         {/* Banner Superior Dinámico de Evento Oficial controlado por GuaneñaBot */}
-        <div className="pointer-events-auto flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/60 shadow-sm text-xs max-w-lg">
+        <div className="pointer-events-auto flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-full bg-slate-950/80 backdrop-blur-2xl border border-white/10 shadow-2xl text-xs max-w-lg">
           <div className="flex items-center gap-2 min-w-0">
             <span
               className={`w-2 h-2 rounded-full shrink-0 ${currentEvent ? 'bg-amber-500' : 'bg-slate-500'}`}
               style={currentEvent?.color ? { backgroundColor: currentEvent.color } : {}}
             />
-            <div className="truncate text-slate-600 dark:text-slate-300">
+            <div className="truncate text-slate-300">
               <span className="hidden sm:inline text-slate-400">Evento Activo: </span>
-              <strong className="font-bold text-slate-900 dark:text-white">
+              <strong className="font-bold text-white">
                 {currentEvent ? currentEvent.name : 'Ninguno'}
               </strong>
             </div>
           </div>
-          <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-amber-500 dark:text-amber-400">
+          <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-amber-300">
             🎭 GuaneñaBot AI
           </span>
         </div>
@@ -1081,7 +1081,7 @@ export function MapView({
             <button
               type="button"
               onClick={() => setIsCardMinimized(false)}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-full backdrop-blur-md bg-white/85 dark:bg-slate-900/85 border border-slate-200/60 dark:border-slate-800/60 shadow-sm hover:shadow-md text-xs font-bold text-slate-800 dark:text-slate-200 hover:scale-[1.02] transition cursor-pointer"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-2xl backdrop-blur-2xl bg-slate-950/85 border border-white/10 shadow-2xl hover:shadow-md text-xs font-bold text-slate-100 hover:scale-[1.02] transition cursor-pointer"
               title="Expandir información del evento"
             >
               <span
@@ -1105,18 +1105,18 @@ export function MapView({
                     <span className="text-[10px] font-black uppercase tracking-wider text-amber-500">
                       Evento Oficial
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-white/5 px-1.5 py-0.2 rounded-md">
+                    <span className="text-[10px] font-mono text-slate-300 bg-white/5 px-1.5 py-0.5 rounded-md border border-white/10">
                       {currentEvent.hours}
                     </span>
                   </div>
-                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-tight truncate">
+                  <h3 className="text-xs sm:text-sm font-bold text-white leading-tight truncate">
                     {currentEvent.name}
                   </h3>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsCardMinimized(true)}
-                  className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition shrink-0 cursor-pointer"
+                  className="text-slate-400 hover:text-white p-1 rounded-xl hover:bg-white/10 transition shrink-0 cursor-pointer"
                   title="Colapsar información para despejar el mapa"
                   aria-label="Colapsar información"
                 >
@@ -1125,31 +1125,31 @@ export function MapView({
               </div>
 
               <div className="space-y-2 text-xs">
-                <p className="text-slate-500 dark:text-slate-300 text-[11px] leading-snug line-clamp-2">
+                <p className="text-slate-400 text-[11px] leading-snug line-clamp-2">
                   {currentEvent.description}
                 </p>
 
                 {/* Badges de estado de vías */}
-                <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100 dark:border-white/5">
+                <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-white/5">
                   {currentEvent.closedPoints && currentEvent.closedPoints.length > 0 ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-[10px] font-medium">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-200 text-[10px] font-bold">
                       <span>⛔</span>
                       <span>{currentEvent.closedPoints.length} Puntos Cierre</span>
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-[10px] font-medium">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-[10px] font-bold">
                       <span>✅</span>
                       <span>Vías Despejadas</span>
                     </span>
                   )}
 
                   {currentEvent.route && currentEvent.route.length > 0 ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-[10px] font-medium">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 border border-white/15 text-slate-100 text-[10px] font-bold">
                       <span>🎉</span>
                       <span>Ruta Trazada</span>
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-[10px] font-medium">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 border border-white/15 text-slate-100 text-[10px] font-bold">
                       <span>🚶</span>
                       <span>Zona Peatonal</span>
                     </span>
@@ -1163,7 +1163,7 @@ export function MapView({
 
       {/* 2.1 Tarjeta Flotante de Navegación Activa por Calles */}
       {navRoute && (
-        <div className="absolute bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-[1100] flex items-center gap-3.5 px-4 py-3 backdrop-blur-md bg-slate-900/90 border border-white/10 rounded-2xl shadow-lg text-white pointer-events-auto animate-in fade-in">
+        <div className="absolute bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-[1100] flex items-center gap-3.5 px-4 py-3 backdrop-blur-2xl bg-slate-950/85 border border-white/10 rounded-2xl shadow-2xl text-white pointer-events-auto animate-in fade-in">
           <div className="flex items-center gap-2.5">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
             <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
@@ -1189,6 +1189,12 @@ export function MapView({
           </button>
         </div>
       )}
+
+      {/* 2.5 Orbes de luz ambiental difuminada (Midnight Carnival Neón) */}
+      <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
+        <div className="absolute -top-24 -left-24 h-[26rem] w-[26rem] rounded-full bg-fuchsia-600/20 blur-[120px]" />
+        <div className="absolute -bottom-32 -right-24 h-[30rem] w-[30rem] rounded-full bg-cyan-500/15 blur-[120px]" />
+      </div>
 
       {/* 3. Contenedor de Leaflet con Mosaicos de Calles Reales */}
       <MapContainer
