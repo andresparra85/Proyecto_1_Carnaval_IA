@@ -1005,7 +1005,7 @@ export function MapView({
       {/* 1. Contenedor Superior Fijo: Banner de Evento Activo y Chips de Filtros Tipo Píldora */}
       <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none">
         {/* Banner Superior Dinámico de Evento Oficial controlado por GuaneñaBot */}
-        <div className="pointer-events-auto flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-full bg-slate-950/80 backdrop-blur-2xl border border-white/10 shadow-2xl text-xs max-w-lg">
+        <div className="pointer-events-auto flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-full bg-[#180a33]/80 backdrop-blur-2xl border border-fuchsia-500/20 shadow-[0_0_25px_rgba(168,85,247,0.25)] text-xs max-w-lg">
           <div className="flex items-center gap-2 min-w-0">
             <span
               className={`w-2 h-2 rounded-full shrink-0 ${currentEvent ? 'bg-amber-500' : 'bg-slate-500'}`}
@@ -1045,24 +1045,24 @@ export function MapView({
 
           {filterOptions.map((f) => {
             const isActive = activeFilter === f.id;
-            const activeGlow = {
-              todos: 'ring-rose-400/50 glow-fuchsia',
-              restaurantes: 'ring-amber-400/50 glow-gold',
-              salud: 'ring-emerald-400/50',
-              policia: 'ring-cyan-400/50 glow-cyan',
-              banio: 'ring-cyan-400/50 glow-cyan',
-              tarima: 'ring-fuchsia-400/50 glow-fuchsia',
-              zonas: 'ring-amber-400/50 glow-gold',
+            const activeChip = {
+              todos: 'bg-gradient-to-r from-rose-600 to-amber-500 text-white border-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.5)]',
+              restaurantes: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)]',
+              salud: 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.4)]',
+              policia: 'bg-gradient-to-r from-cyan-500 to-sky-500 text-white border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]',
+              banio: 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]',
+              tarima: 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.4)]',
+              zonas: 'bg-gradient-to-r from-amber-500 to-rose-500 text-white border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)]',
             }[f.id];
             return (
               <button
                 key={f.id}
                 type="button"
                 onClick={() => setActiveFilter(f.id)}
-                className={`rounded-full px-3.5 py-1.5 text-xs transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md ${
+                className={`rounded-full px-3.5 py-1.5 text-xs transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md border ${
                   isActive
-                    ? `bg-gradient-to-r from-rose-600/95 via-fuchsia-600/90 to-amber-500/95 text-white font-bold shadow-md ring-2 ${activeGlow}`
-                    : 'bg-slate-900/50 border border-white/10 text-slate-200 font-medium hover:text-white hover:border-cyan-400/40 hover:bg-slate-800/80'
+                    ? `font-bold ${activeChip}`
+                    : 'bg-[#220d45]/60 border-white/15 text-slate-200 font-medium hover:border-amber-400/50 hover:text-white'
                 }`}
               >
                 <span className="text-sm">{f.icon}</span>
