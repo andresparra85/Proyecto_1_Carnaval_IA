@@ -606,6 +606,49 @@ export function formatCategoryTitle(category: string): string {
   }
 }
 
+/**
+ * Normaliza y valida pares de coordenadas estrictamente en formato [lat, lng] (estándar de Leaflet).
+ * Corrige automáticamente cualquier inversión de longitud/latitud originada por GeoJSON o servicios OSRM.
+ */
+export function sanitizeLeafletCoordinates(coords: any[]): [number, number][] {
+  if (!Array.isArray(coords)) return [];
+  const result: [number, number][] = [];
+
+  for (const c of coords) {
+    if (!c) continue;
+    let lat: number | null = null;
+    let lng: number | null = null;
+
+    if (Array.isArray(c) && c.length >= 2) {
+      const a = Number(c[0]);
+      const b = Number(c[1]);
+      if (!isNaN(a) && !isNaN(b)) {
+        // En San Juan de Pasto la Latitud es ~1.21 y Longitud es ~-77.28
+        if (a < -50 && b > -5 && b < 15) {
+          lat = b;
+          lng = a;
+        } else {
+          lat = a;
+          lng = b;
+        }
+      }
+    } else if (typeof c === 'object') {
+      const latVal = Number((c as any).lat ?? (c as any).latitude);
+      const lngVal = Number((c as any).lng ?? (c as any).lon ?? (c as any).longitude);
+      if (!isNaN(latVal) && !isNaN(lngVal)) {
+        lat = latVal;
+        lng = lngVal;
+      }
+    }
+
+    if (lat !== null && lng !== null) {
+      result.push([lat, lng]);
+    }
+  }
+
+  return result;
+}
+
 // Controlador de cámara para auto-ajustar los límites (fitBounds) al recibir una polilínea
 function RouteBoundsAutoFitter({ coordinates }: { coordinates: [number, number][] }) {
   const map = useMap();
@@ -622,7 +665,7 @@ function RouteBoundsAutoFitter({ coordinates }: { coordinates: [number, number][
       const bounds = L.latLngBounds(coordinates);
       map.fitBounds(bounds, {
         padding: [60, 60],
-        maxZoom: 16,
+        maxZoom: 15,
         animate: true,
       });
     } catch (err) {
@@ -787,8 +830,14 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
     if (onRouteClear) onRouteClear();
   }, [onRouteClear]);
 
-  const startCoord = isRouteActive && activeRouteCoordinates.length >= 2 ? activeRouteCoordinates[0] : null;
-  const endCoord = isRouteActive && activeRouteCoordinates.length >= 2 ? activeRouteCoordinates[activeRouteCoordinates.length - 1] : null;
+  // Normalización estricta de coordenadas [lat, lng] para Leaflet
+  const parsedRouteCoords = useMemo(
+    () => sanitizeLeafletCoordinates(activeRouteCoordinates),
+    [activeRouteCoordinates]
+  );
+
+  const startCoord = isRouteActive && parsedRouteCoords.length >= 2 ? parsedRouteCoords[0] : null;
+  const endCoord = isRouteActive && parsedRouteCoords.length >= 2 ? parsedRouteCoords[parsedRouteCoords.length - 1] : null;
 
   return (
     <div className={`relative ${className} select-none`}>
@@ -806,46 +855,46 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
         {/* Captura de eventos de clic */}
         <MapClickHandler onSelectCoordinates={onSelectCoordinates} />
 
-        {/* Auto-zoom y ajuste suave a los límites de la polilínea activa (padding: [60, 60]) */}
-        {isRouteActive && activeRouteCoordinates.length >= 2 && (
-          <RouteBoundsAutoFitter coordinates={activeRouteCoordinates} />
+        {/* Auto-zoom y ajuste suave a los límites de la polilínea activa (padding: [60, 60], maxZoom: 15) */}
+        {isRouteActive && parsedRouteCoords.length >= 2 && (
+          <RouteBoundsAutoFitter coordinates={parsedRouteCoords} />
         )}
 
-        {/* Polilínea trazada dinámicamente con color oro carnaval (#f59e0b) */}
-        {isRouteActive && activeRouteCoordinates.length >= 2 && (
+        {/* Polilínea de alto contraste dual-layer (Glow/Casing negro + Línea principal naranja carmesí festivo #ea580c) */}
+        {isRouteActive && parsedRouteCoords.length >= 2 && (
           <>
-            {/* Capa de resplandor o sombra exterior */}
+            {/* Background casing line (Dark contrast glow / outline) */}
             <Polyline
-              key={`glow-route-${activeRouteCoordinates.length}`}
-              positions={activeRouteCoordinates}
+              key={`casing-route-${parsedRouteCoords.length}`}
+              positions={parsedRouteCoords}
               pathOptions={{
-                color: '#f59e0b',
-                weight: 12,
-                opacity: 0.25,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
-            />
-
-            {/* Polilínea vibrante principal (color: #f59e0b, weight: 6, lineCap: round) */}
-            <Polyline
-              key={`main-route-${activeRouteCoordinates.length}`}
-              positions={activeRouteCoordinates}
-              pathOptions={{
-                color: '#f59e0b',
-                weight: 6,
+                color: '#000000',
+                weight: 10,
                 opacity: 0.9,
                 lineCap: 'round',
                 lineJoin: 'round',
               }}
             />
 
-            {/* Marcador de Inicio (Bandera verde con popup: Inicio del Desfile) */}
+            {/* Foreground main line: Carnival Red-Orange (#ea580c), weight: 6, opacity: 1.0, solid continuous */}
+            <Polyline
+              key={`main-route-${parsedRouteCoords.length}`}
+              positions={parsedRouteCoords}
+              pathOptions={{
+                color: '#ea580c',
+                weight: 6,
+                opacity: 1.0,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+            />
+
+            {/* Marcador de Inicio explícito en Estadio Libertad con badge de Bandera Verde */}
             {startCoord && (
-              <Marker position={startCoord} icon={createStartPinIcon('Inicio del Desfile')}>
+              <Marker position={startCoord} icon={createStartPinIcon('Estadio Libertad - Salida')}>
                 <Popup className="custom-popup">
-                  <div className="p-2.5 min-w-[200px] font-sans text-xs bg-slate-900 text-white rounded-xl border border-emerald-500/30">
-                    <div className="flex items-center gap-1.5 font-bold text-emerald-400 border-b border-white/10 pb-1 mb-1.5">
+                  <div className="p-2.5 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl border border-emerald-500/40 shadow-xl">
+                    <div className="flex items-center gap-1.5 font-bold text-emerald-400 border-b border-white/10 pb-1.5 mb-1.5">
                       <span className="text-base">🚩</span>
                       <span className="uppercase text-[11px] tracking-wide">Inicio del Desfile</span>
                     </div>
@@ -855,12 +904,10 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
                     <p className="text-slate-300 text-[11px] leading-relaxed mb-1.5">
                       Punto oficial de partida y concentración de carrozas, comparsas y murgas.
                     </p>
-                    {activeSchedule?.start_time && (
-                      <div className="flex items-center justify-between text-[11px] bg-emerald-950/50 px-2 py-1 rounded border border-emerald-500/20 text-emerald-300 font-mono">
-                        <span>Hora de Salida:</span>
-                        <strong className="font-bold">{activeSchedule.start_time}</strong>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between text-[11px] bg-emerald-950/60 px-2 py-1 rounded border border-emerald-500/25 text-emerald-300 font-mono">
+                      <span>Hora de Salida:</span>
+                      <strong className="font-bold">{activeSchedule?.start_time || '10:00 AM'}</strong>
+                    </div>
                     <div className="mt-1 text-[10px] text-slate-400 font-mono">
                       Lat: {startCoord[0].toFixed(4)}, Lng: {startCoord[1].toFixed(4)}
                     </div>
@@ -869,15 +916,34 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
               </Marker>
             )}
 
-            {/* Marcador de Llegada (Bandera cuadros con popup: Fin de la Senda) */}
+            {/* Marcador de Llegada explícito en Fuente de la Transparencia con badge de Bandera a Cuadros */}
             {endCoord && (
-              <Marker position={endCoord} icon={createEndPinIcon('Fin de la Senda')}>
+              <Marker position={endCoord} icon={createEndPinIcon('Fuente Transparencia - Llegada')}>
                 <Popup className="custom-popup">
-                  <div className="p-2.5 min-w-[200px] font-sans text-xs bg-slate-900 text-white rounded-xl border border-amber-500/30">
-                    <div className="flex items-center gap-1.5 font-bold text-amber-400 border-b border-white/10 pb-1 mb-1.5">
+                  <div className="p-2.5 min-w-[210px] font-sans text-xs bg-slate-900 text-white rounded-xl border border-amber-500/40 shadow-xl">
+                    <div className="flex items-center gap-1.5 font-bold text-amber-400 border-b border-white/10 pb-1.5 mb-1.5">
                       <span className="text-base">🏁</span>
                       <span className="uppercase text-[11px] tracking-wide">Fin de la Senda</span>
                     </div>
+                    <h5 className="font-bold text-white text-xs mb-1">
+                      {activeSchedule?.finish_location || 'Fuente de la Transparencia / Torobajo'}
+                    </h5>
+                    <p className="text-slate-300 text-[11px] leading-relaxed mb-1.5">
+                      Punto de culminación, premiación oficial y desconcentración de agrupaciones y carrozas.
+                    </p>
+                    <div className="flex items-center justify-between text-[11px] bg-amber-950/60 px-2 py-1 rounded border border-amber-500/25 text-amber-300 font-mono">
+                      <span>Hora Estimada:</span>
+                      <strong className="font-bold">{activeSchedule?.estimated_arrival_time || '03:30 PM'}</strong>
+                    </div>
+                    <div className="mt-1 text-[10px] text-slate-400 font-mono">
+                      Lat: {endCoord[0].toFixed(4)}, Lng: {endCoord[1].toFixed(4)}
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
+          </>
+        )}
                     <h5 className="font-bold text-white text-xs mb-1">
                       {activeSchedule?.finish_location || 'Avenida de los Estudiantes / Torobajo'}
                     </h5>
