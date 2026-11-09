@@ -526,22 +526,102 @@ export function getNearbyPlaceIcon(category: string, name?: string) {
   }
 }
 
+// Helper para obtener el emoji característico de cada categoría
+export function getCategoryEmoji(category: string): string {
+  const cat = (category || '').toLowerCase();
+  switch (cat) {
+    case 'restroom':
+    case 'baño':
+    case 'bano':
+      return '🚻';
+    case 'police':
+    case 'policia':
+    case 'cai':
+    case 'seguridad':
+      return '👮';
+    case 'health':
+    case 'salud':
+    case 'medico':
+    case 'hospital':
+    case 'urgencias':
+      return '🚑';
+    case 'stage':
+    case 'tarima':
+    case 'concierto':
+      return '🎪';
+    case 'shopping':
+    case 'comercio':
+    case 'tienda':
+      return '🛍️';
+    case 'restaurant':
+    case 'restaurante':
+    case 'comida':
+      return '🍴';
+    case 'risk_zone':
+    case 'riesgo':
+    case 'aglomeracion':
+      return '⚠️';
+    default:
+      return '📍';
+  }
+}
+
+// Helper para títulos legibles de categoría
+export function formatCategoryTitle(category: string): string {
+  const cat = (category || '').toLowerCase();
+  switch (cat) {
+    case 'restroom':
+    case 'baño':
+    case 'bano':
+      return 'Batería Sanitaria';
+    case 'police':
+    case 'policia':
+    case 'cai':
+    case 'seguridad':
+      return 'Seguridad y Convivencia (CAI)';
+    case 'health':
+    case 'salud':
+    case 'medico':
+    case 'hospital':
+    case 'urgencias':
+      return 'Primeros Auxilios y Salud';
+    case 'stage':
+    case 'tarima':
+    case 'concierto':
+      return 'Tarima Cultural y de Conciertos';
+    case 'shopping':
+    case 'comercio':
+    case 'tienda':
+      return 'Comercio y Abastecimiento';
+    case 'restaurant':
+    case 'restaurante':
+    case 'comida':
+      return 'Gastronomía Típica';
+    case 'risk_zone':
+    case 'riesgo':
+    case 'aglomeracion':
+      return 'Zona de Alta Aglomeración';
+    default:
+      return 'Punto de Interés';
+  }
+}
+
 // Controlador de cámara para auto-ajustar los límites (fitBounds) al recibir una polilínea
 function RouteBoundsAutoFitter({ coordinates }: { coordinates: [number, number][] }) {
   const map = useMap();
-  const prevCoordCountRef = useRef<number>(0);
+  const prevCoordRef = useRef<string>('');
 
   useEffect(() => {
     if (!map || !Array.isArray(coordinates) || coordinates.length < 2) return;
 
-    // Evitar zoom redundante si los puntos no cambiaron
-    if (prevCoordCountRef.current === coordinates.length) return;
-    prevCoordCountRef.current = coordinates.length;
+    const key = `${coordinates.length}-${coordinates[0][0]},${coordinates[0][1]}-${coordinates[coordinates.length - 1][0]},${coordinates[coordinates.length - 1][1]}`;
+    if (prevCoordRef.current === key) return;
+    prevCoordRef.current = key;
 
     try {
       const bounds = L.latLngBounds(coordinates);
       map.fitBounds(bounds, {
-        padding: [50, 50],
+        padding: [60, 60],
         maxZoom: 16,
         animate: true,
       });
@@ -551,6 +631,44 @@ function RouteBoundsAutoFitter({ coordinates }: { coordinates: [number, number][
   }, [coordinates, map]);
 
   return null;
+}
+
+// Componente para renderizar la zona de riesgo con halo de alerta pulsante
+export function RiskZoneOverlay({ zone }: { zone: NearbyPlace }) {
+  const [lat, lng] = zone.coordinates;
+  return (
+    <React.Fragment key={`risk-zone-${zone.name}-${lat}-${lng}`}>
+      <Circle
+        center={[lat, lng]}
+        radius={140}
+        pathOptions={{
+          color: '#ef4444',
+          fillColor: '#dc2626',
+          fillOpacity: 0.28,
+          weight: 2,
+          dashArray: '6, 6',
+        }}
+      />
+      <Marker position={[lat, lng]} icon={createRiskZonePinIcon(zone.name)}>
+        <Popup className="custom-popup">
+          <div className="p-2.5 min-w-[210px] max-w-[260px] font-sans text-xs bg-slate-950 text-white rounded-xl border border-red-500/40 shadow-xl">
+            <div className="flex items-center gap-1.5 font-bold text-red-400 border-b border-red-500/30 pb-1 mb-1">
+              <span>⚠️</span>
+              <span className="uppercase text-[11px] tracking-wider">Zona de Aglomeración Crítica</span>
+            </div>
+            <h5 className="font-bold text-white text-xs mb-1">{zone.name}</h5>
+            <p className="text-slate-300 text-[11px] leading-relaxed">
+              {zone.description || 'Punto crítico de alta afluencia peatonal y cruce de carrozas gigantes. Camine con precaución y cuide sus pertenencias.'}
+            </p>
+            <div className="mt-2 flex items-center justify-between text-[10px] text-red-300 bg-red-950/60 px-2 py-1 rounded border border-red-500/20">
+              <span>Nivel de Riesgo:</span>
+              <strong className="text-red-400 uppercase font-black">Alto / Precaución</strong>
+            </div>
+          </div>
+        </Popup>
+      </Marker>
+    </React.Fragment>
+  );
 }
 
 // Selector de clics sobre el mapa para registrar incidentes o puntos
@@ -569,6 +687,8 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
   routeCoordinates: propRouteCoordinates,
   shouldDrawRoute: propShouldDrawRoute,
   routeTitle: propRouteTitle,
+  schedule: propSchedule,
+  nearbyPlaces: propNearbyPlaces,
   onRouteClear,
   userLocation,
   center = DEFAULT_CENTER,
@@ -587,6 +707,8 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
     Boolean(propShouldDrawRoute && propRouteCoordinates && propRouteCoordinates.length >= 2)
   );
   const [activeTitle, setActiveTitle] = useState<string>(propRouteTitle || 'Recorrido del Carnaval');
+  const [activeSchedule, setActiveSchedule] = useState<CarnavalSchedule | null>(propSchedule || null);
+  const [activeNearbyPlaces, setActiveNearbyPlaces] = useState<NearbyPlace[]>(propNearbyPlaces || []);
 
   // Sincronizar cambios en props
   useEffect(() => {
@@ -600,21 +722,40 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
     }
   }, [propRouteCoordinates, propShouldDrawRoute, propRouteTitle]);
 
+  useEffect(() => {
+    if (propSchedule) {
+      setActiveSchedule(propSchedule);
+    }
+  }, [propSchedule]);
+
+  useEffect(() => {
+    if (Array.isArray(propNearbyPlaces)) {
+      setActiveNearbyPlaces(propNearbyPlaces);
+    }
+  }, [propNearbyPlaces]);
+
   // Escucha de eventos globales desacoplados (Chat-to-Map y Gemini Route Dispatcher)
   useEffect(() => {
     const handleDrawGeminiRoute = (e: any) => {
       const detail = e?.detail;
       if (!detail) return;
 
-      const rawWaypoints = detail.waypoints || detail.coordinates || [];
+      const rawWaypoints = detail.waypoints || detail.coordinates || detail.route_coordinates || [];
       const shouldDraw = detail.should_draw_route !== false && rawWaypoints.length >= 2;
+
+      if (detail.schedule) {
+        setActiveSchedule(detail.schedule);
+      }
+      if (Array.isArray(detail.nearby_places)) {
+        setActiveNearbyPlaces(detail.nearby_places);
+      }
 
       if (shouldDraw) {
         // Limpia cualquier ruta previa e inyecta las nuevas coordenadas
         setActiveRouteCoordinates(rawWaypoints);
         setIsRouteActive(true);
         if (detail.title || detail.reply) {
-          setActiveTitle(detail.title || 'Ruta generada por GuaneñaBot');
+          setActiveTitle(detail.title || detail.event_name || 'Ruta generada por GuaneñaBot');
         }
       }
     };
@@ -622,6 +763,8 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
     const handleClearRoute = () => {
       setActiveRouteCoordinates([]);
       setIsRouteActive(false);
+      setActiveSchedule(null);
+      setActiveNearbyPlaces([]);
       if (onRouteClear) onRouteClear();
     };
 
@@ -639,6 +782,8 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
   const handleClearActiveRoute = useCallback(() => {
     setActiveRouteCoordinates([]);
     setIsRouteActive(false);
+    setActiveSchedule(null);
+    setActiveNearbyPlaces([]);
     if (onRouteClear) onRouteClear();
   }, [onRouteClear]);
 
@@ -661,7 +806,7 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
         {/* Captura de eventos de clic */}
         <MapClickHandler onSelectCoordinates={onSelectCoordinates} />
 
-        {/* Auto-zoom y ajuste suave a los límites de la polilínea activa */}
+        {/* Auto-zoom y ajuste suave a los límites de la polilínea activa (padding: [60, 60]) */}
         {isRouteActive && activeRouteCoordinates.length >= 2 && (
           <RouteBoundsAutoFitter coordinates={activeRouteCoordinates} />
         )}
@@ -682,33 +827,41 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
               }}
             />
 
-            {/* Polilínea vibrante principal con patrón segmentado animado */}
+            {/* Polilínea vibrante principal (color: #f59e0b, weight: 6, lineCap: round) */}
             <Polyline
               key={`main-route-${activeRouteCoordinates.length}`}
               positions={activeRouteCoordinates}
               pathOptions={{
                 color: '#f59e0b',
                 weight: 6,
-                opacity: 0.85,
-                dashArray: '10, 10',
+                opacity: 0.9,
                 lineCap: 'round',
                 lineJoin: 'round',
               }}
             />
 
-            {/* Marcador de Inicio (Bandera verde) */}
+            {/* Marcador de Inicio (Bandera verde con popup: Inicio del Desfile) */}
             {startCoord && (
-              <Marker position={startCoord} icon={createStartPinIcon('Salida Oficial')}>
+              <Marker position={startCoord} icon={createStartPinIcon('Inicio del Desfile')}>
                 <Popup className="custom-popup">
-                  <div className="p-2 min-w-[190px] font-sans text-xs bg-slate-900 text-white rounded-xl">
-                    <div className="flex items-center gap-1.5 font-bold text-emerald-400 border-b border-white/10 pb-1 mb-1">
-                      <span>🚩</span>
-                      <span className="uppercase text-[11px]">Punto de Partida</span>
+                  <div className="p-2.5 min-w-[200px] font-sans text-xs bg-slate-900 text-white rounded-xl border border-emerald-500/30">
+                    <div className="flex items-center gap-1.5 font-bold text-emerald-400 border-b border-white/10 pb-1 mb-1.5">
+                      <span className="text-base">🚩</span>
+                      <span className="uppercase text-[11px] tracking-wide">Inicio del Desfile</span>
                     </div>
-                    <p className="text-slate-300 text-[11px] leading-relaxed">
-                      Inicio del recorrido oficial del Carnaval de Negros y Blancos.
+                    <h5 className="font-bold text-white text-xs mb-1">
+                      {activeSchedule?.start_location || 'Estadio Departamental Libertad'}
+                    </h5>
+                    <p className="text-slate-300 text-[11px] leading-relaxed mb-1.5">
+                      Punto oficial de partida y concentración de carrozas, comparsas y murgas.
                     </p>
-                    <div className="mt-1.5 text-[10px] text-emerald-300 font-mono">
+                    {activeSchedule?.start_time && (
+                      <div className="flex items-center justify-between text-[11px] bg-emerald-950/50 px-2 py-1 rounded border border-emerald-500/20 text-emerald-300 font-mono">
+                        <span>Hora de Salida:</span>
+                        <strong className="font-bold">{activeSchedule.start_time}</strong>
+                      </div>
+                    )}
+                    <div className="mt-1 text-[10px] text-slate-400 font-mono">
                       Lat: {startCoord[0].toFixed(4)}, Lng: {startCoord[1].toFixed(4)}
                     </div>
                   </div>
@@ -716,19 +869,28 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
               </Marker>
             )}
 
-            {/* Marcador de Llegada (Bandera cuadros / fiesta) */}
+            {/* Marcador de Llegada (Bandera cuadros con popup: Fin de la Senda) */}
             {endCoord && (
-              <Marker position={endCoord} icon={createEndPinIcon('Llegada Oficial')}>
+              <Marker position={endCoord} icon={createEndPinIcon('Fin de la Senda')}>
                 <Popup className="custom-popup">
-                  <div className="p-2 min-w-[190px] font-sans text-xs bg-slate-900 text-white rounded-xl">
-                    <div className="flex items-center gap-1.5 font-bold text-amber-400 border-b border-white/10 pb-1 mb-1">
-                      <span>🏁</span>
-                      <span className="uppercase text-[11px]">Punto de Culminación</span>
+                  <div className="p-2.5 min-w-[200px] font-sans text-xs bg-slate-900 text-white rounded-xl border border-amber-500/30">
+                    <div className="flex items-center gap-1.5 font-bold text-amber-400 border-b border-white/10 pb-1 mb-1.5">
+                      <span className="text-base">🏁</span>
+                      <span className="uppercase text-[11px] tracking-wide">Fin de la Senda</span>
                     </div>
-                    <p className="text-slate-300 text-[11px] leading-relaxed">
-                      Llegada y desconcentración de agrupaciones y carrozas.
+                    <h5 className="font-bold text-white text-xs mb-1">
+                      {activeSchedule?.finish_location || 'Avenida de los Estudiantes / Torobajo'}
+                    </h5>
+                    <p className="text-slate-300 text-[11px] leading-relaxed mb-1.5">
+                      Llegada, premiación oficial y desconcentración de agrupaciones y carrozas.
                     </p>
-                    <div className="mt-1.5 text-[10px] text-amber-300 font-mono">
+                    {activeSchedule?.estimated_arrival_time && (
+                      <div className="flex items-center justify-between text-[11px] bg-amber-950/50 px-2 py-1 rounded border border-amber-500/20 text-amber-300 font-mono">
+                        <span>Hora Estimada:</span>
+                        <strong className="font-bold">{activeSchedule.estimated_arrival_time}</strong>
+                      </div>
+                    )}
+                    <div className="mt-1 text-[10px] text-slate-400 font-mono">
                       Lat: {endCoord[0].toFixed(4)}, Lng: {endCoord[1].toFixed(4)}
                     </div>
                   </div>
@@ -737,6 +899,47 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
             )}
           </>
         )}
+
+        {/* Capas interactivas de Telemetría (Restrooms, Police, Health, Stages, Shopping, Restaurants, Risk Zones) */}
+        {Array.isArray(activeNearbyPlaces) && activeNearbyPlaces.map((place, idx) => {
+          if (!place || !Array.isArray(place.coordinates) || place.coordinates.length < 2) return null;
+          const [lat, lng] = place.coordinates;
+
+          if (place.category === 'risk_zone' || place.category === 'aglomeracion') {
+            return <RiskZoneOverlay key={`risk-${place.name}-${idx}`} zone={place} />;
+          }
+
+          return (
+            <Marker
+              key={`nearby-${place.name}-${idx}-${lat}-${lng}`}
+              position={[lat, lng]}
+              icon={getNearbyPlaceIcon(place.category, place.name)}
+            >
+              <Popup className="custom-popup">
+                <div className="p-2.5 min-w-[200px] max-w-[260px] font-sans text-xs bg-slate-950 text-white rounded-xl border border-white/15 shadow-2xl">
+                  <div className="flex items-center gap-2 font-bold text-cyan-400 border-b border-white/10 pb-1.5 mb-1.5">
+                    <span className="text-base">{getCategoryEmoji(place.category)}</span>
+                    <span className="uppercase text-[11px] tracking-wide">
+                      {formatCategoryTitle(place.category)}
+                    </span>
+                  </div>
+                  <h5 className="font-bold text-white text-xs mb-1">{place.name}</h5>
+                  {place.description && (
+                    <p className="text-slate-300 text-[11px] leading-relaxed mb-1.5">
+                      {place.description}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1.5 border-t border-white/10">
+                    <span>Disponibilidad / Estado:</span>
+                    <span className="text-emerald-400 font-bold font-mono">
+                      {place.status || place.schedule || 'Servicio Activo'}
+                    </span>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
 
         {/* Marcador GPS del usuario */}
         {userLocation && (
@@ -775,6 +978,76 @@ export const CarnavalMap: React.FC<CarnavalMapProps> = ({
           </>
         )}
       </MapContainer>
+
+      {/* Tarjeta flotante de telemetría de horarios y recorrido oficial sobre el mapa */}
+      {activeSchedule && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[950] w-[94vw] sm:max-w-2xl rounded-2xl bg-slate-950/90 backdrop-blur-xl border border-amber-500/40 shadow-2xl shadow-black/80 px-4 py-3 text-white animate-in fade-in slide-in-from-top-3 duration-300">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {/* Título y estado */}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-600 text-white flex items-center justify-center text-lg shadow-lg shadow-amber-500/30 shrink-0">
+                🎭
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  </span>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">
+                    {activeSchedule.event_name || 'Telemetría Oficial de la Senda'}
+                  </span>
+                </div>
+                <h4 className="text-xs sm:text-sm font-bold text-white truncate">
+                  {activeTitle || 'Recorrido del Carnaval'}
+                </h4>
+              </div>
+            </div>
+
+            {/* Puntos de Salida y Llegada */}
+            <div className="flex items-center gap-4 text-xs border-t sm:border-t-0 sm:border-l border-white/10 pt-2 sm:pt-0 sm:pl-4 shrink-0">
+              {/* Punto de Partida */}
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-base shrink-0">🚩</span>
+                <div className="min-w-0">
+                  <span className="block text-[10px] text-emerald-400 uppercase font-black">Salida</span>
+                  <span className="block text-white font-bold text-xs truncate max-w-[120px] sm:max-w-[140px]" title={activeSchedule.start_location}>
+                    {activeSchedule.start_location}
+                  </span>
+                  <span className="block text-[11px] text-emerald-300 font-mono font-semibold">
+                    {activeSchedule.start_time}
+                  </span>
+                </div>
+              </div>
+
+              <div className="text-slate-600 font-bold hidden sm:block">➜</div>
+
+              {/* Punto de Llegada */}
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-base shrink-0">🏁</span>
+                <div className="min-w-0">
+                  <span className="block text-[10px] text-amber-400 uppercase font-black">Llegada</span>
+                  <span className="block text-white font-bold text-xs truncate max-w-[120px] sm:max-w-[140px]" title={activeSchedule.finish_location}>
+                    {activeSchedule.finish_location}
+                  </span>
+                  <span className="block text-[11px] text-amber-300 font-mono font-semibold">
+                    {activeSchedule.estimated_arrival_time}
+                  </span>
+                </div>
+              </div>
+
+              {activeSchedule.distance_km && (
+                <div className="hidden md:flex flex-col items-center justify-center px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center">
+                  <span className="text-[9px] uppercase font-bold text-amber-400">Distancia</span>
+                  <span className="text-xs font-mono font-extrabold text-amber-300">
+                    {typeof activeSchedule.distance_km === 'number' ? `${activeSchedule.distance_km} km` : activeSchedule.distance_km}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tarjeta HUD flotante inferior con indicador de ruta y botón para quitar trazado */}
       {isRouteActive && activeRouteCoordinates.length >= 2 && (
