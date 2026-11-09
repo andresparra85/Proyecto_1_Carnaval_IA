@@ -22,7 +22,7 @@ export function Header({
   const isTurista = user?.role === 'turista' || displayName.toLowerCase().includes('turista');
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-slate-950/70 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-2.5 sm:py-3 transition-all shadow-2xl select-none">
+    <header className="sticky top-0 z-30 w-full bg-slate-950/75 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-2.5 sm:py-3 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.5)] select-none">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
         
         {/* 1. Lado Izquierdo: Logotipo, Antifaz y Badge de Estado en Vivo */}
@@ -60,7 +60,7 @@ export function Header({
         </div>
 
         {/* 2. Centro: Navegación Principal en Píldoras (rounded-full) */}
-        <nav aria-label="Navegación principal" className="flex items-center gap-1 sm:gap-2 p-1 rounded-full bg-slate-900/60 border border-white/5 backdrop-blur-md overflow-x-auto no-scrollbar">
+        <nav aria-label="Navegación principal" className="flex items-center gap-1 sm:gap-2 p-1 rounded-full bg-slate-900/60 border border-white/10 backdrop-blur-md overflow-x-auto no-scrollbar shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
           {/* Pestaña: Senda del Carnaval */}
           <button
             type="button"
@@ -122,7 +122,7 @@ export function Header({
           <button
             type="button"
             onClick={onOpenReportModal}
-            className="flex items-center gap-1.5 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-amber-500 text-white shadow-lg shadow-rose-600/30 rounded-full px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            className="flex items-center gap-1.5 bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 hover:brightness-110 text-white shadow-lg shadow-rose-600/30 rounded-full px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             title="Crear un reporte rápido de incidencia en la senda"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
