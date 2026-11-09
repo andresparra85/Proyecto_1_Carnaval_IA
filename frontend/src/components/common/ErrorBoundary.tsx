@@ -50,12 +50,12 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen w-full flex items-center justify-center bg-slate-950 text-slate-100 p-4 font-sans select-none">
           <div className="max-w-md w-full bg-slate-900/90 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl text-center space-y-5 animate-in fade-in duration-300">
             {/* Ícono festivo */}
-            <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-600 via-pink-600 to-amber-500 text-white text-3xl shadow-lg shadow-rose-600/30">
+            <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-600 via-coral-600 to-coral-500 text-white text-3xl shadow-lg shadow-rose-600/30">
               🎭
             </div>
 
             <div className="space-y-2">
-              <span className="text-[10px] font-black tracking-widest uppercase text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+              <span className="text-[10px] font-black tracking-widest uppercase text-coral-400 bg-coral-500/10 px-3 py-1 rounded-full border border-coral-500/20">
                 GuaneñaBot • Recuperación Activa
               </span>
               <h2 className="text-xl font-black text-white tracking-tight">
@@ -79,7 +79,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <button
                 type="button"
                 onClick={this.handleReload}
-                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white text-xs font-bold transition shadow-md shadow-rose-600/25 active:scale-95 cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-rose-600 to-coral-500 hover:from-rose-500 hover:to-coral-400 text-white text-xs font-bold transition shadow-md shadow-rose-600/25 active:scale-95 cursor-pointer"
               >
                 Recargar CarnavalIA
               </button>

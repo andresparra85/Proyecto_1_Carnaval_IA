@@ -34,7 +34,7 @@ export function EventsCalendarModal({
         {/* Encabezado */}
         <header className="px-6 py-5 border-b border-white/10 flex items-center justify-between gap-4 bg-slate-950/60">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-md shadow-orange-500/20 shrink-0">
+            <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-tr from-coral-500 to-rose-500 text-white shadow-md shadow-rose-500/20 shrink-0">
               <Calendar className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -42,7 +42,7 @@ export function EventsCalendarModal({
                 <h2 id="calendar-modal-title" className="text-lg sm:text-xl font-black text-white tracking-tight">
                   Calendario de Eventos
                 </h2>
-                <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-coral-500/10 text-coral-300 border border-coral-500/20">
                   <Sparkles className="w-2.5 h-2.5" />
                   Pasto 2026
                 </span>
@@ -76,7 +76,7 @@ export function EventsCalendarModal({
                   onClick={() => handleSelectEvent(day.id)}
                   className={`group relative p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between ${
                     isSelected
-                      ? 'bg-slate-800/90 border-amber-500/40 shadow-lg shadow-amber-500/10 ring-1 ring-amber-500/40'
+                      ? 'bg-slate-800/90 border-coral-500/40 shadow-lg shadow-coral-500/10 ring-1 ring-coral-500/40'
                       : 'bg-slate-950/40 hover:bg-slate-800/50 border-white/10 hover:border-white/20'
                   }`}
                 >
@@ -86,9 +86,9 @@ export function EventsCalendarModal({
                       <div className="flex items-center gap-2">
                         <span
                           className="w-2.5 h-2.5 rounded-full"
-                          style={{ backgroundColor: event?.color || '#06b6d4' }}
+                          style={{ backgroundColor: event?.color || '#a8a29e' }}
                         />
-                        <span className="text-xs font-black uppercase tracking-wider text-amber-400">
+                        <span className="text-xs font-black uppercase tracking-wider text-coral-400">
                           {day.label}
                         </span>
                       </div>
@@ -99,7 +99,7 @@ export function EventsCalendarModal({
                     </div>
 
                     {/* Título */}
-                    <h3 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors leading-snug">
+                    <h3 className="text-sm font-bold text-white group-hover:text-coral-300 transition-colors leading-snug">
                       {event?.name}
                     </h3>
 
@@ -118,7 +118,7 @@ export function EventsCalendarModal({
                           <span>{event.closedPoints.length} cierres viales</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-emerald-300 font-medium">
+                        <span className="inline-flex items-center gap-1 text-aqua-300 font-medium">
                           <span>✅</span>
                           <span>Vías habilitadas</span>
                         </span>
@@ -133,8 +133,8 @@ export function EventsCalendarModal({
                       }}
                       className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                         isSelected
-                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-sm'
-                          : 'bg-white/5 group-hover:bg-amber-500/20 text-slate-300 group-hover:text-amber-300 border border-white/10'
+                          ? 'bg-gradient-to-r from-coral-500 to-rose-500 text-white font-bold shadow-sm'
+                          : 'bg-white/5 group-hover:bg-coral-500/20 text-slate-300 group-hover:text-coral-300 border border-white/10'
                       }`}
                     >
                       <span>{isSelected ? 'Viendo en la Senda' : 'Ver en la Senda'}</span>

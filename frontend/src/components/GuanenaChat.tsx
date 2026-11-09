@@ -380,11 +380,10 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
                     )}
 
                     <div
-                      className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-[13px] leading-relaxed shadow-md ${
-                        isUser
+                      className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-[13px] leading-relaxed shadow-md ${isUser
                           ? 'bg-gradient-to-r from-rose-600 to-rose-700 text-white font-medium rounded-tr-none shadow-rose-900/40'
                           : 'bg-slate-900/85 backdrop-blur-md border border-white/10 text-slate-100 rounded-tl-none font-normal'
-                      }`}
+                        }`}
                     >
                       <MarkdownMessage content={msg.content} />
 

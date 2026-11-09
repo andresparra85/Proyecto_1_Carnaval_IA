@@ -27,7 +27,7 @@ export interface ReportMarkerProps {
 // Icono temático de alerta según el nivel de severidad / riesgo AI
 function createReportIcon(report: IncidentReportData) {
   const risk = report.ai_risk_level || report.severity || 'Medio';
-  let bg = '#f59e0b'; // Medio
+  let bg = '#ff6b5b'; // Medio
   let emoji = '⚠️';
 
   if (risk === 'Alto' || risk === 'high') {

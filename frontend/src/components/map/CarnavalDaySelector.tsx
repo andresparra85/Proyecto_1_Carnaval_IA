@@ -17,7 +17,7 @@ export const OFFICIAL_CARNIVAL_DATES: CarnivalDayOption[] = [
     id: '03-ene',
     dateLabel: '3 Ene',
     name: 'Canto a la Tierra',
-    color: '#F59E0B', // Ámbar
+    color: '#dc2626', // Ámbar
     description: 'Recorrido completo por la Senda con trazo Ámbar',
     badge: 'Colectivos Coreográficos',
   },
@@ -25,7 +25,7 @@ export const OFFICIAL_CARNIVAL_DATES: CarnivalDayOption[] = [
     id: '04-ene',
     dateLabel: '4 Ene',
     name: 'Familia Castañeda',
-    color: '#D946EF', // Magenta
+    color: '#be123c', // Magenta
     description: 'Recorrido completo por la Senda con trazo Magenta',
     badge: 'Estampas y Carretas',
   },
@@ -33,7 +33,7 @@ export const OFFICIAL_CARNIVAL_DATES: CarnivalDayOption[] = [
     id: '05-ene',
     dateLabel: '5 Ene',
     name: 'Día de Negros',
-    color: '#38BDF8', // Cyan festivo / Tablados
+    color: '#a8a29e', // Cyan festivo / Tablados
     description: 'Tablados y zonas de juego en Plaza del Carnaval y Plaza de Nariño',
     badge: 'Juego de Cosmético',
   },
@@ -41,7 +41,7 @@ export const OFFICIAL_CARNIVAL_DATES: CarnivalDayOption[] = [
     id: '06-ene',
     dateLabel: '6 Ene',
     name: 'Desfile Magno',
-    color: '#E11D48', // Rojo Carmesí
+    color: '#dc2626', // Rojo Carmesí
     description: 'Recorrido oficial completo con trazo Rojo Carmesí y todos los hitos',
     badge: 'Carrozas Monumentales',
   },

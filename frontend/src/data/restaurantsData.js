@@ -105,7 +105,7 @@ export function getRestaurantStatus(hoursStr, currentDate = new Date()) {
     isOpen: open,
     badge: open ? '🟢 Abierto Ahora' : '🔴 Cerrado',
     className: open
-      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+      ? 'bg-aqua-500/20 text-aqua-300 border-aqua-500/40'
       : 'bg-rose-500/20 text-rose-300 border-rose-500/40',
   };
 }

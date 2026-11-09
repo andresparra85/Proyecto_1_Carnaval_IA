@@ -27,7 +27,7 @@ export interface PoiMarkerProps {
 
 // Icono temático dinámico según la categoría del POI
 function createThemedPoiIcon(poi: PoiData) {
-  let bg = poi.badgeColor || '#f59e0b';
+  let bg = poi.badgeColor || '#ff6b5b';
   let emoji = poi.icon || '📍';
 
   if (!poi.icon) {
@@ -35,7 +35,7 @@ function createThemedPoiIcon(poi: PoiData) {
       case 'bano':
       case 'banos':
         emoji = '🚻';
-        bg = '#06b6d4';
+        bg = '#14b8a6';
         break;
       case 'salud':
         emoji = '🚨';
@@ -54,7 +54,7 @@ function createThemedPoiIcon(poi: PoiData) {
       case 'graderia':
       case 'graderias':
         emoji = '🏟️';
-        bg = '#eab308';
+        bg = '#ff6b5b';
         break;
       default:
         emoji = '📍';
@@ -161,7 +161,7 @@ export const PoiMarker: React.FC<PoiMarkerProps> = ({ poi, activeCategory, userG
     <Marker position={coords} icon={createThemedPoiIcon(poi)}>
       <Popup className="custom-popup" autoPan={true}>
         <div className="p-2.5 min-w-[220px] max-w-[270px] font-sans text-xs bg-slate-900 text-white rounded-xl">
-          <div className="flex items-center gap-1.5 font-bold border-b border-white/10 pb-1 mb-1.5 text-amber-400">
+          <div className="flex items-center gap-1.5 font-bold border-b border-white/10 pb-1 mb-1.5 text-coral-300">
             <span className="text-base">{poi.icon || '📍'}</span>
             <span className="leading-tight">{poi.name}</span>
           </div>
@@ -188,7 +188,7 @@ export const PoiMarker: React.FC<PoiMarkerProps> = ({ poi, activeCategory, userG
           <button
             type="button"
             onClick={handleHowToGetThere}
-            className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-xs shadow-md transition active:scale-95 cursor-pointer mt-1"
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-gradient-to-r from-coral-600 via-rose-600 to-coral-700 hover:from-coral-500 hover:to-rose-500 text-white font-extrabold text-xs shadow-md transition active:scale-95 cursor-pointer mt-1"
             title={`Trazar ruta a pie hacia ${poi.name}`}
           >
             <span>📍</span>

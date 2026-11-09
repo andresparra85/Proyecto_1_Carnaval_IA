@@ -18,7 +18,7 @@ export const CARNAVAL_POIS = [
     coords: [1.2158, -77.2835], // Sidewalk plaza (andén fuera de la calzada)
     address: 'Plaza del Carnaval y la Cultura (Costado Sur / Andén)',
     description: 'Puesto de mando y atención prehospitalaria, curaciones y ambulancia medicalizada.',
-    badgeColor: '#ef4444',
+    badgeColor: '#dc2626',
     phone: '132'
   },
   {
@@ -29,7 +29,7 @@ export const CARNAVAL_POIS = [
     coords: [1.2170, -77.2812], // Plazoleta este (andén sobre la plaza)
     address: 'Plaza de Nariño (Plazoleta Este / Andén)',
     description: 'Punto de primeros auxilios y triage rápido para espectadores en el centro.',
-    badgeColor: '#ef4444',
+    badgeColor: '#dc2626',
     phone: '132'
   },
   {
@@ -40,7 +40,7 @@ export const CARNAVAL_POIS = [
     coords: [1.2092, -77.2899],
     address: 'Sector Bomboná con Cra 25 (Andén Peatonal)',
     description: 'Atención médica en zona de desconcentración y llegada.',
-    badgeColor: '#ef4444',
+    badgeColor: '#dc2626',
     phone: '123'
   },
 
@@ -53,7 +53,7 @@ export const CARNAVAL_POIS = [
     coords: [1.2145, -77.2845], // Costado sur (fuera de la calzada)
     address: 'Plaza del Carnaval (Costado Sur)',
     description: 'Batería sanitaria pública habilitada sobre el andén peatonal.',
-    badgeColor: '#06b6d4',
+    badgeColor: '#a8a29e',
     schedule: '24 Horas'
   },
   {
@@ -64,7 +64,7 @@ export const CARNAVAL_POIS = [
     coords: [1.2139, -77.2816],
     address: 'Costado Occidental Plaza de Nariño',
     description: 'Baterías sanitarias municipales.',
-    badgeColor: '#06b6d4',
+    badgeColor: '#a8a29e',
     schedule: '6:00 AM - 10:00 PM'
   },
 
@@ -77,7 +77,7 @@ export const CARNAVAL_POIS = [
     coords: [1.2122, -77.2782], // Acera oriental
     address: 'Carrera 27 (Acera Oriental entre Calles 14 y 15)',
     description: 'Estructuras modulares elevadas ubicadas sobre el andén oriental con vista despejada.',
-    badgeColor: '#f59e0b'
+    badgeColor: '#dc2626'
   },
   {
     id: 'poi-graderia-plaza-carnaval',
@@ -87,7 +87,7 @@ export const CARNAVAL_POIS = [
     coords: [1.2156, -77.2838],
     address: 'Plaza del Carnaval frente a Tarima',
     description: 'Tribunas principales para calificación de jurados.',
-    badgeColor: '#f59e0b'
+    badgeColor: '#dc2626'
   },
   {
     id: 'poi-graderia-plaza-narino',
@@ -97,7 +97,7 @@ export const CARNAVAL_POIS = [
     coords: [1.2135, -77.2810],
     address: 'Calle 18 con Carrera 25',
     description: 'Tribunas cívicas y prensa oficial.',
-    badgeColor: '#f59e0b'
+    badgeColor: '#dc2626'
   }
 ];
 

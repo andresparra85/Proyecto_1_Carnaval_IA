@@ -83,7 +83,7 @@ export function PastoPoiMarkersLayer({
         >
           <Popup>
             <div className="p-1 font-sans text-xs">
-              <strong className="block text-amber-500 font-bold">{poi.name}</strong>
+              <strong className="block text-coral-600 font-bold">{poi.name}</strong>
               <p className="text-slate-600 dark:text-slate-300 my-1">{poi.description}</p>
               <span className="text-[10px] text-slate-400 block">{poi.address}</span>
             </div>
@@ -155,15 +155,15 @@ export function createSvgLandmarkPin({
   type: 'inicio' | 'intermedio' | 'fin' | 'plaza' | 'salud';
   label?: string;
 }) {
-  let pinColor = '#F59E0B'; // Ámbar por defecto
-  let shadowColor = 'rgba(245, 158, 11, 0.6)';
+  let pinColor = '#dc2626'; // Ámbar por defecto
+  let shadowColor = 'rgba(220, 38, 38, 0.6)';
   let iconSvg = '';
   let subText = 'Hito';
 
   if (type === 'inicio') {
     // Verde Esmeralda con icono de Bandera de Salida
-    pinColor = '#10B981';
-    shadowColor = 'rgba(16, 185, 129, 0.65)';
+    pinColor = '#a8a29e';
+    shadowColor = 'rgba(168, 162, 158, 0.65)';
     subText = 'Salida';
     iconSvg = `
       <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -172,8 +172,8 @@ export function createSvgLandmarkPin({
     `;
   } else if (type === 'fin') {
     // Carmesí festivo con icono de Meta / Llegada
-    pinColor = '#E11D48';
-    shadowColor = 'rgba(225, 29, 72, 0.7)';
+    pinColor = '#dc2626';
+    shadowColor = 'rgba(220, 38, 38, 0.7)';
     subText = 'Llegada';
     iconSvg = `
       <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -183,8 +183,8 @@ export function createSvgLandmarkPin({
     `;
   } else {
     // Dorado / Ámbar con icono de Corona / Tarima Festiva (Plaza Nariño / Carnaval)
-    pinColor = '#F59E0B';
-    shadowColor = 'rgba(245, 158, 11, 0.65)';
+    pinColor = '#dc2626';
+    shadowColor = 'rgba(220, 38, 38, 0.65)';
     subText = 'Hito';
     iconSvg = `
       <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -280,7 +280,7 @@ export function MapComponent({
       <Polyline
         positions={SENDA_OFICIAL_COORDS}
         pathOptions={{
-          color: '#E11D48',
+          color: '#dc2626',
           weight: 6,
           opacity: 0.95
         }}

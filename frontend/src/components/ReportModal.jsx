@@ -208,7 +208,7 @@ export function ReportModal({
         {/* Encabezado */}
         <header className="px-6 py-4 border-b border-white/10 flex items-center justify-between gap-3 bg-slate-950/70">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-tr from-rose-600 via-pink-600 to-amber-500 text-white shadow-md shadow-rose-600/30 shrink-0">
+            <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-tr from-rose-600 via-coral-600 to-coral-500 text-white shadow-md shadow-rose-600/30 shrink-0">
               <AlertTriangle className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -240,8 +240,8 @@ export function ReportModal({
           )}
 
           {isSuccess && (
-            <div className="p-3.5 text-xs rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-center gap-2 animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="p-3.5 text-xs rounded-2xl bg-aqua-500/15 border border-aqua-500/30 text-aqua-300 flex items-center gap-2 animate-in fade-in">
+              <CheckCircle2 className="w-4 h-4 text-aqua-400 shrink-0" />
               <span className="font-bold">Reporte enviado a logística del Carnaval</span>
             </div>
           )}
@@ -261,7 +261,7 @@ export function ReportModal({
                     onClick={() => setReportType(t.value)}
                     className={`flex items-center gap-3 p-3 rounded-2xl border text-xs font-semibold transition-all duration-200 cursor-pointer text-left active:scale-[0.98] ${
                       isSelected
-                        ? 'bg-gradient-to-r from-rose-500/25 to-amber-500/25 border-rose-500 text-white shadow-lg shadow-rose-950/40 ring-1 ring-rose-400/50 scale-[1.02]'
+                        ? 'bg-gradient-to-r from-rose-500/25 to-coral-500/25 border-rose-500 text-white shadow-lg shadow-rose-950/40 ring-1 ring-rose-400/50 scale-[1.02]'
                         : 'bg-slate-800/60 hover:bg-slate-800 border-white/10 text-slate-300 hover:text-white hover:border-white/20'
                     }`}
                   >
@@ -288,7 +288,7 @@ export function ReportModal({
                 type="button"
                 onClick={handleUseCurrentLocation}
                 disabled={locatingGps}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-400 hover:text-amber-300 transition cursor-pointer"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-coral-400 hover:text-coral-300 transition cursor-pointer"
               >
                 <Locate className={`w-3.5 h-3.5 ${locatingGps ? 'animate-spin' : ''}`} />
                 <span>{locatingGps ? 'Obteniendo...' : 'Capturar mi GPS'}</span>
@@ -296,7 +296,7 @@ export function ReportModal({
             </div>
 
             <div className="relative">
-              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400 pointer-events-none" />
+              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-coral-400 pointer-events-none" />
               <select
                 value={selectedSector}
                 onChange={(e) => handleSectorChange(e.target.value)}
@@ -318,7 +318,7 @@ export function ReportModal({
 
             <div className="mt-1.5 flex items-center justify-between text-[11px] text-slate-400 px-1">
               <span>Coordenadas: {latitude.toFixed(4)}, {longitude.toFixed(4)}</span>
-              <span className="text-amber-400 font-medium">San Juan de Pasto</span>
+              <span className="text-coral-400 font-medium">San Juan de Pasto</span>
             </div>
           </div>
 
@@ -341,7 +341,7 @@ export function ReportModal({
             <button
               type="submit"
               disabled={loading || isSuccess}
-              className="w-full py-3.5 px-4 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-rose-600/30 hover:shadow-rose-600/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 px-4 carnaval-btn-primary text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
             >
               {loading ? (
                 <>

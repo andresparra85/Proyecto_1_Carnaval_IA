@@ -32,7 +32,7 @@ export const CARNIVAL_ROUTES = {
     name: "Arcoíris en el Asfalto (Pre-Carnaval)",
     hours: "08:00 - 18:00",
     description: "Pintura artística con tiza en el asfalto. Zona peatonal cultural.",
-    color: "#ec4899", // Rosa
+    color: "#be123c", // Rosa
     closedPoints: [
       { lat: 1.2118, lng: -77.2798, label: "Cra 23 entre Calles 14 y 15 (El Colorado)" },
       { lat: 1.2135, lng: -77.2790, label: "Calle 16 entre Cra 23 y Cra 27" }
@@ -44,7 +44,7 @@ export const CARNIVAL_ROUTES = {
     name: "Desfile de Años Viejos y Viudas",
     hours: "08:00 - 16:00",
     description: "Humor, sátira política y quema de monigotes.",
-    color: "#f59e0b", // Ámbar
+    color: "#dc2626", // Ámbar
     startPoint: { lat: 1.2030, lng: -77.2798, label: "Salida: Normal Superior" },
     endPoint: { lat: 1.2265, lng: -77.2856, label: "Llegada: Fuente de la Transparencia" },
     closedPoints: [
@@ -59,7 +59,7 @@ export const CARNIVAL_ROUTES = {
     name: "Carnavalito y Ofrenda a la Virgen de las Mercedes",
     hours: "07:00 - 14:00",
     description: "Desfile infantil con mini-carrozas y comparsas tradicionales.",
-    color: "#06b6d4", // Cyan
+    color: "#a8a29e", // Cyan
     startPoint: { lat: 1.2030, lng: -77.2798, label: "Salida: Escuela Normal Superior" },
     endPoint: { lat: 1.2265, lng: -77.2856, label: "Llegada: Fuente de la Transparencia" },
     closedPoints: [
@@ -73,7 +73,7 @@ export const CARNIVAL_ROUTES = {
     name: "Canto a la Tierra (Colectivos Coreográficos)",
     hours: "09:00 - 16:00",
     description: "Recorrido completo por la Senda con trazo Ámbar. Miles de músicos y danzantes andinos.",
-    color: "#F59E0B", // Ámbar oficial
+    color: "#dc2626", // Ámbar oficial
     startPoint: { lat: 1.2265, lng: -77.2856, label: "Salida Oficial: Fuente de la Transparencia" },
     endPoint: { lat: 1.2030, lng: -77.2798, label: "Llegada Oficial: Champagnat / Normal Superior" },
     closedPoints: [
@@ -88,7 +88,7 @@ export const CARNIVAL_ROUTES = {
     name: "Llegada de la Familia Castañeda",
     hours: "08:00 - 15:00",
     description: "Recorrido completo por la Senda con trazo Magenta. Estampas de época y bienvenida campesina de 1929.",
-    color: "#D946EF", // Magenta oficial
+    color: "#dc2626", // Magenta oficial
     startPoint: { lat: 1.2030, lng: -77.2798, label: "Salida Oficial: Normal Superior" },
     endPoint: { lat: 1.2265, lng: -77.2856, label: "Llegada Oficial: Fuente de la Transparencia" },
     closedPoints: [
@@ -102,7 +102,7 @@ export const CARNIVAL_ROUTES = {
     name: "Día de Negros (Juego de la Pintica y Tablados)",
     hours: "11:00 - 23:00",
     description: "Tablados y zonas de juego en Plaza del Carnaval y Plaza de Nariño. Conmemoración de la igualdad étnica.",
-    color: "#38BDF8", // Cyan festivo / Tablados
+    color: "#a8a29e", // Cyan festivo / Tablados
     startPoint: { lat: 1.2165, lng: -77.2806, label: "Tablado Principal: Plaza de Nariño" },
     endPoint: { lat: 1.2138, lng: -77.2782, label: "Tablado Oficial: Plaza del Carnaval" },
     closedPoints: [
@@ -117,7 +117,7 @@ export const CARNIVAL_ROUTES = {
     name: "Día de Blancos (El Desfile Magno)",
     hours: "05:00 - 17:00",
     description: "Recorrido oficial completo con trazo Rojo Carmesí y todos los hitos visibles. Carrozas Monumentales.",
-    color: "#E11D48", // Rojo Carmesí oficial
+    color: "#dc2626", // Rojo Carmesí oficial
     startPoint: { lat: 1.2030, lng: -77.2798, label: "Salida Oficial: I.E. Normal Superior" },
     endPoint: { lat: 1.2265, lng: -77.2856, label: "Llegada Oficial: Fuente de la Transparencia" },
     closedPoints: [
@@ -133,7 +133,7 @@ export const CARNIVAL_ROUTES = {
     name: "Festival del Cuy y la Cultura Campesina",
     hours: "09:00 - 17:00",
     description: "Gastronomía tradicional andina y música campesina en corregimientos.",
-    color: "#ea580c", // Naranja
+    color: "#dc2626", // Carmín
     startPoint: { lat: 1.2145, lng: -77.2782, label: "Punto de Encuentro: Plaza de Nariño" },
     endPoint: { lat: 1.1850, lng: -77.2950, label: "Destino Festivo: Corregimiento de Obonuco" },
     closedPoints: [

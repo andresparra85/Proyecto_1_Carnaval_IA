@@ -84,7 +84,7 @@ export const CARNAVAL_DAILY_TRACKS = {
     dateLabel: '28 de Diciembre',
     name: 'Arcoíris en el Asfalto',
     tagline: 'Expresión artística con tizas de colores sobre el pavimento del Centro Histórico',
-    color: '#8B5CF6', // Púrpura creativo
+    color: '#be123c', // Magenta creativo
     lengthKm: 1.8,
     durationHours: '8:00 AM - 6:00 PM',
     direction: 'Calle 18 entre Carreras 24 y 27 (Centro Histórico)',
@@ -114,7 +114,7 @@ export const CARNAVAL_DAILY_TRACKS = {
     dateLabel: '31 de Diciembre',
     name: 'Desfile de Años Viejos',
     tagline: 'Sátira, muñecos tradicionales y viudas despidiendo el año que culmina',
-    color: '#F59E0B', // Ámbar festivo
+    color: '#dc2626', // Ámbar festivo
     lengthKm: 7.2,
     durationHours: '10:00 AM - 4:00 PM',
     direction: 'Champagnat -> Carrera 27 -> Calle 19 -> Fuente de la Transparencia',
@@ -138,7 +138,7 @@ export const CARNAVAL_DAILY_TRACKS = {
     dateLabel: '2 de Enero',
     name: 'Carnavalito y Homenaje a la Virgen de las Mercedes',
     tagline: 'Los niños como herederos de la tradición artesanal y cultural',
-    color: '#06B6D4', // Cyan andino
+    color: '#a8a29e', // Cyan andino
     lengthKm: 3.5,
     durationHours: '9:00 AM - 2:00 PM',
     direction: 'Carrera 27 -> Plaza del Carnaval -> Plaza de Nariño',
@@ -174,7 +174,7 @@ export const CARNAVAL_DAILY_TRACKS = {
     dateLabel: '3 de Enero',
     name: 'Canto a la Tierra (Colectivos Coreográficos)',
     tagline: 'Zampoñas, bombos y miles de danzantes en alabanza a la Pachamama',
-    color: '#10B981', // Verde Esmeralda de la Tierra
+    color: '#a8a29e', // Verde Esmeralda de la Tierra
     lengthKm: 7.2,
     durationHours: '9:00 AM - 6:00 PM',
     direction: 'Senda Oficial completa: Champagnat a Fuente de la Transparencia',
@@ -198,7 +198,7 @@ export const CARNAVAL_DAILY_TRACKS = {
     dateLabel: '4 de Enero',
     name: 'Llegada de la Familia Castañeda',
     tagline: 'Bienvenida costumbrista a los campesinos y colonos de 1929',
-    color: '#D946EF', // Magenta festivo
+    color: '#dc2626', // Magenta festivo
     lengthKm: 7.2,
     durationHours: '10:00 AM - 4:00 PM',
     direction: 'Senda Oficial completa con parada en Plaza del Carnaval',
@@ -222,7 +222,7 @@ export const CARNAVAL_DAILY_TRACKS = {
     dateLabel: '5 de Enero',
     name: 'Día de Negros (Juego de Identidad)',
     tagline: '¡Una pintica por favor! Día de la igualdad racial y la cosmética negra',
-    color: '#38BDF8', // Azul identity
+    color: '#a8a29e', // Azul identity
     lengthKm: 4.5,
     durationHours: 'Todo el día y noche',
     direction: 'Plazas principales: Plaza Nariño, Plaza del Carnaval y Parque Bolívar',
@@ -255,7 +255,7 @@ export const CARNAVAL_DAILY_TRACKS = {
     dateLabel: '6 de Enero',
     name: 'Desfile Magno (Día de Blancos - Carrozas Gigantes)',
     tagline: 'La máxima expresión del talento artesanal nariñense y carrozas monumentales',
-    color: '#E11D48', // Carmesí oficial
+    color: '#dc2626', // Carmesí oficial
     lengthKm: 7.2,
     durationHours: '8:00 AM - 6:00 PM',
     direction: 'Senda Oficial completa: Champagnat a Fuente de la Transparencia',
@@ -279,7 +279,7 @@ export const CARNAVAL_DAILY_TRACKS = {
     dateLabel: '7 de Enero',
     name: 'Festival del Cuy y la Cultura Campesina',
     tagline: 'Cierre gastronómico y rural en los corregimientos tradicionales de Pasto',
-    color: '#EA580C', // Naranja gastronómico
+    color: '#dc2626', // Carmín gastronómico
     lengthKm: 9.0,
     durationHours: '8:00 AM - 7:00 PM',
     direction: 'Corregimientos: Pandiaco -> Obonuco -> Catambuco',
@@ -338,7 +338,7 @@ export const SENDA_POINTS_OF_INTEREST = [
     coords: [1.2158, -77.2835], // sidewalk plaza
     address: 'Plaza del Carnaval y la Cultura (Costado Sur / Andén)',
     description: 'Atención de primeros auxilios, rehidratación, paramédicos y ambulancia medicalizada.',
-    badgeColor: '#ef4444'
+    badgeColor: '#dc2626'
   },
   {
     id: 'poi-salud-2',
@@ -348,7 +348,7 @@ export const SENDA_POINTS_OF_INTEREST = [
     coords: [1.2170, -77.2812], // plazoleta este
     address: 'Plaza de Nariño (Plazoleta Este / Andén)',
     description: 'Triage de emergencias leves, curaciones y personal de socorro en zona central.',
-    badgeColor: '#ef4444'
+    badgeColor: '#dc2626'
   },
   {
     id: 'poi-salud-3',
@@ -358,7 +358,7 @@ export const SENDA_POINTS_OF_INTEREST = [
     coords: [1.2092, -77.2899],
     address: 'Sector Bomboná con Carrera 25',
     description: 'Punto de socorro para atención inmediata en el sector de llegada del desfile.',
-    badgeColor: '#ef4444'
+    badgeColor: '#dc2626'
   },
 
   // 2. Baños Públicos y Baterías Sanitarias
@@ -370,7 +370,7 @@ export const SENDA_POINTS_OF_INTEREST = [
     coords: [1.2145, -77.2845], // costado sur
     address: 'Plaza del Carnaval (Costado Sur)',
     description: 'Batería sanitaria pública habilitada en el andén sur fuera de la calzada del desfile.',
-    badgeColor: '#06b6d4'
+    badgeColor: '#a8a29e'
   },
 
   // 3. Graderías Oficiales
@@ -382,7 +382,7 @@ export const SENDA_POINTS_OF_INTEREST = [
     coords: [1.2156, -77.2838],
     address: 'Carrera 20 frente a Tarima de Jurados',
     description: 'Sector A y B con boletería y vista privilegiada al paso de carrozas monumentales.',
-    badgeColor: '#f59e0b'
+    badgeColor: '#dc2626'
   },
   {
     id: 'poi-grad-2',
@@ -392,7 +392,7 @@ export const SENDA_POINTS_OF_INTEREST = [
     coords: [1.2122, -77.2782], // acera oriental
     address: 'Carrera 27 (Acera Oriental entre Calles 14 y 15)',
     description: 'Graderías sobre el andén oriental con excelente visibilidad sin obstruir calzada.',
-    badgeColor: '#f59e0b'
+    badgeColor: '#dc2626'
   },
   {
     id: 'poi-grad-3',
@@ -402,7 +402,7 @@ export const SENDA_POINTS_OF_INTEREST = [
     coords: [1.2135, -77.2810],
     address: 'Calle 18 con Carrera 25',
     description: 'Graderías para invitados, transmisión televisiva y prensa nacional.',
-    badgeColor: '#f59e0b'
+    badgeColor: '#dc2626'
   },
 
   // 4. Zonas de Juego (Talco y Cosmético Tradicional)
@@ -414,7 +414,7 @@ export const SENDA_POINTS_OF_INTEREST = [
     coords: [1.2152, -77.2842],
     address: 'Costado Norte Plaza del Carnaval',
     description: 'Área habilitada para el juego con cosmético, talco perfumado y espuma reglamentaria.',
-    badgeColor: '#8b5cf6'
+    badgeColor: '#dc2626'
   },
   {
     id: 'poi-juego-2',
@@ -424,7 +424,7 @@ export const SENDA_POINTS_OF_INTEREST = [
     coords: [1.2139, -77.2815],
     address: 'Plaza de Nariño (Centro)',
     description: '¡Una pintica por favor! Área masiva de celebración popular y juego limpio.',
-    badgeColor: '#8b5cf6'
+    badgeColor: '#dc2626'
   },
 
   // 4. Puntos de Información Turística
@@ -436,7 +436,7 @@ export const SENDA_POINTS_OF_INTEREST = [
     coords: [1.2136, -77.2825],
     address: 'Calle 19 # 24-40 Centro',
     description: 'Guías oficiales, mapas impresos, programación oficial y atención en varios idiomas.',
-    badgeColor: '#10b981'
+    badgeColor: '#a8a29e'
   },
   {
     id: 'poi-tur-2',
@@ -446,7 +446,7 @@ export const SENDA_POINTS_OF_INTEREST = [
     coords: [1.2188, -77.2690],
     address: 'Av. Santander frente a I.E. Normal Superior',
     description: 'Punto de orientación a visitantes en el inicio del recorrido de la Senda.',
-    badgeColor: '#10b981'
+    badgeColor: '#a8a29e'
   }
 ];
 

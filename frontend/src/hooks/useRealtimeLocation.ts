@@ -169,3 +169,4 @@ export function useRealtimeLocation(): RealtimeLocationState {
 }
 
 export default useRealtimeLocation;
+
