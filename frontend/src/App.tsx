@@ -187,7 +187,7 @@ export function App() {
   // 1. Pantalla de carga mientras se verifica sesión local
   if (authLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen w-screen bg-slate-950 text-slate-100">
+      <div className="flex flex-col items-center justify-center h-screen w-screen bg-[#0d041a] text-slate-100">
         <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white text-2xl shadow-lg shadow-orange-500/20 animate-bounce">
           🎭
         </div>
@@ -205,7 +205,14 @@ export function App() {
 
   // 3. Una vez autenticado con sesión activa, renderizar la aplicación completa
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-950 text-slate-100">
+    <div className="relative flex flex-col h-screen w-screen overflow-hidden bg-[#0d041a] text-slate-100">
+      {/* 0. Orbes de luz ambiental multicromáticos (Carnaval Vivo) */}
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute -top-32 -left-32 h-[34rem] w-[34rem] rounded-full bg-rose-500/25 blur-[120px]" />
+        <div className="absolute -top-24 -right-32 h-[32rem] w-[32rem] rounded-full bg-amber-400/20 blur-[130px]" />
+        <div className="absolute bottom-[-10rem] left-1/3 h-[38rem] w-[38rem] rounded-full bg-cyan-500/20 blur-[140px]" />
+      </div>
+
       {/* 1. Barra de Navegación Superior Glassmorphic */}
       <Header
         activeView={reportsModalOpen ? 'reportes' : calendarOpen ? 'calendario' : activeView}
@@ -268,30 +275,30 @@ export function App() {
           )}
 
           {/* Tarjeta Cápsula de Resumen Rápido Glassmorphic */}
-          <div className="flex items-center gap-3 px-3.5 py-1.5 rounded-2xl backdrop-blur-md bg-white/80 dark:bg-slate-900/85 border border-slate-200/50 dark:border-slate-800/50 shadow-sm text-xs text-slate-700 dark:text-slate-300">
+          <div className="flex items-center gap-3 px-3.5 py-1.5 rounded-2xl backdrop-blur-md bg-[#160a2e]/80 border border-fuchsia-500/25 shadow-[0_0_20px_rgba(168,85,247,0.25)] text-xs text-slate-200">
             <div className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-amber-500" />
-              <span><strong className="text-slate-900 dark:text-white font-bold">{pois.length}</strong> Puntos</span>
+              <MapPin className="w-3.5 h-3.5 text-amber-400" />
+              <span><strong className="text-white font-bold">{pois.length}</strong> Puntos</span>
             </div>
-            <span className="text-slate-300 dark:text-slate-700">•</span>
+            <span className="text-slate-500">•</span>
             <button
               type="button"
               onClick={() => setReportsModalOpen(true)}
-              className="flex items-center gap-1.5 hover:text-amber-500 transition cursor-pointer"
+              className="flex items-center gap-1.5 hover:text-amber-400 transition cursor-pointer"
               title="Abrir panel de reportes ciudadanos"
             >
-              <ShieldAlert className="w-3.5 h-3.5 text-orange-500" />
-              <span><strong className="text-slate-900 dark:text-white font-bold">{reports.length}</strong> Reportes</span>
+              <ShieldAlert className="w-3.5 h-3.5 text-orange-400" />
+              <span><strong className="text-white font-bold">{reports.length}</strong> Reportes</span>
             </button>
-            <span className="text-slate-300 dark:text-slate-700">•</span>
+            <span className="text-slate-500">•</span>
             <button
               onClick={loadDashboardData}
               disabled={loading}
-              className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition p-1 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl active:scale-95 cursor-pointer"
+              className="text-slate-400 hover:text-white transition p-1 hover:bg-white/10 rounded-xl active:scale-95 cursor-pointer"
               title={`Actualizar datos (Última: ${lastUpdated.toLocaleTimeString()})`}
               aria-label="Actualizar datos"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-amber-500' : 'hover:text-amber-500'}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-amber-400' : 'hover:text-amber-400'}`} />
             </button>
           </div>
         </div>

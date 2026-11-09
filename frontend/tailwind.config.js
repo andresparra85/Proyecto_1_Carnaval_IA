@@ -16,6 +16,12 @@ export default {
         'carnaval-magenta': '#D946EF', // Magenta Familia Castañeda
         'carnaval-fuchsia': '#d946ef', // Fucsia Neón Midnight Carnival
         'dark-obsidian': '#050811',    // Base nocturna Obsidian Night
+        'carnaval-rose': '#f43f5e',      // Fucsia Carnaval (Primario Eléctrico)
+        'carnaval-flame': '#fb923c',     // Naranja Candela / Oro Intenso
+        'carnaval-tropical': '#22d3ee',  // Cian / Turquesa Tropical
+        'carnaval-electric': '#a855f7',  // Púrpura Eléctrico
+        'carnaval-night-base': '#0d041a',   // Violeta Nocturno Profundo
+        'carnaval-night-purple': '#120726', // Violeta Nocturno Alterno
         carnaval: {
           dark: '#070a12',
           card: 'rgba(15, 23, 42, 0.75)',
@@ -52,6 +58,11 @@ export default {
         'neon-diffuse-cyan': '0 0 60px -12px rgba(6, 182, 212, 0.45)',
         'neon-diffuse-gold': '0 0 60px -12px rgba(245, 158, 11, 0.45)',
         'hud-glass': '0 10px 30px rgba(0, 0, 0, 0.5)',
+        'neon-rose': '0 0 20px rgba(244, 63, 94, 0.5)',
+        'neon-amber-vivid': '0 0 15px rgba(245, 158, 11, 0.4)',
+        'neon-emerald-vivid': '0 0 15px rgba(16, 185, 129, 0.4)',
+        'neon-purple-vivid': '0 0 15px rgba(168, 85, 247, 0.4)',
+        'neon-tropical': '0 0 25px rgba(34, 211, 238, 0.45)',
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
