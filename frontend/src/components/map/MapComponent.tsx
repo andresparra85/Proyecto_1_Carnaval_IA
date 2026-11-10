@@ -16,8 +16,8 @@ L.Icon.Default.mergeOptions({
 // Constantes visuales y de posicionamiento robusto de MapComponent
 export const DEFAULT_MAP_CENTER: [number, number] = [1.2140, -77.2820]; // Centro Histórico de Pasto
 export const DEFAULT_MAP_ZOOM = 15;
-export const DEFAULT_MAP_CONTAINER_CLASS = "h-[calc(100vh-4rem)] w-full relative z-0";
-export const DEFAULT_MAP_CONTAINER_STYLE: React.CSSProperties = { minHeight: '500px', width: '100%' };
+export const DEFAULT_MAP_CONTAINER_CLASS = "relative w-full h-screen overflow-hidden bg-[#07090e]";
+export const DEFAULT_MAP_CONTAINER_STYLE: React.CSSProperties = { minHeight: '100vh', width: '100%' };
 
 /**
  * Hook de geolocalización segura para MapComponent que garantiza orden de declaración hoisted
@@ -57,6 +57,24 @@ export function GuardedNavigationPolyline({ navigationPath }: { navigationPath: 
   );
 }
 
+const getPoiCategoryBadge = (category: string) => {
+  switch ((category || '').toLowerCase()) {
+    case 'restaurante':
+    case 'gastronomia':
+      return { label: 'Gastronomía Andina', color: 'bg-amber-500/20 text-amber-300 border-amber-500/40', icon: '🍴' };
+    case 'bano':
+    case 'banio':
+      return { label: 'Baños Móviles', color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40', icon: '🚻' };
+    case 'cai':
+    case 'seguridad':
+      return { label: 'Seguridad CAI', color: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40', icon: '👮' };
+    case 'salud':
+      return { label: 'Puesto de Salud', color: 'bg-rose-500/20 text-rose-300 border-rose-500/40', icon: '🚑' };
+    default:
+      return { label: 'Punto de Interés', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40', icon: '📍' };
+  }
+};
+
 /**
  * Capa de marcadores interactivos georreferenciados para Pasto (Restaurantes, Baños, CAIs, Salud)
  */
@@ -73,23 +91,61 @@ export function PastoPoiMarkersLayer({
 
   return (
     <>
-      {filtered.map((poi) => (
-        <Marker
-          key={poi.id}
-          position={poi.coords}
-          eventHandlers={{
-            click: () => onSelectPoi && onSelectPoi(poi),
-          }}
-        >
-          <Popup>
-            <div className="p-1 font-sans text-xs">
-              <strong className="block text-coral-600 font-bold">{poi.name}</strong>
-              <p className="text-slate-600 dark:text-slate-300 my-1">{poi.description}</p>
-              <span className="text-[10px] text-slate-400 block">{poi.address}</span>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+      {filtered.map((poi) => {
+        const badge = getPoiCategoryBadge(poi.category);
+        return (
+          <Marker
+            key={poi.id}
+            position={poi.coords}
+            eventHandlers={{
+              click: () => onSelectPoi && onSelectPoi(poi),
+            }}
+          >
+            <Popup className="stitch-popup-custom">
+              <div className="p-3.5 min-w-[220px] max-w-[280px] bg-slate-950/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl text-white font-sans">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${badge.color}`}>
+                    {badge.icon} {badge.label}
+                  </span>
+                  <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Activo
+                  </span>
+                </div>
+                <h4 className="font-bold text-white text-sm leading-snug mb-1">
+                  {poi.name}
+                </h4>
+                <p className="text-slate-300 text-xs leading-relaxed mb-2">
+                  {poi.description}
+                </p>
+                {poi.address && (
+                  <div className="text-[11px] text-amber-300/90 font-medium mb-2.5 flex items-center gap-1">
+                    <span>📍</span>
+                    <span className="truncate">{poi.address}</span>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    dispatchGuanenaAction('NAVIGATE_TO', { targetCoords: poi.coords, name: poi.name });
+                    if (typeof window !== 'undefined') {
+                      window.dispatchEvent(
+                        new CustomEvent('route-to-poi', {
+                          detail: { targetCoords: poi.coords, targetName: poi.name },
+                        })
+                      );
+                    }
+                  }}
+                  className="w-full py-2 px-3 rounded-full bg-gradient-to-r from-rose-600 via-amber-500 to-cyan-500 hover:brightness-110 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-[0_4px_16px_rgba(225,29,72,0.4)] transition cursor-pointer"
+                >
+                  <span>📍</span>
+                  <span>Trazar ruta a pie</span>
+                </button>
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
     </>
   );
 }
@@ -263,35 +319,39 @@ export function MapComponent({
   ...props
 }: any) {
   return (
-    <MapContainer
-      center={DEFAULT_MAP_CENTER}
-      zoom={DEFAULT_MAP_ZOOM}
-      bounds={SENDA_OFICIAL_COORDS}
-      className={DEFAULT_MAP_CONTAINER_CLASS}
-      style={DEFAULT_MAP_CONTAINER_STYLE}
-      zoomControl={false}
-      scrollWheelZoom={true}
-    >
-      <SendaBoundsFitter coords={SENDA_OFICIAL_COORDS} />
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
-      <Polyline
-        positions={SENDA_OFICIAL_COORDS}
-        pathOptions={{
-          color: '#dc2626',
-          weight: 6,
-          opacity: 0.95
-        }}
-      />
-      {HITOS_SENDA.map((h) => (
-        <Marker key={h.id} position={h.coords}>
-          <Tooltip direction="top" permanent>{h.name}</Tooltip>
-        </Marker>
-      ))}
-      {children}
-    </MapContainer>
+    <div className="relative w-full h-screen overflow-hidden bg-[#07090e]">
+      <MapContainer
+        center={DEFAULT_MAP_CENTER}
+        zoom={DEFAULT_MAP_ZOOM}
+        bounds={SENDA_OFICIAL_COORDS}
+        className="w-full h-full relative z-0 bg-[#07090e]"
+        style={{ width: '100%', height: '100%' }}
+        zoomControl={false}
+        scrollWheelZoom={true}
+      >
+        <SendaBoundsFitter coords={SENDA_OFICIAL_COORDS} />
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors • CarnavalIA'
+        />
+        <Polyline
+          positions={SENDA_OFICIAL_COORDS}
+          pathOptions={{
+            color: '#E11D48',
+            weight: 7,
+            opacity: 0.95,
+            lineCap: 'round',
+            lineJoin: 'round',
+          }}
+        />
+        {HITOS_SENDA.map((h) => (
+          <Marker key={h.id} position={h.coords}>
+            <Tooltip direction="top" permanent>{h.name}</Tooltip>
+          </Marker>
+        ))}
+        {children}
+      </MapContainer>
+    </div>
   );
 }
 

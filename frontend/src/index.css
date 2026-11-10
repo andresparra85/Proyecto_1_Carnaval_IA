@@ -366,3 +366,66 @@ body {
 .glow-violet {
   box-shadow: 0 0 30px -6px rgba(220, 38, 38, 0.6);
 }
+
+/* ===== Leaflet Dark Theme Controls & Stitch Card Popups ===== */
+.leaflet-container {
+  background-color: #07090e !important;
+  font-family: inherit;
+}
+
+.leaflet-bar {
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 9999px !important;
+  overflow: hidden !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+}
+
+.leaflet-bar a {
+  background-color: rgba(15, 23, 42, 0.85) !important;
+  color: #f1f5f9 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  transition: all 0.2s ease !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: rgba(30, 41, 59, 0.95) !important;
+  color: #06b6d4 !important;
+}
+
+.leaflet-bar a:last-child {
+  border-bottom: none !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(15, 23, 42, 0.92) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  color: #f1f5f9 !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 1.25rem !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.8) !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: inherit !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(15, 23, 42, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.leaflet-popup-close-button {
+  color: #94a3b8 !important;
+  padding: 8px !important;
+  top: 6px !important;
+  right: 6px !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #f1f5f9 !important;
+}
