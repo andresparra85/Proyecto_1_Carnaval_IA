@@ -25,58 +25,46 @@ export interface QuickSuggestion {
 
 export const GUANENA_SUGGESTIONS: QuickSuggestion[] = [
   {
-    id: 'sug-senda',
-    icon: '🎭',
-    label: '¿Qué desfile hay hoy?',
-    prompt: '¿Qué desfile hay hoy y cuál es el recorrido de la Senda?',
-    action: 'senda',
-    coords: [1.2140, -77.2820],
-    name: 'Senda del Carnaval de Negros y Blancos',
-    answer: '¡Que viva Pasto, carajo! 🎭 Hoy la Senda vibra con 7 km de derroche cultural desde la Normal hasta Champagnat.\n¡Te acabo de enfocar el trazado milimétrico en el mapa para que no te perdás ni una comparsa!',
-  },
-  {
-    id: 'sug-bano',
-    icon: '🚻',
-    label: 'Baños públicos',
-    prompt: '¿Dónde hay baños públicos cercanos en la Plaza del Carnaval?',
-    action: 'poi',
-    category: 'bano',
-    coords: [1.2153, -77.2843],
-    name: 'Batería Sanitaria Plaza del Carnaval',
-    answer: '¡A la voz de una, paisano! 🚻 Tenés baterías sanitarias habilitadas 24 horas en Plaza del Carnaval y en el Parque Nariño.\n¡Pines encendidos en el mapa y ruta peatonal trazada para llegar de una!',
-  },
-  {
     id: 'sug-cuy',
-    icon: '🍽️',
-    label: 'Comer cuy tradicional',
-    prompt: '¿Dónde puedo comer buen cuy asado o comida tradicional de Pasto?',
+    icon: '🍖',
+    label: '¿Dónde comer cuy?',
+    prompt: '¿Dónde puedo comer un buen cuy asado o comida tradicional de Pasto?',
     action: 'poi',
     category: 'restaurante',
     coords: [1.2132, -77.2798],
     name: 'Restaurante Rancho Grande',
-    answer: '¡Que viva el buen sabor pastuso! 🍽️ Andá al Rancho Grande en la Calle 18 o a la Picantería La Merced junto a la Plaza del Carnaval.\n¡Pines gastronómicos activados y ruta a pie lista en pantalla!',
+    answer: '¡Que viva Pasto, carajo! 🍽️ Te recomiendo el Restaurante Rancho Grande en la Calle 18 o La Merced cerca a la Plaza del Carnaval. ¡Ruta a pie trazada en el mapa!',
   },
   {
-    id: 'sug-cai',
-    icon: '👮',
-    label: 'CAI de Policía',
-    prompt: '¿Dónde está el CAI de policía o puesto de seguridad más cercano?',
-    action: 'poi',
-    category: 'cai',
-    coords: [1.2155, -77.2839],
-    name: 'CAI Plaza del Carnaval',
-    answer: '¡Todo firme y seguro! 👮 Tenés el CAI Plaza del Carnaval y el del Parque Nariño con policías y recepción de extraviados.\n¡Pines de seguridad activados en tu mapa inmediatamente!',
+    id: 'sug-senda',
+    icon: '🎭',
+    label: 'Ver la Senda',
+    prompt: '¿Cuál es el recorrido oficial de la Senda del Carnaval?',
+    action: 'senda',
+    coords: [1.2140, -77.2820],
+    name: 'Senda del Carnaval de Negros y Blancos',
+    answer: '¡Que viva Pasto, carajo! 🎭 La Senda recorre 7 km desde la Normal Superior por la Cra 27 hasta Champagnat. ¡Te he enfocado la Senda oficial en el mapa!',
   },
   {
-    id: 'sug-salud',
-    icon: '🚨',
-    label: 'Puestos de Salud',
-    prompt: '¿Dónde hay puestos de salud y primeros auxilios de la Cruz Roja?',
+    id: 'sug-bano',
+    icon: '🚻',
+    label: 'Baño cercano',
+    prompt: '¿Dónde hay un baño público o batería sanitaria cercana?',
     action: 'poi',
-    category: 'salud',
-    coords: [1.2151, -77.2845],
-    name: 'Puesto de Primeros Auxilios Cruz Roja',
-    answer: '¡Tranquilo mi gente! 🚨 La Cruz Roja y Defensa Civil están en la Plaza del Carnaval y el Parque Nariño con ambulancias.\n¡Puestos médicos iluminados en el mapa para cualquier auxilio!',
+    category: 'bano',
+    coords: [1.2153, -77.2843],
+    name: 'Batería Sanitaria Plaza del Carnaval',
+    answer: '¡A la voz de una! 🚻 Baterías sanitarias habilitadas en la Plaza del Carnaval y en la Plaza de Nariño. ¡Puntos ubicados en el mapa!',
+  },
+  {
+    id: 'sug-plaza-narino',
+    icon: '📍',
+    label: 'Ruta a Plaza Nariño',
+    prompt: '¿Cómo llegar a la Plaza de Nariño?',
+    action: 'navigate',
+    coords: [1.2168, -77.2805],
+    name: 'Plaza de Nariño',
+    answer: '¡Ruta trazada hacia la Plaza de Nariño! Punto de encuentro neurálgico y tarima de música campesina.',
   },
 ];
 
@@ -331,42 +319,51 @@ export function GuanenaBot({ onFocusSenda, onFocusLandmark }: GuanenaBotProps = 
 
   return (
     <>
-      {/* Botón flotante GuaneñaBot */}
+      {/* Botón flotante lanzador de GuaneñaBot (Stitch Style) */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-[1000] p-4 rounded-full bg-gradient-to-r from-amber-500 to-rose-600 text-white shadow-2xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center border-2 border-white/30 backdrop-blur-md group"
+          className="fixed bottom-5 right-5 z-[1001] flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-rose-600 via-amber-500 to-cyan-500 text-white font-bold text-xs shadow-[0_0_24px_rgba(225,29,72,0.5)] border border-white/20 hover:scale-105 active:scale-95 transition-all cursor-pointer group"
           title="Abrir Asistente GuaneñaBot"
           aria-label="Abrir asistente de IA GuaneñaBot"
         >
-          <Sparkles className="w-6 h-6 animate-pulse" />
-          <span className="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out font-bold text-sm ml-0 group-hover:ml-2">
-            GuaneñaBot
+          <div className="w-6 h-6 rounded-full bg-[#07090e] flex items-center justify-center text-xs">
+            🎭
+          </div>
+          <span className="font-extrabold tracking-wide">
+            GuaneñaBot <span className="text-cyan-300 font-normal">• IA en vivo</span>
           </span>
+          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#06b6d4]"></span>
         </button>
       )}
 
-      {/* Ventana de Chat GuaneñaBot */}
+      {/* Drawer HUD Conversacional de Stitch para GuaneñaBot */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[1100] w-[92vw] sm:w-[420px] h-[580px] max-h-[85vh] flex flex-col rounded-3xl bg-slate-900/95 border border-white/20 shadow-2xl backdrop-blur-xl text-white overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-amber-600/40 via-rose-600/40 to-slate-900/80 border-b border-white/10">
+        <div className="fixed bottom-5 right-5 z-[1001] w-80 sm:w-96 max-h-[580px] flex flex-col bg-slate-900/90 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 text-white">
+          {/* Header con avatar de máscara festiva y badge neón */}
+          <div className="p-4 bg-slate-950/70 border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center shadow-lg border border-white/20">
-                <Sparkles className="w-5 h-5 text-white" />
+              <div className="relative w-10 h-10 rounded-full bg-gradient-to-tr from-rose-500 via-amber-400 to-cyan-400 p-0.5 shadow-[0_0_15px_rgba(225,29,72,0.5)] shrink-0">
+                <div className="w-full h-full rounded-full bg-[#07090e] flex items-center justify-center text-lg">
+                  🎭
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-cyan-400 ring-2 ring-slate-950 shadow-[0_0_8px_#06b6d4]"></span>
               </div>
-              <div>
-                <h3 className="text-sm font-black tracking-wide flex items-center gap-1.5">
-                  GuaneñaBot
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    Online
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-sm font-black tracking-tight text-white">GuaneñaBot</h3>
+                  <span className="text-[10px] font-bold text-cyan-300 px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30">
+                    IA en vivo
                   </span>
-                </h3>
-                <p className="text-[11px] text-amber-200/80">Guía de Inteligencia Vial y Cultural</p>
+                </div>
+                <p className="text-[10px] text-amber-400/90 font-medium truncate">
+                  Copiloto Oficial • Carnaval de Pasto
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-1">
               <button
+                type="button"
                 onClick={() => {
                   setMessages([
                     {
@@ -377,28 +374,30 @@ export function GuanenaBot({ onFocusSenda, onFocusLandmark }: GuanenaBotProps = 
                     },
                   ]);
                 }}
-                className="p-2 hover:bg-white/10 rounded-xl transition text-slate-300 hover:text-white"
+                className="p-1.5 hover:bg-white/10 rounded-xl transition text-slate-400 hover:text-white"
                 title="Reiniciar conversación"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
               <button
+                type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-xl transition text-slate-300 hover:text-white"
+                className="p-1.5 hover:bg-white/10 rounded-xl transition text-slate-400 hover:text-white"
                 title="Cerrar chat"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Chips de sugerencias interactivas */}
-          <div className="px-4 py-2.5 bg-slate-950/60 border-b border-white/5 flex gap-2 overflow-x-auto no-scrollbar">
+          {/* Chips horizontales scrolleables con sugerencias rápidas */}
+          <div className="p-2.5 bg-slate-950/40 border-b border-white/5 flex gap-1.5 overflow-x-auto no-scrollbar">
             {GUANENA_SUGGESTIONS.map((chip) => (
               <button
                 key={chip.id}
+                type="button"
                 onClick={() => handleSuggestionClick(chip)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-500/40 text-xs font-semibold whitespace-nowrap transition active:scale-95 text-slate-200 hover:text-amber-300"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400/40 text-[11px] font-semibold whitespace-nowrap transition active:scale-95 text-slate-200 hover:text-cyan-300 cursor-pointer shrink-0"
               >
                 <span>{chip.icon}</span>
                 <span>{chip.label}</span>
@@ -407,7 +406,7 @@ export function GuanenaBot({ onFocusSenda, onFocusLandmark }: GuanenaBotProps = 
           </div>
 
           {/* Cuerpo de mensajes */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-3 font-sans text-xs sm:text-sm">
+          <div className="flex-1 p-3.5 overflow-y-auto space-y-2.5 font-sans text-xs min-h-[220px]">
             {messages.map((msg) => {
               const isUser = msg.sender === 'user';
               return (
@@ -416,9 +415,9 @@ export function GuanenaBot({ onFocusSenda, onFocusLandmark }: GuanenaBotProps = 
                   className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[85%] px-4 py-2.5 rounded-2xl shadow-md ${
+                    className={`max-w-[88%] px-3.5 py-2.5 rounded-2xl shadow-md ${
                       isUser
-                        ? 'bg-gradient-to-r from-amber-500 to-rose-600 text-white rounded-br-xs'
+                        ? 'bg-gradient-to-r from-rose-600 to-amber-600 text-white rounded-br-xs'
                         : 'bg-slate-800/90 text-slate-100 border border-white/10 rounded-bl-xs leading-relaxed whitespace-pre-line'
                     }`}
                   >
@@ -429,8 +428,8 @@ export function GuanenaBot({ onFocusSenda, onFocusLandmark }: GuanenaBotProps = 
             })}
             {loading && (
               <div className="flex justify-start">
-                <div className="px-4 py-2.5 rounded-2xl bg-slate-800/80 border border-white/10 text-amber-400 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 animate-spin" />
+                <div className="px-3.5 py-2 rounded-2xl bg-slate-800/80 border border-white/10 text-cyan-400 flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 animate-spin" />
                   <span className="text-xs">Consultando la Senda de Pasto...</span>
                 </div>
               </div>
@@ -450,17 +449,17 @@ export function GuanenaBot({ onFocusSenda, onFocusLandmark }: GuanenaBotProps = 
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Preguntá por la Senda, baños, cuy, CAIs..."
-              className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-amber-500/60 transition"
+              placeholder="Pregúntale a GuaneñaBot sobre rutas o eventos..."
+              className="flex-1 bg-slate-900/90 border border-white/10 rounded-full px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 transition"
               disabled={loading}
             />
             <button
               type="submit"
               disabled={loading || !inputMessage.trim()}
-              className="p-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-rose-600 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition"
+              className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 active:scale-95 transition flex items-center justify-center shrink-0 cursor-pointer shadow-[0_0_12px_rgba(6,182,212,0.4)]"
               title="Enviar mensaje"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-3.5 h-3.5" />
             </button>
           </form>
         </div>
