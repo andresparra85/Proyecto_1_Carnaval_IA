@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Sparkles, Compass } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Sparkles, Compass, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-export function LoginView() {
+export function LoginView({ onClose, onLoginSuccess }) {
   const { login, register, loginAsGuest } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
@@ -39,6 +39,8 @@ export function LoginView() {
         await login(trimmedEmail, trimmedPassword);
       }
       localStorage.setItem('carnavalia_session', 'active');
+      if (onLoginSuccess) onLoginSuccess();
+      if (onClose) onClose();
     } catch (err) {
       console.error('Error de autenticación:', err);
       const detail = err.detail || err.response?.data?.detail;
@@ -67,17 +69,19 @@ export function LoginView() {
     setError(null);
     localStorage.setItem('carnavalia_session', 'active');
     loginAsGuest();
+    if (onLoginSuccess) onLoginSuccess();
+    if (onClose) onClose();
   };
 
   return (
-    <div className="min-h-screen w-screen flex items-center justify-center p-4 bg-[#0a0a0b] relative overflow-hidden select-none">
+    <div className={`flex items-center justify-center p-4 bg-[#07090e]/80 select-none ${onClose ? 'w-full' : 'min-h-screen w-screen relative overflow-hidden'}`}>
       {/* 1. Fondo Atmosférico con Gradientes e Iluminación Ambiental Neón */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0b] via-[#0d0d0f] to-[#0a0a0b] pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#07090e] via-[#0d111a] to-[#07090e] pointer-events-none" />
       
       {/* Orbes de luz difuminada Neón (Violeta, Fucsia, Cyan) */}
-      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-coral-600/30 rounded-full blur-3xl pointer-events-none animate-pulse-slow" />
-      <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-rose-500/25 rounded-full blur-3xl pointer-events-none animate-pulse-slow" style={{ animationDelay: '1.5s' }} />
-      <div className="absolute -top-32 right-1/4 w-80 h-80 bg-aqua-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-rose-600/25 rounded-full blur-3xl pointer-events-none animate-pulse-slow" />
+      <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none animate-pulse-slow" style={{ animationDelay: '1.5s' }} />
+      <div className="absolute -top-32 right-1/4 w-80 h-80 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
 
       {/* Trama sutil de textura */}
       <div className="absolute inset-0 opacity-[0.035] pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]" />
@@ -89,20 +93,31 @@ export function LoginView() {
       <div className="absolute bottom-20 right-20 text-xl opacity-20 pointer-events-none hidden sm:block animate-float" style={{ animationDelay: '1s' }}>🎨</div>
 
       {/* 2. Tarjeta Central Glassmorphism Premium */}
-      <div className="relative w-full max-w-sm sm:max-w-md p-7 sm:p-9 rounded-3xl backdrop-blur-2xl bg-[#101012]/70 border border-white/10 shadow-2xl shadow-rose-950/40 z-10 transition-all duration-300">
+      <div className="relative w-full max-w-sm sm:max-w-md p-7 sm:p-9 rounded-3xl backdrop-blur-2xl bg-[#0e131f]/90 border border-white/10 shadow-2xl shadow-rose-950/40 z-10 transition-all duration-300">
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+            title="Cerrar ventana"
+            aria-label="Cerrar ventana"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
         
         {/* Cabecera con Insignia Cultural y Logotipo */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-coral-500/15 via-coral-600/15 to-rose-800/15 border border-white/10 text-[11px] font-semibold text-rose-300 shadow-sm mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-rose-500/15 via-amber-500/15 to-cyan-500/15 border border-white/10 text-[11px] font-semibold text-rose-300 shadow-sm mb-3">
             <span>🎭</span>
             <span>Patrimonio Cultural Inmaterial UNESCO</span>
           </div>
 
-          <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-coral-500 via-coral-600 to-rose-800 text-white text-3xl mb-2.5 shadow-lg shadow-rose-600/40 ring-4 ring-white/10">
+          <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-600 via-amber-500 to-cyan-400 text-white text-3xl mb-2.5 shadow-lg shadow-rose-600/40 ring-4 ring-white/10">
             🎭
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-coral-300 via-coral-400 to-aqua-300 bg-clip-text text-transparent flex items-center gap-1">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-rose-400 via-amber-300 to-cyan-400 bg-clip-text text-transparent flex items-center gap-1">
             CarnavalIA
           </h1>
           <p className="text-xs text-slate-300 mt-1 font-semibold tracking-wide">
@@ -111,7 +126,7 @@ export function LoginView() {
           <p className="text-[11px] text-slate-400 mt-0.5">
             {isRegister
               ? 'Regístrate para colaborar y explorar la fiesta magna'
-              : 'Inicia sesión para acceder a la Senda y servicios en vivo'}
+              : 'Inicia sesión para reportes ciudadanos o explora como visitante'}
           </p>
         </div>
 

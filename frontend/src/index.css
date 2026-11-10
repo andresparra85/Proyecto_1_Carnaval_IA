@@ -220,9 +220,13 @@ body {
 .leaflet-container {
   width: 100%;
   height: 100%;
-  background-color: #0d0d0f !important;
+  background-color: #07090e !important;
   outline: none;
   font-family: inherit;
+}
+
+.leaflet-tile-pane {
+  background-color: #07090e !important;
 }
 
 /* Modern Glass Popups for Leaflet */

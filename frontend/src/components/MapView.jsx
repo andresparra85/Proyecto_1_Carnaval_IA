@@ -7,6 +7,7 @@ import {
   Popup,
   Circle,
   Polyline,
+  LayerGroup,
   useMap,
 } from 'react-leaflet';
 import L from 'leaflet';
@@ -717,11 +718,11 @@ export function MapView({
   const [isLocating, setIsLocating] = useState(false);
   const originPoint = userGps ? [userGps.lat || userGps[0], userGps.lng || userGps[1]] : [1.2138, -77.2818]; // Fallback al Parque Nariño si no hay GPS activo
 
-  // Estado local para activar o desactivar la capa de la Senda del Carnaval (inicia estrictamente en false)
-  const [showSendaDetails, setShowSendaDetails] = useState(false);
-  const [internalShowSenda, setInternalShowSenda] = useState(false);
+  // Estado para activar o desactivar la capa de la Senda del Carnaval (activa por defecto)
+  const [showSendaDetails, setShowSendaDetails] = useState(true);
+  const [internalShowSenda, setInternalShowSenda] = useState(true);
   const [sendaFocusCounter, setSendaFocusCounter] = useState(0);
-  const showSenda = Boolean(showSendaDetails && (propShowSenda !== undefined ? propShowSenda : internalShowSenda));
+  const showSenda = propShowSenda !== undefined ? propShowSenda : internalShowSenda;
   const toggleSenda = () => {
     setShowSendaDetails((prev) => !prev);
     if (propOnToggleSenda) {
@@ -1047,68 +1048,70 @@ export function MapView({
   const showZones = activeFilter === 'todos' || activeFilter === 'zonas';
 
   return (
-    <div className="relative w-full h-full min-h-[500px] overflow-hidden shadow-2xl bg-[#0a0a0b]">
-      {/* 1. Contenedor Superior Fijo: Banner de Evento Activo y Chips de Filtros Tipo Píldora */}
-      <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none">
+    <div className="relative w-full h-full min-h-screen overflow-hidden bg-[#07090e]">
+      {/* 1. Contenedor Superior Fijo: Banner de Evento Activo y Chips de Filtros Tipo Píldora (Debajo del Navbar) */}
+      <div className="absolute top-20 sm:top-20 left-4 right-4 z-[800] flex flex-col gap-2 pointer-events-none">
         {/* Banner Superior Dinámico de Evento Oficial controlado por GuaneñaBot */}
-        <div className="pointer-events-auto flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-full bg-[#101012]/80 backdrop-blur-2xl border border-rose-500/20 shadow-[0_0_25px_rgba(220,38,38,0.25)] text-xs max-w-lg">
-          <div className="flex items-center gap-2 min-w-0">
+        <div className="pointer-events-auto flex items-center justify-between gap-3 px-4 py-2 rounded-2xl bg-slate-900/85 backdrop-blur-xl border border-white/10 shadow-2xl text-xs max-w-lg">
+          <div className="flex items-center gap-2.5 min-w-0">
             <span
-              className={`w-2 h-2 rounded-full shrink-0 ${currentEvent ? 'bg-coral-500' : 'bg-slate-500'}`}
+              className={`w-2.5 h-2.5 rounded-full shrink-0 animate-pulse ${currentEvent ? 'bg-rose-500 shadow-[0_0_8px_#e11d48]' : 'bg-slate-500'}`}
               style={currentEvent?.color ? { backgroundColor: currentEvent.color } : {}}
             />
-            <div className="truncate text-slate-300">
-              <span className="hidden sm:inline text-slate-400">Evento Activo: </span>
-              <strong className="font-bold text-white">
-                {currentEvent ? currentEvent.name : 'Ninguno'}
+            <div className="truncate text-slate-200">
+              <span className="hidden sm:inline text-slate-400 font-medium">Evento Activo: </span>
+              <strong className="font-extrabold text-white">
+                {currentEvent ? currentEvent.name : 'Senda Oficial del Carnaval'}
               </strong>
             </div>
           </div>
-          <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-rose-300">
-            🎭 GuaneñaBot AI
+          <span className="shrink-0 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-300">
+            🎭 GuaneñaBot IA
           </span>
         </div>
 
-        {/* Chips de Categorías (Filtros del Mapa) tipo Píldora (Pill Badges) */}
-        <div className="pointer-events-auto flex items-center gap-2 max-w-full overflow-x-auto no-scrollbar py-0.5">
+        {/* Chips de Categorías (Filtros del Mapa) tipo Píldora Neón Glassmorphic */}
+        <div className="pointer-events-auto flex items-center gap-2 max-w-full overflow-x-auto no-scrollbar py-1">
           {/* Botón directo de activación / desactivación de la Senda del Carnaval */}
           <button
             type="button"
             onClick={toggleSenda}
-            className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md ${showSenda
-                ? 'bg-gradient-to-r from-coral-600 to-rose-500 text-white shadow-md ring-2 ring-coral-400/50 glow-coral'
-                : 'bg-slate-900/50 border border-white/10 text-slate-200 hover:text-white hover:border-rose-400/50'
-              }`}
+            className={`rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-xl border ${
+              showSenda
+                ? 'bg-gradient-to-r from-rose-600 via-rose-700 to-amber-600 text-white shadow-[0_0_20px_rgba(225,29,72,0.6)] border-rose-400/50 ring-2 ring-rose-400/30'
+                : 'bg-slate-900/80 border-white/10 text-slate-300 hover:text-white hover:border-rose-400/50'
+            }`}
             title={showSenda ? 'Ocultar Senda del Carnaval' : 'Mostrar Senda del Carnaval'}
           >
             <span className="text-sm">🎭</span>
             <span>Senda del Carnaval</span>
             <span
-              className={`w-2 h-2 rounded-full transition-all ${showSenda ? 'bg-white shadow-sm' : 'bg-slate-400'
-                }`}
+              className={`w-2 h-2 rounded-full transition-all ${
+                showSenda ? 'bg-cyan-400 shadow-[0_0_8px_#06b6d4]' : 'bg-slate-500'
+              }`}
             />
           </button>
 
           {filterOptions.map((f) => {
             const isActive = activeFilter === f.id;
             const activeChip = {
-              todos: 'bg-gradient-to-r from-coral-600 to-rose-500 text-white border-coral-400 shadow-[0_0_20px_rgba(220,38,38,0.55)]',
-              restaurantes: 'bg-gradient-to-r from-rose-600 to-rose-800 text-white border-rose-400 shadow-[0_0_15px_rgba(190,18,60,0.45)]',
-              salud: 'bg-gradient-to-r from-aqua-500 to-aqua-700 text-white border-aqua-400 shadow-[0_0_15px_rgba(168,162,158,0.4)]',
-              policia: 'bg-gradient-to-r from-aqua-500 to-aqua-600 text-white border-aqua-400 shadow-[0_0_15px_rgba(168,162,158,0.4)]',
-              banio: 'bg-gradient-to-r from-aqua-500 to-aqua-700 text-white border-aqua-400 shadow-[0_0_15px_rgba(168,162,158,0.4)]',
-              tarima: 'bg-gradient-to-r from-coral-600 to-rose-500 text-white border-coral-400 shadow-[0_0_15px_rgba(220,38,38,0.4)]',
-              zonas: 'bg-gradient-to-r from-rose-600 to-coral-500 text-white border-rose-400 shadow-[0_0_15px_rgba(190,18,60,0.45)]',
+              todos: 'bg-gradient-to-r from-rose-600 via-rose-700 to-amber-600 text-white border-rose-400/60 shadow-[0_0_20px_rgba(225,29,72,0.55)]',
+              restaurantes: 'bg-gradient-to-r from-amber-600 to-rose-600 text-white border-amber-400/60 shadow-[0_0_16px_rgba(245,158,11,0.5)]',
+              salud: 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white border-cyan-400/60 shadow-[0_0_16px_rgba(6,182,212,0.5)]',
+              policia: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-blue-400/60 shadow-[0_0_16px_rgba(59,130,246,0.5)]',
+              banio: 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-emerald-400/60 shadow-[0_0_16px_rgba(16,185,129,0.5)]',
+              tarima: 'bg-gradient-to-r from-rose-600 to-fuchsia-600 text-white border-fuchsia-400/60 shadow-[0_0_16px_rgba(217,70,239,0.5)]',
+              zonas: 'bg-gradient-to-r from-red-600 to-rose-700 text-white border-red-400/60 shadow-[0_0_16px_rgba(239,68,68,0.5)]',
             }[f.id];
             return (
               <button
                 key={f.id}
                 type="button"
                 onClick={() => setActiveFilter(f.id)}
-                className={`rounded-full px-3.5 py-1.5 text-xs transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md border ${
+                className={`rounded-full px-3.5 py-1.5 text-xs transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-xl border ${
                   isActive
                     ? `font-bold ${activeChip}`
-                    : 'bg-[#181819]/60 border-white/15 text-slate-200 font-medium hover:border-rose-400/50 hover:text-white'
+                    : 'bg-slate-900/80 border-white/10 text-slate-300 font-medium hover:border-rose-400/50 hover:text-white'
                 }`}
               >
                 <span className="text-sm">{f.icon}</span>
@@ -1243,14 +1246,14 @@ export function MapView({
         <div className="absolute bottom-[-8rem] left-1/3 h-[32rem] w-[32rem] rounded-full bg-aqua-500/20 blur-[140px]" />
       </div>
 
-      {/* 3. Contenedor de Leaflet con Mosaicos de Calles Reales */}
+      {/* 3. Contenedor de Leaflet con Mosaicos GIS Oscuros */}
       <MapContainer
         center={[1.2140, -77.2820]}
         zoom={15}
         zoomControl={false}
         scrollWheelZoom={true}
-        className="h-[calc(100vh-4rem)] w-full relative z-0"
-        style={{ minHeight: '500px', width: '100%' }}
+        className="h-full w-full relative z-0"
+        style={{ minHeight: '100%', height: '100%', width: '100%', backgroundColor: '#07090e' }}
       >
         {/* Controlador para centrar y animar la vista sobre la Senda del Carnaval */}
         <SendaController
@@ -1289,11 +1292,12 @@ export function MapView({
           hasUserGps={Boolean(userGps)}
         />
 
-        {/* Capa de mosaicos con calles reales detalladas (OpenStreetMap Estándar con nombres de calles, carreras y manzanas) */}
+        {/* Capa de mosaicos GIS Oscuro CartoDB Dark Matter de alta resolución */}
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          maxZoom={19}
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          subdomains="abcd"
+          maxZoom={20}
         />
 
         {/* Marcador GPS del Usuario (Punto Azul con Halo Pulsante estilo Google Maps) */}
@@ -1332,6 +1336,104 @@ export function MapView({
         {/* Capa Oficial de la Senda protegida contra trazados estáticos obsoletos */}
         {showSenda && (
           <>
+            {/* Trazado Vial Continuo y Neón de la Senda del Carnaval */}
+            {Array.isArray(SENDA_CARNAVAL_COORDS) && SENDA_CARNAVAL_COORDS.length >= 2 && (
+              <LayerGroup key={`senda-layer-group-${selectedDay}`}>
+                {/* 1. Base negra de sombra y alto contraste */}
+                <Polyline
+                  key={`senda-base-${selectedDay}`}
+                  positions={SENDA_CARNAVAL_COORDS}
+                  pathOptions={{
+                    color: '#07090e',
+                    weight: 12,
+                    opacity: 0.95,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                  }}
+                />
+                {/* 2. Resplandor exterior Neón Cyan */}
+                <Polyline
+                  key={`senda-aura-${selectedDay}`}
+                  positions={SENDA_CARNAVAL_COORDS}
+                  pathOptions={{
+                    color: '#06b6d4',
+                    weight: 8,
+                    opacity: 0.75,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                  }}
+                />
+                {/* 3. Trazo principal Carmesí Festivo Neón con variación cromática oficial por día */}
+                <Polyline
+                  key={`senda-core-${selectedDay}`}
+                  positions={SENDA_CARNAVAL_COORDS}
+                  pathOptions={{
+                    color: selectedDay === '03-ene' ? '#f59e0b' : selectedDay === '04-ene' ? '#d946ef' : selectedDay === '05-ene' ? '#06b6d4' : '#e11d48',
+                    weight: 5,
+                    opacity: 1,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                  }}
+                />
+                {/* 4. Línea de pulso festivo interior */}
+                <Polyline
+                  key={`senda-pulse-${selectedDay}`}
+                  positions={SENDA_CARNAVAL_COORDS}
+                  pathOptions={{
+                    color: '#ffffff',
+                    weight: 2,
+                    opacity: 0.85,
+                    dashArray: '8, 14',
+                    lineCap: 'round',
+                  }}
+                />
+              </LayerGroup>
+            )}
+
+            {/* Marcadores de Inicio (🚩 Champagnat) y Fin (🏁 Fuente de la Transparencia) */}
+            {Array.isArray(SENDA_CARNAVAL_COORDS) && SENDA_CARNAVAL_COORDS.length >= 2 && (
+              <>
+                <Marker
+                  position={SENDA_CARNAVAL_COORDS[0]}
+                  icon={createSvgLandmarkPin({
+                    type: 'inicio',
+                    label: 'Partida: Champagnat',
+                  })}
+                >
+                  <Popup>
+                    <div className="text-xs p-2 min-w-[200px] font-sans">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block mb-1">
+                        🚩 Punto de Salida Oficial
+                      </span>
+                      <strong className="text-white text-sm block">Champagnat / Parque Bolívar</strong>
+                      <p className="text-slate-300 text-xs mt-1">
+                        Inicio oficial del recorrido de desfiles, murgas y carrozas hacia el centro.
+                      </p>
+                    </div>
+                  </Popup>
+                </Marker>
+
+                <Marker
+                  position={SENDA_CARNAVAL_COORDS[SENDA_CARNAVAL_COORDS.length - 1]}
+                  icon={createSvgLandmarkPin({
+                    type: 'fin',
+                    label: 'Llegada: Transparencia',
+                  })}
+                >
+                  <Popup>
+                    <div className="text-xs p-2 min-w-[200px] font-sans">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-rose-400 block mb-1">
+                        🏁 Punto de Llegada Oficial
+                      </span>
+                      <strong className="text-white text-sm block">Fuente de la Transparencia</strong>
+                      <p className="text-slate-300 text-xs mt-1">
+                        Culminación del desfile y zona de desconcentración peatonal hacia Torobajo.
+                      </p>
+                    </div>
+                  </Popup>
+                </Marker>
+              </>
+            )}
             {/* Zonas de Tablados y Juego destacadas para el Día de Negros (5 de Enero) */}
             {selectedDay === '05-ene' && (
               <>
