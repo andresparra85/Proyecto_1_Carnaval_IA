@@ -255,7 +255,7 @@ export function App() {
     return (
       <div className="flex flex-col items-center justify-center h-screen w-screen bg-[#08080a] text-slate-100">
         <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-yellow-400 text-stone-950 text-2xl shadow-lg shadow-yellow-500/30 animate-bounce">
-          <span className="material-symbols-outlined text-[32px] font-bold">satellite_alt</span>
+          <span className="material-symbols-outlined text-[32px] font-bold">theater_comedy</span>
         </div>
         <p className="text-xs font-bold tracking-widest uppercase text-yellow-400 mt-4 font-mono">
           Iniciando CarnavalIA GIS Pasto...
@@ -292,7 +292,7 @@ export function App() {
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-xl bg-yellow-400 flex items-center justify-center shadow-[0_0_18px_rgba(250,204,21,0.45)]">
-                <span className="material-symbols-outlined text-[#1a1400] text-[24px] font-bold">satellite_alt</span>
+                <span className="material-symbols-outlined text-[#1a1400] text-[24px] font-bold">theater_comedy</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-[20px] tracking-tight text-white font-bold leading-tight">CarnavalIA</span>

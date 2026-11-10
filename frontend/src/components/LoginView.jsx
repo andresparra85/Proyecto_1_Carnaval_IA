@@ -100,7 +100,7 @@ export function LoginView() {
         <div className="flex flex-col items-center text-center">
           {/* Icono Distintivo */}
           <div className="w-12 h-12 rounded-xl bg-yellow-400 flex items-center justify-center shadow-[0_0_20px_rgba(250,204,21,0.45)] text-stone-950 mb-3">
-            <span className="material-symbols-outlined text-[26px] font-bold">satellite_alt</span>
+            <span className="material-symbols-outlined text-[#1a1400] text-[28px] font-bold">theater_comedy</span>
           </div>
 
           {/* Subtítulo / Badge de Telemetría */}
