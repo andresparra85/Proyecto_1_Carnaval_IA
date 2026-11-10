@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Sparkles, RotateCcw, MessageSquare, MapPin, Navigation } from 'lucide-react';
 import { findCarnavalLandmark, CARNAVAL_LANDMARKS } from '../../data/carnavalKnowledge';
-import { searchPastoPOI, PASTO_POIS, PointOfInterest, dispatchGuanenaAction } from '../../data/pastoPOIs';
+import { searchPastoPOI, findBestPOIForQuery, PASTO_POIS, PointOfInterest, dispatchGuanenaAction } from '../../data/pastoPOIs';
 import { getStreetRoute } from '../../services/routingService';
 import { sendGuanenaMessage } from '../../services/guanenaChatService';
 import { parseBotIntent, dispatchParadeIntent } from '../../services/botIntentParser';
@@ -9,6 +9,7 @@ import { parseBotIntent, dispatchParadeIntent } from '../../services/botIntentPa
 export interface GuanenaBotProps {
   onFocusSenda?: () => void;
   onFocusLandmark?: (coords: [number, number], name?: string) => void;
+  onSelectDestination?: (targetCoords: [number, number], targetName: string) => void;
 }
 
 export interface QuickSuggestion {
@@ -98,7 +99,7 @@ export async function getTouristGpsCoords(): Promise<[number, number]> {
   });
 }
 
-export function GuanenaBot({ onFocusSenda, onFocusLandmark }: GuanenaBotProps = {}) {
+export function GuanenaBot({ onFocusSenda, onFocusLandmark, onSelectDestination }: GuanenaBotProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -233,33 +234,28 @@ export function GuanenaBot({ onFocusSenda, onFocusLandmark }: GuanenaBotProps = 
       actionTriggered = true;
       await executeActionOnMap('senda', { dayId: '06-ene' });
       botReply = '¡Que viva Pasto, carajo! 🎭 La Senda recorre 7 km desde la Normal por la Cra 27 hasta Champagnat.\n¡Te he desplegado el desfile y el mapa vial al instante!';
-    } else if (q.includes('baño') || q.includes('bano') || q.includes('sanitario') || q.includes('orinar')) {
+    const [userLat, userLng] = await getTouristGpsCoords();
+    const touristCoords: [number, number] = [userLat, userLng];
+
+    const matchedPOIResult = findBestPOIForQuery(userText, touristCoords);
+    if (matchedPOIResult) {
       actionTriggered = true;
-      const bano = searchPastoPOI(userText) || PASTO_POIS.find((p) => p.category === 'bano');
-      await executeActionOnMap('poi', { category: 'bano', coords: bano?.coords, name: bano?.name });
-      botReply = `¡A la voz de una! 🚻 Ubicado ${bano?.name || 'Baño público'} en ${bano?.address || 'Plaza del Carnaval'}.\n¡Pines sanitarios iluminados y ruta vial a pie calculada!`;
-    } else if (q.includes('comer') || q.includes('cuy') || q.includes('restaurante') || q.includes('fritada') || q.includes('empanada')) {
-      actionTriggered = true;
-      const rest = searchPastoPOI(userText) || PASTO_POIS.find((p) => p.category === 'restaurante');
-      await executeActionOnMap('poi', { category: 'restaurante', coords: rest?.coords, name: rest?.name });
-      botReply = `¡Qué delicia paisano! 🍽️ Recomendadísimo ${rest?.name || 'Rancho Grande'} (${rest?.address || 'Centro'}).\n¡Pines gastronómicos activados y ruta trazada en el mapa!`;
-    } else if (q.includes('policia') || q.includes('policía') || q.includes('cai') || q.includes('seguridad') || q.includes('robo') || q.includes('extraviado')) {
-      actionTriggered = true;
-      const cai = searchPastoPOI(userText) || PASTO_POIS.find((p) => p.category === 'cai');
-      await executeActionOnMap('poi', { category: 'cai', coords: cai?.coords, name: cai?.name });
-      botReply = `¡Firme mi paisano! 👮 Tenés disponible el ${cai?.name || 'CAI Centro'} en ${cai?.address || 'Plaza del Carnaval'}.\n¡Puestos de vigilancia y seguridad encendidos en el mapa!`;
-    } else if (q.includes('salud') || q.includes('médic') || q.includes('medic') || q.includes('cruz roja') || q.includes('urgencia') || q.includes('hospital')) {
-      actionTriggered = true;
-      const salud = searchPastoPOI(userText) || PASTO_POIS.find((p) => p.category === 'salud');
-      await executeActionOnMap('poi', { category: 'salud', coords: salud?.coords, name: salud?.name });
-      botReply = `¡Atención prioritaria! 🚨 ${salud?.name || 'Puesto de Cruz Roja'} en ${salud?.address || 'Plaza del Carnaval'}.\n¡Ruta de asistencia médica trazada de inmediato en tu mapa!`;
+      const { poi, category, reply } = matchedPOIResult;
+      botReply = reply;
+      if (onSelectDestination) {
+        onSelectDestination(poi.coords, poi.name);
+      }
+      await executeActionOnMap('poi', { category, coords: poi.coords, name: poi.name });
     } else if (q.includes('cómo llegar') || q.includes('como llegar') || q.includes('ruta a') || q.includes('ir a')) {
       actionTriggered = true;
       const target = searchPastoPOI(userText) || findCarnavalLandmark(userText);
       const coords = target && 'coords' in target ? target.coords : [1.2140, -77.2820];
       const name = target ? target.name : 'Punto solicitado';
+      if (onSelectDestination) {
+        onSelectDestination(coords, name);
+      }
       await executeActionOnMap('navigate', { coords, name });
-      botReply = `¡Listo paisano! 🚶‍♂️ He calculado la ruta vial a pie más rápida hacia **${name}** con OSRM.\n¡Seguí la línea azul trazada en las calles del mapa!`;
+      botReply = `¡De una, paisano! Te acabo de trazar la ruta en el mapa hacia **${name}**. Te queda a unos minutos caminando. ¡Sigue la línea dorada!`;
     }
 
     if (!actionTriggered) {

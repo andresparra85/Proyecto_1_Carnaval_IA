@@ -662,9 +662,19 @@ function NavRouteController({ routePath }) {
 
     const adjust = () => {
       try {
-        map.fitBounds(routePath, { padding: [50, 50] });
+        if (routePath.length >= 2) {
+          const destination = routePath[routePath.length - 1];
+          if (map?.flyTo && destination) {
+            map.flyTo(destination, 17, { animate: true, duration: 1.2 });
+          } else {
+            map.fitBounds(routePath, { padding: [50, 50] });
+          }
+        }
+        if (map?.invalidateSize) {
+          setTimeout(() => map.invalidateSize(), 300);
+        }
       } catch (err) {
-        console.warn("Error en fitBounds de navegación:", err);
+        console.warn("Error en centrado de navegación:", err);
       }
     };
 
@@ -1413,18 +1423,33 @@ export function MapView({
           </>
         )}
 
-        {/* Renderizado de la ruta peatonal en Leaflet con OSRM blindado o GuaneñaBot (Gemini 2.5 Flash) */}
+        {/* Renderizado de la ruta peatonal en Leaflet con OSRM blindado o GuaneñaBot (Dorado Neón) */}
         {Array.isArray(routePath) && routePath.length >= 2 && (
-          <Polyline
-            key={`route-${routePath.length}-${navRoute?.isGeminiRoute ? 'gemini' : 'osrm'}`}
-            positions={routePath}
-            pathOptions={{
-              color: navRoute?.isGeminiRoute ? '#f59e0b' : '#2563eb',
-              weight: navRoute?.isGeminiRoute ? 6 : 6,
-              opacity: 0.9,
-              dashArray: navRoute?.isGeminiRoute ? '10, 10' : undefined,
-            }}
-          />
+          <>
+            <Polyline
+              key={`route-casing-${routePath.length}`}
+              positions={routePath}
+              pathOptions={{
+                color: '#000000',
+                weight: 9,
+                opacity: 0.7,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+            />
+            <Polyline
+              key={`route-${routePath.length}-${navRoute?.isGeminiRoute ? 'gemini' : 'osrm'}`}
+              positions={routePath}
+              pathOptions={{
+                color: '#f59e0b',
+                weight: 5,
+                opacity: 0.95,
+                lineCap: 'round',
+                lineJoin: 'round',
+                dashArray: navRoute?.isGeminiRoute ? '8, 8' : undefined,
+              }}
+            />
+          </>
         )}
 
         {navRoute && navRoute.targetCoords && (

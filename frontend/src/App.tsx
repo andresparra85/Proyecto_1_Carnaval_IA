@@ -139,6 +139,17 @@ export function App() {
     }
   }, [activeRouteCoordinates]);
 
+  // Manejador reactivo cuando GuaneñaBot selecciona un destino espacial
+  const handleSelectDestination = useCallback((targetCoords: [number, number], targetName: string) => {
+    const currentGps = userGpsRef.current;
+    const start = currentGps ? [currentGps.lat, currentGps.lng] : [1.2136, -77.2811];
+    setNavRoute({
+      startCoords: start,
+      targetCoords,
+      targetName,
+    });
+  }, []);
+
   // Escuchar comandos de IA emitidos desde GuaneñaBot para cambiar fecha de carnaval o trazar ruta OSRM
   useEffect(() => {
     const handleDayEvent = (e: any) => {
@@ -633,7 +644,11 @@ export function App() {
           </button>
 
           {/* GUANEÑABOT HUD FLOTANTE ABAJO A LA DERECHA */}
-          <GuanenaChat onRouteReceived={handleRouteReceived} onFocusSenda={handleFocusSenda} />
+          <GuanenaChat
+            onRouteReceived={handleRouteReceived}
+            onFocusSenda={handleFocusSenda}
+            onSelectDestination={handleSelectDestination}
+          />
 
           {/* Prompt para Instalar PWA */}
           <InstallPwaPrompt />

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { PASTO_POIS, PointOfInterest, LatLngTuple, dispatchGuanenaAction } from '../../data/pastoPOIs';
 import { SENDA_OFICIAL_COORDS, HITOS_SENDA } from '../../data/sendaCoords';
+import { getStreetRoute } from '../../services/routingService';
 
 // Resuelve el error clásico de Leaflet con Vite donde las rutas de los iconos por defecto se rompen
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -43,17 +44,23 @@ export function GuardedUserMarker({ userGps }: { userGps: [number, number] | nul
 }
 
 /**
- * Componente blindado para renderizar polilíneas de navegación solo con arrays de al menos 2 puntos
+ * Componente blindado para renderizar polilíneas de navegación solo con arrays de al menos 2 puntos (Dorado Neón)
  */
 export function GuardedNavigationPolyline({ navigationPath }: { navigationPath: [number, number][] | null | undefined }) {
   if (!Array.isArray(navigationPath) || navigationPath.length < 2) {
     return null;
   }
   return (
-    <Polyline
-      positions={navigationPath}
-      pathOptions={{ color: '#2563eb', weight: 6, opacity: 0.85 }}
-    />
+    <>
+      <Polyline
+        positions={navigationPath}
+        pathOptions={{ color: '#000000', weight: 8, opacity: 0.65, lineCap: 'round', lineJoin: 'round' }}
+      />
+      <Polyline
+        positions={navigationPath}
+        pathOptions={{ color: '#f59e0b', weight: 5, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }}
+      />
+    </>
   );
 }
 
@@ -312,10 +319,154 @@ function SendaBoundsFitter({ coords }: { coords: [number, number][] }) {
 }
 
 /**
+ * Controlador de navegación reactivo para GuaneñaBot:
+ * - Centra el mapa suavemente en las coordenadas del destino con map.flyTo([lat, lng], 17)
+ * - Abre el popup del lugar seleccionado
+ * - Si existe la ubicación del usuario (o mock en la Senda), enruta peatonalmente con OSRM y dibuja la polilínea dorada/neón
+ * - Llama a map.invalidateSize() para garantizar estabilidad visual
+ */
+export function GuanenaRoutingHandler({
+  selectedDestination,
+  onDestinationChanged,
+  userLocation,
+}: {
+  selectedDestination?: { coords: [number, number]; name: string; sector?: string; category?: string } | null;
+  onDestinationChanged?: (dest: any) => void;
+  userLocation?: [number, number] | null;
+}) {
+  const map = useMap();
+  const [activeDestination, setActiveDestination] = useState<any>(selectedDestination || null);
+  const [walkingPath, setWalkingPath] = useState<[number, number][] | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
+
+  useEffect(() => {
+    if (selectedDestination) {
+      setActiveDestination(selectedDestination);
+    }
+  }, [selectedDestination]);
+
+  useEffect(() => {
+    const handleRouteEvent = async (e: any) => {
+      const detail = e.detail;
+      if (!detail || !detail.targetCoords) return;
+
+      const dest = {
+        coords: detail.targetCoords as [number, number],
+        name: detail.targetName || 'Destino de Carnaval',
+        sector: detail.sector || 'Senda del Carnaval',
+        category: detail.category,
+      };
+
+      setActiveDestination(dest);
+      if (onDestinationChanged) onDestinationChanged(dest);
+
+      // a) Centra el mapa suavemente en las coordenadas del destino con map.flyTo([lat, lng], 17)
+      if (map?.flyTo) {
+        map.flyTo(dest.coords, 17, { animate: true, duration: 1.5 });
+      }
+
+      // d) Llama a map.invalidateSize() para mantener la estabilidad de los tiles
+      setTimeout(() => {
+        if (map?.invalidateSize) map.invalidateSize();
+      }, 350);
+
+      // c) Calcula la ruta a pie con OSRM desde la ubicación del usuario o fallback
+      const start: [number, number] = detail.startCoords || detail.originCoords || userLocation || [1.2138, -77.2818];
+      try {
+        if (detail.path && Array.isArray(detail.path) && detail.path.length >= 2) {
+          setWalkingPath(detail.path);
+        } else {
+          const path = await getStreetRoute(start, dest.coords);
+          setWalkingPath(path);
+        }
+      } catch (err) {
+        console.warn('Fallback de enrutamiento OSRM peatonal activado:', err);
+        setWalkingPath([start, dest.coords]);
+      } finally {
+        setTimeout(() => {
+          // b) Abre el popup de detalle del lugar seleccionado
+          if (markerRef.current) {
+            markerRef.current.openPopup();
+          }
+          if (map?.invalidateSize) map.invalidateSize();
+        }, 600);
+      }
+    };
+
+    window.addEventListener('route-to-poi', handleRouteEvent);
+    window.addEventListener('TRIGGER_NAVIGATION', handleRouteEvent);
+    return () => {
+      window.removeEventListener('route-to-poi', handleRouteEvent);
+      window.removeEventListener('TRIGGER_NAVIGATION', handleRouteEvent);
+    };
+  }, [map, onDestinationChanged, userLocation]);
+
+  return (
+    <>
+      {/* Polilínea Dorada / Neón OSRM por calles de Pasto */}
+      {walkingPath && walkingPath.length >= 2 && (
+        <>
+          <Polyline
+            positions={walkingPath}
+            pathOptions={{
+              color: '#000000',
+              weight: 8,
+              opacity: 0.65,
+              lineCap: 'round',
+              lineJoin: 'round',
+            }}
+          />
+          <Polyline
+            positions={walkingPath}
+            pathOptions={{
+              color: '#f59e0b',
+              weight: 5,
+              opacity: 0.95,
+              lineCap: 'round',
+              lineJoin: 'round',
+            }}
+          />
+        </>
+      )}
+
+      {/* Marcador de Destino Activo con Popup de Apertura Automática */}
+      {activeDestination && activeDestination.coords && (
+        <Marker
+          ref={markerRef}
+          position={activeDestination.coords}
+        >
+          <Popup autoPan={false}>
+            <div className="p-2 min-w-[190px] text-xs font-sans">
+              <span className="text-[10px] font-black uppercase text-amber-400 block mb-0.5">
+                Ruta Guiada GuaneñaBot
+              </span>
+              <strong className="text-white block font-black text-sm">
+                {activeDestination.name}
+              </strong>
+              {activeDestination.sector && (
+                <p className="text-amber-200/90 text-[11px] mt-0.5 font-semibold">
+                  📍 Sector: {activeDestination.sector}
+                </p>
+              )}
+              <p className="text-slate-300 text-[11px] mt-1">
+                🚶‍♂️ Sigue la línea dorada peatonal en el mapa.
+              </p>
+            </div>
+          </Popup>
+        </Marker>
+      )}
+    </>
+  );
+}
+
+/**
  * Componente principal MapComponent con la Senda Oficial del Carnaval
  */
 export function MapComponent({
   children,
+  onSelectDestination,
+  selectedDestination,
+  userLocation,
   ...props
 }: any) {
   return (
@@ -349,6 +500,14 @@ export function MapComponent({
             <Tooltip direction="top" permanent>{h.name}</Tooltip>
           </Marker>
         ))}
+        {/* Capa interactiva de POIs (Baños, Restaurantes, CAIs, Salud, Tarimas) */}
+        <PastoPoiMarkersLayer />
+        {/* Manejador de enrutamiento dinámico en tiempo real OSRM de GuaneñaBot */}
+        <GuanenaRoutingHandler
+          selectedDestination={selectedDestination}
+          onDestinationChanged={onSelectDestination}
+          userLocation={userLocation}
+        />
         {children}
       </MapContainer>
     </div>

@@ -7,6 +7,8 @@ import {
   NearbyPlace,
 } from '../services/carnavalApi';
 import { useRealtimeLocation } from '../hooks/useRealtimeLocation';
+import { findBestPOIForQuery } from '../data/pastoPOIs';
+import { getStreetRoute } from '../services/routingService';
 
 export interface GuanenaChatProps {
   onRouteReceived?: (
@@ -17,6 +19,7 @@ export interface GuanenaChatProps {
     nearbyPlaces?: NearbyPlace[]
   ) => void;
   onFocusSenda?: () => void;
+  onSelectDestination?: (targetCoords: [number, number], targetName: string) => void;
   className?: string;
   isOpen?: boolean;
   onToggle?: () => void;
@@ -108,6 +111,7 @@ function MarkdownMessage({ content }: { content: string }) {
 export const GuanenaChat: React.FC<GuanenaChatProps> = ({
   onRouteReceived,
   onFocusSenda,
+  onSelectDestination,
   className = '',
   isOpen: propIsOpen,
   onToggle: propOnToggle,
@@ -219,6 +223,91 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
     setInputMessage('');
     setLoading(true);
 
+    // 1. Detección reactiva de intención espacial (Baños, Restaurantes, CAIs, Puestos de Salud, Tarimas)
+    const userOrigin: [number, number] = (location?.lat && location?.lng) 
+      ? [location.lat, location.lng] 
+      : [1.2138, -77.2818];
+
+    const matchedPoiResult = findBestPOIForQuery(query, userOrigin);
+    if (matchedPoiResult) {
+      try {
+        const { poi, reply } = matchedPoiResult;
+        let routeCoords: [number, number][] = [userOrigin, poi.coords];
+        try {
+          const streetPath = await getStreetRoute(userOrigin, poi.coords);
+          if (Array.isArray(streetPath) && streetPath.length >= 2) {
+            routeCoords = streetPath;
+          }
+        } catch (err) {
+          console.warn('[GuanenaChat] Fallback OSRM directo:', err);
+        }
+
+        const botMessage: ChatMessage = {
+          id: `bot-${Date.now()}`,
+          role: 'model',
+          content: reply,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          waypoints: routeCoords,
+          shouldDrawRoute: true,
+        };
+
+        setMessages((prev) => [...prev, botMessage]);
+
+        // Disparar enrutamiento dinámico en el mapa
+        if (onSelectDestination) {
+          onSelectDestination(poi.coords, poi.name);
+        }
+        dispatchRouteToMap(routeCoords, poi.name);
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('route-to-poi', {
+              detail: {
+                targetCoords: poi.coords,
+                targetName: poi.name,
+                sector: poi.sector,
+                category: poi.category,
+                path: routeCoords,
+                startCoords: userOrigin,
+              },
+            })
+          );
+          window.dispatchEvent(
+            new CustomEvent('TRIGGER_NAVIGATION', {
+              detail: {
+                targetCoords: poi.coords,
+                targetName: poi.name,
+                originCoords: userOrigin,
+                coords: routeCoords,
+              },
+            })
+          );
+          window.dispatchEvent(
+            new CustomEvent('highlight-poi', {
+              detail: {
+                coords: poi.coords,
+                name: poi.name,
+                category: poi.category,
+                sector: poi.sector,
+                zoom: 17,
+              },
+            })
+          );
+          window.dispatchEvent(
+            new CustomEvent('FOCUS_MAP_BOUNDS', {
+              detail: { coordinates: routeCoords },
+            })
+          );
+        }
+
+        setLoading(false);
+        return;
+      } catch (err) {
+        console.warn('[GuanenaChat] Error en manejo de intención espacial:', err);
+      }
+    }
+
+    // 2. Si no es una consulta espacial directa, consultar a Gemini 2.5 Flash
     // Formatear historial para el backend de Gemini
     const historyPayload: ChatHistoryTurn[] = messages
       .filter((m) => m.id !== 'welcome-init')
