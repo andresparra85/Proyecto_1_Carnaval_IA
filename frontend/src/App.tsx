@@ -18,7 +18,9 @@ import { RefreshCw, ShieldAlert, MapPin, Crosshair } from 'lucide-react';
 import { useRealtimeLocation } from './hooks/useRealtimeLocation';
 
 export function App() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Auditar estrictamente el estado de autenticación desde localStorage con manejo seguro de excepciones
   const [isSessionActive, setIsSessionActive] = useState<boolean>(() => {
@@ -46,6 +48,18 @@ export function App() {
       setIsSessionActive(false);
     }
   }, [isAuthenticated]);
+
+  const handleLogout = useCallback(() => {
+    try {
+      localStorage.removeItem('carnavalia_session');
+      localStorage.removeItem('carnavalia_user');
+      localStorage.removeItem('carnavalia_token');
+    } catch (e) {
+      console.warn('Error clearing session:', e);
+    }
+    if (logout) logout();
+    setIsSessionActive(false);
+  }, [logout]);
 
   const [pois, setPois] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
@@ -239,12 +253,12 @@ export function App() {
   // 1. Pantalla de carga mientras se verifica sesión local
   if (authLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen w-screen bg-[#0a0a0b] text-slate-100">
-        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-coral-500 via-coral-600 to-rose-800 text-white text-2xl shadow-lg shadow-rose-500/30 animate-bounce">
-          🎭
+      <div className="flex flex-col items-center justify-center h-screen w-screen bg-[#08080a] text-slate-100">
+        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-yellow-400 text-stone-950 text-2xl shadow-lg shadow-yellow-500/30 animate-bounce">
+          <span className="material-symbols-outlined text-[32px] font-bold">satellite_alt</span>
         </div>
-        <p className="text-xs font-bold tracking-widest uppercase text-slate-400 mt-4">
-          Iniciando CarnavalIA...
+        <p className="text-xs font-bold tracking-widest uppercase text-yellow-400 mt-4 font-mono">
+          Iniciando CarnavalIA GIS Pasto...
         </p>
       </div>
     );
@@ -255,127 +269,376 @@ export function App() {
     return <LoginView />;
   }
 
-  // 3. Una vez autenticado con sesión activa, renderizar la aplicación completa
+  const carnivalDayNames: Record<string, string> = {
+    '28-dic': 'Pre-Carnaval: Arcoíris',
+    '31-dic': '31 Dic: Años Viejos',
+    '02-ene': 'Día 2: Carnavalito',
+    '03-ene': 'Día 3: Canto a la Tierra',
+    '04-ene': 'Día 4: Familia Castañeda',
+    '05-ene': 'Día 5: Día de Negros',
+    '06-ene': 'Día 6: Desfile Magno',
+    '07-ene': 'Día 7: Festival del Cuy',
+  };
+
+  const displayName = user?.full_name || user?.name || user?.email?.split('@')[0] || 'Turista Pasto';
+
+  // 3. Una vez autenticado con sesión activa, renderizar el Dashboard GIS Stitch Oficial
   return (
-    <div className="relative flex flex-col h-screen w-screen overflow-hidden bg-[#0a0a0b] text-slate-100">
-      {/* 0. Orbes de luz ambiental multicromáticos (Carnaval Vivo) */}
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-32 -left-32 h-[34rem] w-[34rem] rounded-full bg-coral-600/30 blur-[120px]" />
-        <div className="absolute -top-24 -right-32 h-[32rem] w-[32rem] rounded-full bg-rose-500/25 blur-[130px]" />
-        <div className="absolute bottom-[-10rem] left-1/3 h-[38rem] w-[38rem] rounded-full bg-aqua-500/20 blur-[140px]" />
-      </div>
-
-      {/* 1. Barra de Navegación Superior Flotante Glassmorphic (Stitch Style) */}
-      <Navbar
-        activeView={reportsModalOpen ? 'reportes' : calendarOpen ? 'calendario' : activeView}
-        onSelectSenda={() => {
-          setActiveView('senda');
-          setCalendarOpen(false);
-          setReportsModalOpen(false);
-          setShowSenda((prev) => !prev);
-        }}
-        onOpenCalendar={() => {
-          setCalendarOpen(true);
-          setReportsModalOpen(false);
-        }}
-        onOpenReports={() => {
-          setReportsModalOpen(true);
-          setCalendarOpen(false);
-        }}
-        onOpenReportModal={() => {
-          setSelectedLocation(null);
-          setReportModalOpen(true);
-        }}
-        reportsCount={reports.length}
-        poisCount={pois.length || 18}
-      />
-
-      {/* 2. Cuerpo Principal (Mapa de la Senda + Widgets flotantes) */}
-      <main className="relative flex-1 w-full h-full overflow-hidden">
-        {/* Mapa Interactivo Leaflet con ErrorBoundary de protección */}
-        <ErrorBoundary>
-          <MapView
-            pois={pois}
-            reports={reports}
-            zones={zones}
-            onSelectCoordinates={handleSelectCoordinates}
-            isSelectingLocation={reportModalOpen}
-            selectedLocation={selectedLocation}
-            currentCarnivalDay={currentCarnivalDay}
-            selectedDay={currentCarnivalDay}
-            onSelectDay={setCurrentCarnivalDay}
-            onUserLocationChange={setUserGps}
-            navRoute={navRoute}
-            setNavRoute={setNavRoute}
-            showSenda={showSenda}
-            onToggleSenda={() => setShowSenda((prev) => !prev)}
-            focusSendaTrigger={focusSendaTrigger}
-            schedule={activeSchedule}
-            nearbyPlaces={activeNearbyPlaces}
-          />
-        </ErrorBoundary>
-
-        {/* Panel Superior Flotante: Métricas en Vivo */}
-        <div className="absolute top-4 right-4 z-[900] flex flex-col sm:flex-row items-end sm:items-center gap-2 pointer-events-auto">
-          {/* Badge de Alertas Críticas */}
-          {highRiskCount > 0 && (
-            <div
-              onClick={() => setReportsModalOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-rose-500/20 backdrop-blur-md text-rose-300 text-xs font-bold border border-rose-500/40 shadow-sm animate-pulse cursor-pointer hover:bg-rose-500/30 transition"
-              title="Ver alertas críticas"
-            >
-              <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-              <span>{highRiskCount} Alerta{highRiskCount > 1 ? 's' : ''} Crítica{highRiskCount > 1 ? 's' : ''}</span>
+    <div className="min-h-screen bg-[#08080a] text-slate-100 font-sans selection:bg-yellow-400 selection:text-stone-950 overflow-hidden relative">
+      {/* 1. SIDEBAR IZQUIERDA (Especificación Stitch) */}
+      <aside className={`fixed left-0 top-0 h-full w-72 bg-[#0c0c10]/95 border-r border-[#1e1e28] backdrop-blur-2xl z-40 flex flex-col justify-between p-4 shadow-[0_8px_32px_-4px_rgba(0,0,0,0.85)] transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="flex flex-col gap-6">
+          {/* Logo con icono Satellite */}
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-xl bg-yellow-400 flex items-center justify-center shadow-[0_0_18px_rgba(250,204,21,0.45)]">
+                <span className="material-symbols-outlined text-[#1a1400] text-[24px] font-bold">satellite_alt</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[20px] tracking-tight text-white font-bold leading-tight">CarnavalIA</span>
+                <span className="text-[11px] text-yellow-400 tracking-widest uppercase font-semibold">GIS Pasto · UNESCO</span>
+              </div>
             </div>
-          )}
-
-          {/* Tarjeta Cápsula de Resumen Rápido Glassmorphic */}
-          <div className="flex items-center gap-3 px-3.5 py-1.5 rounded-2xl backdrop-blur-md bg-[#101012]/80 border border-rose-500/25 shadow-[0_0_20px_rgba(220,38,38,0.25)] text-xs text-slate-200">
-            <div className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-aqua-400" />
-              <span><strong className="text-white font-bold">{pois.length}</strong> Puntos</span>
-            </div>
-            <span className="text-slate-500">•</span>
+            {/* Cerrar en móvil */}
             <button
               type="button"
-              onClick={() => setReportsModalOpen(true)}
-              className="flex items-center gap-1.5 hover:text-aqua-300 transition cursor-pointer"
-              title="Abrir panel de reportes ciudadanos"
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="md:hidden p-1.5 text-neutral-400 hover:text-white"
             >
-              <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-              <span><strong className="text-white font-bold">{reports.length}</strong> Reportes</span>
+              <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
-            <span className="text-slate-500">•</span>
+          </div>
+
+          {/* Badge Día en Vivo */}
+          <div
+            onClick={() => setCalendarOpen(true)}
+            className="p-2.5 rounded-xl bg-[#15151c]/90 border border-yellow-500/20 backdrop-blur-md flex items-center justify-between cursor-pointer hover:border-yellow-500/40 transition group"
+            title="Cambiar fecha del Carnaval"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse shadow-[0_0_8px_#facc15] shrink-0" />
+              <span className="text-[12px] text-gray-200 font-semibold truncate">
+                {carnivalDayNames[currentCarnivalDay] || 'Día 6: Desfile Magno'}
+              </span>
+            </div>
+            <span className="text-[11px] text-yellow-400 font-bold shrink-0 ml-1">LIVE</span>
+          </div>
+
+          {/* Menú de Navegación Vertical */}
+          <nav className="flex flex-col gap-1.5" aria-label="Navegación principal">
             <button
-              onClick={loadDashboardData}
-              disabled={loading}
-              className="text-slate-400 hover:text-white transition p-1 hover:bg-white/10 rounded-xl active:scale-95 cursor-pointer"
-              title={`Actualizar datos (Última: ${lastUpdated.toLocaleTimeString()})`}
-              aria-label="Actualizar datos"
+              type="button"
+              onClick={() => {
+                setActiveView('senda');
+                setCalendarOpen(false);
+                setReportsModalOpen(false);
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all text-left cursor-pointer ${
+                activeView === 'senda' && !reportsModalOpen && !calendarOpen
+                  ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-stone-950 shadow-[0_0_20px_rgba(250,204,21,0.45)] border border-yellow-200'
+                  : 'text-neutral-300 hover:bg-[#1a1a24] hover:text-yellow-400 border border-transparent hover:border-yellow-500/20'
+              }`}
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-aqua-400' : 'hover:text-aqua-300'}`} />
+              <span className="material-symbols-outlined text-[18px]">map</span>
+              <span className="text-[14px]">Mapa Principal</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowSenda((prev) => !prev);
+                handleFocusSenda();
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all text-left cursor-pointer ${
+                showSenda
+                  ? 'text-yellow-400 bg-[#1a1a24] border border-yellow-500/30'
+                  : 'text-neutral-300 hover:bg-[#1a1a24] hover:text-yellow-400 border border-transparent hover:border-yellow-500/20'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[20px]">route</span>
+              <span className="text-[14px]">Senda del Carnaval</span>
+              <span className={`ml-auto w-2 h-2 rounded-full ${showSenda ? 'bg-yellow-400 shadow-[0_0_8px_#facc15]' : 'bg-neutral-600'}`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('toggle-guanena-chat'));
+                }
+                setIsMobileSidebarOpen(false);
+              }}
+              className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-neutral-300 hover:bg-[#1a1a24] hover:text-yellow-400 border border-transparent hover:border-yellow-500/20 transition-all font-semibold text-left cursor-pointer group"
+            >
+              <span className="material-symbols-outlined text-[20px] group-hover:text-yellow-400">smart_toy</span>
+              <span className="text-[14px]">GuaneñaBot AI</span>
+              <span className="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded bg-yellow-400/20 text-yellow-300 font-bold">2.5</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setCalendarOpen(true);
+                setReportsModalOpen(false);
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold transition-all text-left cursor-pointer ${
+                calendarOpen
+                  ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-stone-950 font-bold border border-yellow-200'
+                  : 'text-neutral-300 hover:bg-[#1a1a24] hover:text-yellow-400 border border-transparent hover:border-yellow-500/20'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[20px]">emergency</span>
+              <span className="text-[14px]">Puntos Cívicos y Salud</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setReportsModalOpen(true);
+                setCalendarOpen(false);
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold transition-all text-left cursor-pointer ${
+                reportsModalOpen
+                  ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold shadow-lg border border-red-400'
+                  : 'text-neutral-300 hover:bg-[#1a1a24] hover:text-yellow-400 border border-transparent hover:border-yellow-500/20'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[20px]">warning</span>
+              <span className="text-[14px]">Centro de Alertas</span>
+              {reports.length > 0 && (
+                <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-500 text-white">
+                  {reports.length}
+                </span>
+              )}
+            </button>
+          </nav>
+        </div>
+
+        {/* Bloque Inferior: Datum Telemetría + Usuario y Salir */}
+        <div className="flex flex-col gap-3">
+          <div className="p-2.5 rounded-xl bg-[#121218] border border-[#22222e] flex flex-col gap-1 text-[11px] font-mono">
+            <span className="text-neutral-400">DATUM TELEMETRÍA</span>
+            <div className="flex justify-between items-center text-yellow-400 font-semibold">
+              <span>{userGps?.lat ? `${userGps.lat.toFixed(4)}°N` : "01°12'54\"N"}</span>
+              <span>{userGps?.lng ? `${userGps.lng.toFixed(4)}°W` : "77°16'44\"W"}</span>
+            </div>
+            <div className="flex justify-between items-center text-neutral-400">
+              <span>ALT: 2,527m</span>
+              <span className="text-amber-400 font-semibold">{userGps ? 'GPS ACTIVO' : 'GNSS: RTK FIX'}</span>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-[#1e1e28] flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-7 h-7 rounded-lg bg-yellow-400/20 border border-yellow-400/30 flex items-center justify-center text-xs font-bold text-yellow-300 shrink-0">
+                👤
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-semibold text-white truncate max-w-[110px]">
+                  {displayName}
+                </span>
+                <span className="text-[10px] text-emerald-400">En línea</span>
+              </div>
+            </div>
+
+            <button
+              id="sidebar-logout-btn"
+              type="button"
+              onClick={handleLogout}
+              className="p-1.5 px-2 rounded-lg text-neutral-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition cursor-pointer text-xs flex items-center gap-1 shrink-0"
+              title="Cerrar sesión e ir al login"
+            >
+              <span className="material-symbols-outlined text-[16px]">logout</span>
+              <span className="text-[11px] font-bold">Salir</span>
             </button>
           </div>
         </div>
+      </aside>
 
-        {/* Prompt para Instalar PWA */}
-        <InstallPwaPrompt />
+      {/* Backdrop para cerrar sidebar en móvil */}
+      {isMobileSidebarOpen && (
+        <div
+          onClick={() => setIsMobileSidebarOpen(false)}
+          className="fixed inset-0 bg-black/60 z-30 md:hidden backdrop-blur-sm"
+        />
+      )}
 
-        {/* Botón flotante "Centrar en mi ubicación" (Crosshair) */}
-        <button
-          type="button"
-          onClick={() => centerOnMe()}
-          className="absolute bottom-6 left-4 z-[900] flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-slate-950/85 hover:bg-slate-900/95 backdrop-blur-xl border border-sky-500/40 hover:border-sky-400 text-sky-400 hover:text-sky-300 font-bold text-xs shadow-2xl shadow-black/80 transition-all duration-200 active:scale-95 cursor-pointer group"
-          title="Centrar mapa en mi ubicación GPS en tiempo real"
-          aria-label="Centrar en mi ubicación"
-        >
-          <Crosshair className="w-4 h-4 text-sky-400 group-hover:rotate-45 transition-transform duration-300" />
-          <span className="hidden sm:inline font-semibold">Centrar en mi ubicación</span>
-        </button>
+      {/* 2. CONTENEDOR PRINCIPAL */}
+      <div className="md:pl-72 min-h-screen bg-[#08080a] relative flex flex-col h-screen overflow-hidden">
+        {/* HEADER SUPERIOR */}
+        <header className="fixed top-0 left-0 md:left-72 right-0 h-16 bg-[#0c0c10]/90 border-b border-[#1e1e28] backdrop-blur-xl z-30 flex items-center justify-between px-4 sm:px-6 shadow-[0_8px_32px_-4px_rgba(0,0,0,0.6)]">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="md:hidden p-2 rounded-xl bg-[#16161f] border border-[#272735] text-yellow-400 hover:text-white cursor-pointer"
+              title="Abrir menú"
+            >
+              <span className="material-symbols-outlined text-[20px]">menu</span>
+            </button>
+            <div className="flex items-center gap-2 bg-[#16161f] border border-yellow-500/30 px-3 py-1 rounded-full text-xs font-mono text-yellow-300 shadow-sm">
+              <span className="material-symbols-outlined text-[16px] text-yellow-400 animate-pulse">near_me</span>
+              <span className="hidden sm:inline">PASTO_CAM_VECTOR_FEED</span>
+              <span className="sm:hidden font-bold">PASTO SIG</span>
+            </div>
+          </div>
 
-        {/* Componente del Asistente GuaneñaBot (Chatbot UI Flotante con Gemini 2.5 Flash y Trazado de Rutas) */}
-        <GuanenaChat onRouteReceived={handleRouteReceived} onFocusSenda={handleFocusSenda} />
-      </main>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="hidden sm:flex items-center bg-[#15151d] border border-[#272735] focus-within:border-yellow-500/50 rounded-xl px-3 py-1.5 gap-2 transition">
+              <span className="material-symbols-outlined text-neutral-400 text-[18px]">search</span>
+              <input
+                className="bg-transparent text-white text-xs placeholder:text-neutral-500 outline-none w-44 md:w-56"
+                placeholder="Buscar cuadrilla, carroza, tarima..."
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedLocation(null);
+                setReportModalOpen(true);
+              }}
+              className="h-9 px-3.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-500 hover:from-red-500 hover:to-amber-400 text-white font-bold flex items-center gap-2 shadow-[0_0_20px_rgba(239,68,68,0.45)] border border-amber-300/40 active:scale-95 transition cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[17px]">sos</span>
+              <span className="text-xs uppercase tracking-wider font-extrabold">Alerta SOS</span>
+            </button>
+          </div>
+        </header>
+
+        {/* LIENZO DEL MAPA INTERACTIVO (LEAFLET REAL CON MAPCONTAINER DE FONDO) */}
+        <main className="w-full pt-16 h-screen relative overflow-hidden flex-1">
+          {/* MAPCONTAINER REAL DE LEAFLET */}
+          <div className="absolute inset-0 z-0">
+            <ErrorBoundary>
+              <MapView
+                pois={pois}
+                reports={reports}
+                zones={zones}
+                onSelectCoordinates={handleSelectCoordinates}
+                isSelectingLocation={reportModalOpen}
+                selectedLocation={selectedLocation}
+                currentCarnivalDay={currentCarnivalDay}
+                selectedDay={currentCarnivalDay}
+                onSelectDay={setCurrentCarnivalDay}
+                onUserLocationChange={setUserGps}
+                navRoute={navRoute}
+                setNavRoute={setNavRoute}
+                showSenda={showSenda}
+                onToggleSenda={() => setShowSenda((prev) => !prev)}
+                focusSendaTrigger={focusSendaTrigger}
+                schedule={activeSchedule}
+                nearbyPlaces={activeNearbyPlaces}
+                hideTopBar={true}
+              />
+            </ErrorBoundary>
+          </div>
+
+          {/* FILTROS FLOTANTES ARRIBA */}
+          <div className="absolute left-4 sm:left-6 top-20 z-20 flex items-center gap-2 flex-wrap max-w-2xl pointer-events-auto select-none">
+            <button
+              type="button"
+              onClick={() => {
+                setShowSenda((prev) => !prev);
+                handleFocusSenda();
+              }}
+              className={`h-8 px-3 rounded-xl text-xs font-black flex items-center gap-2 transition cursor-pointer active:scale-95 ${
+                showSenda
+                  ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-stone-950 shadow-[0_0_18px_rgba(250,204,21,0.4)] border border-yellow-200'
+                  : 'bg-[#101016]/95 border border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/20 shadow-lg'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[15px]">route</span>
+              <span>Senda Oficial (7.5 km)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('show-poi-category', { detail: { category: 'restaurantes' } }));
+                }
+              }}
+              className="h-8 px-3 rounded-xl bg-[#101016]/95 border border-yellow-500/40 hover:border-yellow-400 text-yellow-200 text-xs font-bold flex items-center gap-1.5 shadow-lg active:scale-95 transition cursor-pointer"
+            >
+              <span>🍴</span>
+              <span>Gastronomía (34)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('show-poi-category', { detail: { category: 'salud' } }));
+                }
+              }}
+              className="h-8 px-3 rounded-xl bg-[#101016]/95 border border-rose-500/30 hover:border-rose-400 text-rose-200 text-xs font-bold flex items-center gap-1.5 shadow-lg active:scale-95 transition cursor-pointer"
+            >
+              <span>🚑</span>
+              <span>Puestos Salud (12)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('show-poi-category', { detail: { category: 'policia' } }));
+                }
+              }}
+              className="h-8 px-3 rounded-xl bg-[#101016]/95 border border-blue-500/30 hover:border-blue-400 text-blue-200 text-xs font-bold flex items-center gap-1.5 shadow-lg active:scale-95 transition cursor-pointer"
+            >
+              <span>👮</span>
+              <span>CAIs Policía</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('show-poi-category', { detail: { category: 'banio' } }));
+                }
+              }}
+              className="h-8 px-3 rounded-xl bg-[#101016]/95 border border-emerald-500/30 hover:border-emerald-400 text-emerald-200 text-xs font-bold flex items-center gap-1.5 shadow-lg active:scale-95 transition cursor-pointer"
+            >
+              <span>🚻</span>
+              <span>Baños</span>
+            </button>
+          </div>
+
+          {/* BARRA DE TELEMETRÍA INFERIOR IZQUIERDA */}
+          <div className="absolute left-4 sm:left-6 bottom-6 z-20 hidden md:flex items-center gap-3 bg-[#0c0c10]/95 border border-[#222230] backdrop-blur-xl px-4 py-2 rounded-xl shadow-xl text-xs font-mono select-none">
+            <span className="text-white font-bold">SENDA: 7.5 KM</span>
+            <span className="text-neutral-600">|</span>
+            <span className="text-yellow-300 font-bold">ESPECTADORES: 420,000</span>
+            <span className="text-neutral-600">|</span>
+            <span className="text-yellow-400 font-bold">16°C • PASTOLUZ</span>
+          </div>
+
+          {/* BOTÓN FLOTANTE GPS CENTRAR EN MI UBICACIÓN */}
+          <button
+            type="button"
+            onClick={() => centerOnMe()}
+            className="absolute left-4 sm:left-6 bottom-16 md:bottom-18 z-20 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#101016]/90 border border-yellow-500/30 hover:border-yellow-400 text-yellow-300 text-xs font-mono font-bold shadow-lg transition active:scale-95 cursor-pointer"
+            title="Centrar mapa en mi GPS"
+          >
+            <Crosshair className="w-3.5 h-3.5 text-yellow-400" />
+            <span className="text-[11px] font-mono">GPS EN VIVO</span>
+          </button>
+
+          {/* GUANEÑABOT HUD FLOTANTE ABAJO A LA DERECHA */}
+          <GuanenaChat onRouteReceived={handleRouteReceived} onFocusSenda={handleFocusSenda} />
+
+          {/* Prompt para Instalar PWA */}
+          <InstallPwaPrompt />
+        </main>
+      </div>
 
       {/* Modal para Registro de Reportes */}
       <ReportModal

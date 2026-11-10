@@ -711,6 +711,7 @@ export function MapView({
   showSenda: propShowSenda,
   onToggleSenda: propOnToggleSenda,
   focusSendaTrigger = 0,
+  hideTopBar = false,
 }) {
   // 1. Estado de geolocalización GPS del usuario (declarado al inicio absoluto para evitar ReferenceError)
   const [userGps, setUserGps] = useState(null);
@@ -1047,77 +1048,79 @@ export function MapView({
   const showZones = activeFilter === 'todos' || activeFilter === 'zonas';
 
   return (
-    <div className="relative w-full h-full min-h-[500px] overflow-hidden shadow-2xl bg-[#0a0a0b]">
+    <div className="relative w-full h-full min-h-[500px] overflow-hidden bg-[#08080a]">
       {/* 1. Contenedor Superior Fijo: Banner de Evento Activo y Chips de Filtros Tipo Píldora */}
-      <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none">
-        {/* Banner Superior Dinámico de Evento Oficial controlado por GuaneñaBot */}
-        <div className="pointer-events-auto flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-full bg-[#101012]/80 backdrop-blur-2xl border border-rose-500/20 shadow-[0_0_25px_rgba(220,38,38,0.25)] text-xs max-w-lg">
-          <div className="flex items-center gap-2 min-w-0">
-            <span
-              className={`w-2 h-2 rounded-full shrink-0 ${currentEvent ? 'bg-coral-500' : 'bg-slate-500'}`}
-              style={currentEvent?.color ? { backgroundColor: currentEvent.color } : {}}
-            />
-            <div className="truncate text-slate-300">
-              <span className="hidden sm:inline text-slate-400">Evento Activo: </span>
-              <strong className="font-bold text-white">
-                {currentEvent ? currentEvent.name : 'Ninguno'}
-              </strong>
+      {!hideTopBar && (
+        <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none">
+          {/* Banner Superior Dinámico de Evento Oficial controlado por GuaneñaBot */}
+          <div className="pointer-events-auto flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-full bg-[#101012]/80 backdrop-blur-2xl border border-rose-500/20 shadow-[0_0_25px_rgba(220,38,38,0.25)] text-xs max-w-lg">
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                className={`w-2 h-2 rounded-full shrink-0 ${currentEvent ? 'bg-coral-500' : 'bg-slate-500'}`}
+                style={currentEvent?.color ? { backgroundColor: currentEvent.color } : {}}
+              />
+              <div className="truncate text-slate-300">
+                <span className="hidden sm:inline text-slate-400">Evento Activo: </span>
+                <strong className="font-bold text-white">
+                  {currentEvent ? currentEvent.name : 'Ninguno'}
+                </strong>
+              </div>
             </div>
+            <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-rose-300">
+              🎭 GuaneñaBot AI
+            </span>
           </div>
-          <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-rose-300">
-            🎭 GuaneñaBot AI
-          </span>
-        </div>
 
-        {/* Chips de Categorías (Filtros del Mapa) tipo Píldora (Pill Badges) */}
-        <div className="pointer-events-auto flex items-center gap-2 max-w-full overflow-x-auto no-scrollbar py-0.5">
-          {/* Botón directo de activación / desactivación de la Senda del Carnaval */}
-          <button
-            type="button"
-            onClick={toggleSenda}
-            className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md ${showSenda
-                ? 'bg-gradient-to-r from-coral-600 to-rose-500 text-white shadow-md ring-2 ring-coral-400/50 glow-coral'
-                : 'bg-slate-900/50 border border-white/10 text-slate-200 hover:text-white hover:border-rose-400/50'
-              }`}
-            title={showSenda ? 'Ocultar Senda del Carnaval' : 'Mostrar Senda del Carnaval'}
-          >
-            <span className="text-sm">🎭</span>
-            <span>Senda del Carnaval</span>
-            <span
-              className={`w-2 h-2 rounded-full transition-all ${showSenda ? 'bg-white shadow-sm' : 'bg-slate-400'
+          {/* Chips de Categorías (Filtros del Mapa) tipo Píldora (Pill Badges) */}
+          <div className="pointer-events-auto flex items-center gap-2 max-w-full overflow-x-auto no-scrollbar py-0.5">
+            {/* Botón directo de activación / desactivación de la Senda del Carnaval */}
+            <button
+              type="button"
+              onClick={toggleSenda}
+              className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md ${showSenda
+                  ? 'bg-gradient-to-r from-coral-600 to-rose-500 text-white shadow-md ring-2 ring-coral-400/50 glow-coral'
+                  : 'bg-slate-900/50 border border-white/10 text-slate-200 hover:text-white hover:border-rose-400/50'
                 }`}
-            />
-          </button>
+              title={showSenda ? 'Ocultar Senda del Carnaval' : 'Mostrar Senda del Carnaval'}
+            >
+              <span className="text-sm">🎭</span>
+              <span>Senda del Carnaval</span>
+              <span
+                className={`w-2 h-2 rounded-full transition-all ${showSenda ? 'bg-white shadow-sm' : 'bg-slate-400'
+                  }`}
+              />
+            </button>
 
-          {filterOptions.map((f) => {
-            const isActive = activeFilter === f.id;
-            const activeChip = {
-              todos: 'bg-gradient-to-r from-coral-600 to-rose-500 text-white border-coral-400 shadow-[0_0_20px_rgba(220,38,38,0.55)]',
-              restaurantes: 'bg-gradient-to-r from-rose-600 to-rose-800 text-white border-rose-400 shadow-[0_0_15px_rgba(190,18,60,0.45)]',
-              salud: 'bg-gradient-to-r from-aqua-500 to-aqua-700 text-white border-aqua-400 shadow-[0_0_15px_rgba(168,162,158,0.4)]',
-              policia: 'bg-gradient-to-r from-aqua-500 to-aqua-600 text-white border-aqua-400 shadow-[0_0_15px_rgba(168,162,158,0.4)]',
-              banio: 'bg-gradient-to-r from-aqua-500 to-aqua-700 text-white border-aqua-400 shadow-[0_0_15px_rgba(168,162,158,0.4)]',
-              tarima: 'bg-gradient-to-r from-coral-600 to-rose-500 text-white border-coral-400 shadow-[0_0_15px_rgba(220,38,38,0.4)]',
-              zonas: 'bg-gradient-to-r from-rose-600 to-coral-500 text-white border-rose-400 shadow-[0_0_15px_rgba(190,18,60,0.45)]',
-            }[f.id];
-            return (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setActiveFilter(f.id)}
-                className={`rounded-full px-3.5 py-1.5 text-xs transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md border ${
-                  isActive
-                    ? `font-bold ${activeChip}`
-                    : 'bg-[#181819]/60 border-white/15 text-slate-200 font-medium hover:border-rose-400/50 hover:text-white'
-                }`}
-              >
-                <span className="text-sm">{f.icon}</span>
-                <span>{f.label}</span>
-              </button>
-            );
-          })}
+            {filterOptions.map((f) => {
+              const isActive = activeFilter === f.id;
+              const activeChip = {
+                todos: 'bg-gradient-to-r from-coral-600 to-rose-500 text-white border-coral-400 shadow-[0_0_20px_rgba(220,38,38,0.55)]',
+                restaurantes: 'bg-gradient-to-r from-rose-600 to-rose-800 text-white border-rose-400 shadow-[0_0_15px_rgba(190,18,60,0.45)]',
+                salud: 'bg-gradient-to-r from-aqua-500 to-aqua-700 text-white border-aqua-400 shadow-[0_0_15px_rgba(168,162,158,0.4)]',
+                policia: 'bg-gradient-to-r from-aqua-500 to-aqua-600 text-white border-aqua-400 shadow-[0_0_15px_rgba(168,162,158,0.4)]',
+                banio: 'bg-gradient-to-r from-aqua-500 to-aqua-700 text-white border-aqua-400 shadow-[0_0_15px_rgba(168,162,158,0.4)]',
+                tarima: 'bg-gradient-to-r from-coral-600 to-rose-500 text-white border-coral-400 shadow-[0_0_15px_rgba(220,38,38,0.4)]',
+                zonas: 'bg-gradient-to-r from-rose-600 to-coral-500 text-white border-rose-400 shadow-[0_0_15px_rgba(190,18,60,0.45)]',
+              }[f.id];
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setActiveFilter(f.id)}
+                  className={`rounded-full px-3.5 py-1.5 text-xs transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 cursor-pointer backdrop-blur-md border ${
+                    isActive
+                      ? `font-bold ${activeChip}`
+                      : 'bg-[#181819]/60 border-white/15 text-slate-200 font-medium hover:border-rose-400/50 hover:text-white'
+                  }`}
+                >
+                  <span className="text-sm">{f.icon}</span>
+                  <span>{f.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 2. Tarjeta Flotante Compacta de "Evento Oficial" con Bordes rounded-3xl - Renderizado condicional */}
       {showSenda && selectedEvent && currentEvent && (

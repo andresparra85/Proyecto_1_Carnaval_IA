@@ -18,6 +18,8 @@ export interface GuanenaChatProps {
   ) => void;
   onFocusSenda?: () => void;
   className?: string;
+  isOpen?: boolean;
+  onToggle?: () => void;
 }
 
 export interface ChatMessage {
@@ -107,9 +109,37 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
   onRouteReceived,
   onFocusSenda,
   className = '',
+  isOpen: propIsOpen,
+  onToggle: propOnToggle,
 }) => {
   const { location, centerOnMe } = useRealtimeLocation();
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = propIsOpen !== undefined ? propIsOpen : internalIsOpen;
+  const toggleOpen = useCallback(() => {
+    if (propOnToggle) {
+      propOnToggle();
+    } else {
+      setInternalIsOpen((prev) => !prev);
+    }
+  }, [propOnToggle]);
+
+  useEffect(() => {
+    const handleToggle = () => toggleOpen();
+    const handleOpen = () => {
+      if (propOnToggle) {
+        if (!isOpen) propOnToggle();
+      } else {
+        setInternalIsOpen(true);
+      }
+    };
+    window.addEventListener('toggle-guanena-chat', handleToggle);
+    window.addEventListener('open-guanena-chat', handleOpen);
+    return () => {
+      window.removeEventListener('toggle-guanena-chat', handleToggle);
+      window.removeEventListener('open-guanena-chat', handleOpen);
+    };
+  }, [toggleOpen, propOnToggle, isOpen]);
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome-init',
@@ -287,65 +317,51 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
 
   return (
     <>
-      {/* 1. Botón Flotante Circular (FAB) con Gradiente Festivo y Pulso Neón */}
-      <button
-        id="guanena-fab-button"
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-[9999] pointer-events-auto flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-rose-600 via-amber-500 to-cyan-500 hover:scale-110 active:scale-95 text-white shadow-2xl shadow-rose-600/40 border-2 border-white/30 transition-all duration-300 cursor-pointer group select-none"
-        aria-label="Abrir o cerrar chat de GuaneñaBot"
-        title="GuaneñaBot • Asistente Inteligente del Carnaval de Pasto"
-      >
-        {!isOpen && (
-          <span className="absolute inset-0 rounded-full bg-amber-400/30 animate-ping pointer-events-none" />
-        )}
+      {/* 1. Botón Flotante (FAB) Neón Pasto */}
+      {!isOpen && (
+        <button
+          id="guanena-fab-button"
+          type="button"
+          onClick={() => toggleOpen()}
+          className="fixed bottom-6 right-6 z-[9999] pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-yellow-400 hover:bg-yellow-300 text-stone-950 font-bold shadow-[0_0_25px_rgba(250,204,21,0.5)] border border-yellow-200 active:scale-95 transition-all cursor-pointer group select-none"
+          aria-label="Abrir chat de GuaneñaBot"
+          title="GuaneñaBot • Asistente Inteligente del Carnaval de Pasto"
+        >
+          <span className="material-symbols-outlined text-[20px] text-[#1a1400]">smart_toy</span>
+          <span className="text-xs font-bold tracking-tight">GuaneñaBot AI</span>
+          <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+        </button>
+      )}
 
-        {isOpen ? (
-          <X className="w-6 h-6 text-white stroke-[2.5]" />
-        ) : (
-          <div className="relative flex items-center justify-center text-2xl">
-            🎭
-          </div>
-        )}
-      </button>
-
-      {/* 2. Cajón de Chat Glassmorphic Desplegable */}
+      {/* 2. Cajón de Chat Glassmorphic Desplegable (HUD Stitch) */}
       {isOpen && (
-        <div
+        <aside
           role="complementary"
           aria-label="Ventana de GuaneñaBot"
-          className={`fixed bottom-24 right-4 sm:right-6 z-[9999] pointer-events-auto w-[calc(100vw-2rem)] sm:w-[410px] h-[550px] max-h-[82vh] rounded-3xl bg-slate-950/90 backdrop-blur-2xl border border-white/15 shadow-2xl shadow-rose-950/60 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 ${className}`}
+          className={`fixed bottom-6 right-4 sm:right-6 z-[9999] pointer-events-auto w-[380px] max-w-[calc(100vw-2rem)] h-[520px] max-h-[82vh] rounded-2xl bg-[#0c0c10]/95 border border-yellow-500/35 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 ${className}`}
         >
-          {/* Header con Estado en Línea y Avatar Flotante */}
-          <header className="px-4 py-3.5 border-b border-white/10 bg-slate-900/80 flex items-center justify-between gap-2 select-none">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-600 via-amber-500 to-cyan-500 text-white shadow-lg shadow-rose-600/30 shrink-0 text-lg border border-white/20">
-                🎭
-                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-emerald-500/40 animate-pulse" />
+          {/* Header con estilo Stitch */}
+          <div className="p-3 bg-[#14141c] border-b border-[#222230] flex items-center justify-between select-none">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-yellow-400 flex items-center justify-center text-stone-950 font-bold shadow-[0_0_12px_rgba(250,204,21,0.4)]">
+                <span className="material-symbols-outlined text-[18px]">smart_toy</span>
               </div>
-              <div className="min-w-0">
+              <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-extrabold text-xs sm:text-sm text-white tracking-tight leading-tight truncate">
-                    GuaneñaBot • Gemini 2.5 Flash
-                  </h3>
-                  <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    IA
+                  <span className="text-sm text-white font-bold tracking-tight">GuaneñaBot</span>
+                  <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-yellow-400/20 text-yellow-300 border border-yellow-400/30">
+                    2.5 FLASH
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span className="text-[10px] text-emerald-300 font-semibold">
-                    En línea • Pasto, Nariño
-                  </span>
-                </div>
+                <span className="text-[10px] text-neutral-400 font-mono">Conectado a Red SIG Pasto</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={handleResetConversation}
-                className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition cursor-pointer"
+                className="p-1.5 text-neutral-400 hover:text-white rounded-lg hover:bg-white/10 transition cursor-pointer"
                 title="Reiniciar conversación"
                 aria-label="Reiniciar conversación"
               >
@@ -353,15 +369,15 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => setIsOpen(false)}
-                className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition cursor-pointer"
-                title="Cerrar chat"
+                onClick={() => toggleOpen()}
+                className="p-1.5 text-neutral-400 hover:text-white rounded-lg hover:bg-white/10 transition cursor-pointer"
+                title="Minimizar GuaneñaBot"
                 aria-label="Cerrar chat"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-          </header>
+          </div>
 
           {/* Body: Historial de Mensajes */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3.5 no-scrollbar">
@@ -541,14 +557,14 @@ export const GuanenaChat: React.FC<GuanenaChatProps> = ({
               id="guanena-chat-send-btn-live"
               type="submit"
               disabled={!inputMessage.trim() || loading}
-              className="w-10 h-10 rounded-full bg-gradient-to-r from-amber-500 via-rose-600 to-amber-500 hover:brightness-110 text-white font-bold active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-rose-600/30 flex items-center justify-center shrink-0"
+              className="w-10 h-10 rounded-full bg-yellow-400 hover:bg-yellow-300 text-stone-950 font-bold active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-[0_0_15px_rgba(250,204,21,0.4)] flex items-center justify-center shrink-0"
               aria-label="Enviar pregunta a GuaneñaBot"
               title="Enviar pregunta"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4 stroke-[2.5]" />
             </button>
           </form>
-        </div>
+        </aside>
       )}
     </>
   );
