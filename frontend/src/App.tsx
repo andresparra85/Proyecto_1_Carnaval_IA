@@ -18,22 +18,34 @@ import { RefreshCw, ShieldAlert, MapPin, Crosshair } from 'lucide-react';
 import { useRealtimeLocation } from './hooks/useRealtimeLocation';
 
 export function App() {
-  const { isAuthenticated, loading: authLoading, loginAsGuest } = useAuth();
-  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const { isAuthenticated, loading: authLoading } = useAuth();
   
-  // Acceso directo a la Senda y Telemetría GIS para todos los visitantes (modo Turista sin barreras)
-  const [isSessionActive, setIsSessionActive] = useState<boolean>(true);
+  // Auditar estrictamente el estado de autenticación desde localStorage con manejo seguro de excepciones
+  const [isSessionActive, setIsSessionActive] = useState<boolean>(() => {
+    try {
+      return Boolean(
+        typeof window !== 'undefined' &&
+        localStorage.getItem('carnavalia_session') === 'active'
+      );
+    } catch (e) {
+      console.warn('Error leyendo carnavalia_session en inicialización:', e);
+      return false;
+    }
+  });
 
   useEffect(() => {
     try {
-      if (typeof window !== 'undefined' && !localStorage.getItem('carnavalia_session')) {
-        localStorage.setItem('carnavalia_session', 'active');
-        if (loginAsGuest) loginAsGuest();
-      }
+      const active = Boolean(
+        isAuthenticated &&
+        typeof window !== 'undefined' &&
+        localStorage.getItem('carnavalia_session') === 'active'
+      );
+      setIsSessionActive(active);
     } catch (e) {
-      console.warn('Error inicializando sesión de turista:', e);
+      console.warn('Error actualizando carnavalia_session:', e);
+      setIsSessionActive(false);
     }
-  }, [loginAsGuest]);
+  }, [isAuthenticated]);
 
   const [pois, setPois] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
@@ -62,8 +74,8 @@ export function App() {
   const [navRoute, setNavRoute] = useState<any>(null);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
-  // Estado para la capa y foco de la Senda del Carnaval (activa por defecto con resplandor Neón)
-  const [showSenda, setShowSenda] = useState(true);
+  // Estado para la capa y foco de la Senda del Carnaval
+  const [showSenda, setShowSenda] = useState(false);
   const [focusSendaTrigger, setFocusSendaTrigger] = useState(0);
 
   // Estado para la ruta dinámica y telemetría trazada por GuaneñaBot (Gemini 2.5 Flash)
@@ -227,25 +239,30 @@ export function App() {
   // 1. Pantalla de carga mientras se verifica sesión local
   if (authLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen w-screen bg-[#07090e] text-slate-100">
-        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-600 via-amber-500 to-cyan-400 text-white text-2xl shadow-lg shadow-rose-500/40 animate-bounce">
+      <div className="flex flex-col items-center justify-center h-screen w-screen bg-[#0a0a0b] text-slate-100">
+        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-coral-500 via-coral-600 to-rose-800 text-white text-2xl shadow-lg shadow-rose-500/30 animate-bounce">
           🎭
         </div>
         <p className="text-xs font-bold tracking-widest uppercase text-slate-400 mt-4">
-          Iniciando CarnavalIA • Pasto GIS...
+          Iniciando CarnavalIA...
         </p>
       </div>
     );
   }
 
-  // 2. Renderizado de la aplicación completa con acceso público inmediato para visitantes y turistas
+  // 2. Si NO existe sesión activa, renderizar ÚNICA Y EXCLUSIVAMENTE Login (bloqueo total de mapa, chat y modales)
+  if (!isSessionActive) {
+    return <LoginView />;
+  }
+
+  // 3. Una vez autenticado con sesión activa, renderizar la aplicación completa
   return (
-    <div className="relative flex flex-col h-screen w-screen overflow-hidden bg-[#07090e] text-slate-100">
+    <div className="relative flex flex-col h-screen w-screen overflow-hidden bg-[#0a0a0b] text-slate-100">
       {/* 0. Orbes de luz ambiental multicromáticos (Carnaval Vivo) */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-32 -left-32 h-[34rem] w-[34rem] rounded-full bg-rose-600/25 blur-[120px]" />
-        <div className="absolute -top-24 -right-32 h-[32rem] w-[32rem] rounded-full bg-cyan-500/20 blur-[130px]" />
-        <div className="absolute bottom-[-10rem] left-1/3 h-[38rem] w-[38rem] rounded-full bg-amber-500/15 blur-[140px]" />
+        <div className="absolute -top-32 -left-32 h-[34rem] w-[34rem] rounded-full bg-coral-600/30 blur-[120px]" />
+        <div className="absolute -top-24 -right-32 h-[32rem] w-[32rem] rounded-full bg-rose-500/25 blur-[130px]" />
+        <div className="absolute bottom-[-10rem] left-1/3 h-[38rem] w-[38rem] rounded-full bg-aqua-500/20 blur-[140px]" />
       </div>
 
       {/* 1. Barra de Navegación Superior Flotante Glassmorphic (Stitch Style) */}
@@ -269,7 +286,6 @@ export function App() {
           setSelectedLocation(null);
           setReportModalOpen(true);
         }}
-        onOpenAuth={() => setAuthModalOpen(true)}
         reportsCount={reports.length}
         poisCount={pois.length || 18}
       />
@@ -298,6 +314,49 @@ export function App() {
             nearbyPlaces={activeNearbyPlaces}
           />
         </ErrorBoundary>
+
+        {/* Panel Superior Flotante: Métricas en Vivo */}
+        <div className="absolute top-4 right-4 z-[900] flex flex-col sm:flex-row items-end sm:items-center gap-2 pointer-events-auto">
+          {/* Badge de Alertas Críticas */}
+          {highRiskCount > 0 && (
+            <div
+              onClick={() => setReportsModalOpen(true)}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-rose-500/20 backdrop-blur-md text-rose-300 text-xs font-bold border border-rose-500/40 shadow-sm animate-pulse cursor-pointer hover:bg-rose-500/30 transition"
+              title="Ver alertas críticas"
+            >
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+              <span>{highRiskCount} Alerta{highRiskCount > 1 ? 's' : ''} Crítica{highRiskCount > 1 ? 's' : ''}</span>
+            </div>
+          )}
+
+          {/* Tarjeta Cápsula de Resumen Rápido Glassmorphic */}
+          <div className="flex items-center gap-3 px-3.5 py-1.5 rounded-2xl backdrop-blur-md bg-[#101012]/80 border border-rose-500/25 shadow-[0_0_20px_rgba(220,38,38,0.25)] text-xs text-slate-200">
+            <div className="flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-aqua-400" />
+              <span><strong className="text-white font-bold">{pois.length}</strong> Puntos</span>
+            </div>
+            <span className="text-slate-500">•</span>
+            <button
+              type="button"
+              onClick={() => setReportsModalOpen(true)}
+              className="flex items-center gap-1.5 hover:text-aqua-300 transition cursor-pointer"
+              title="Abrir panel de reportes ciudadanos"
+            >
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+              <span><strong className="text-white font-bold">{reports.length}</strong> Reportes</span>
+            </button>
+            <span className="text-slate-500">•</span>
+            <button
+              onClick={loadDashboardData}
+              disabled={loading}
+              className="text-slate-400 hover:text-white transition p-1 hover:bg-white/10 rounded-xl active:scale-95 cursor-pointer"
+              title={`Actualizar datos (Última: ${lastUpdated.toLocaleTimeString()})`}
+              aria-label="Actualizar datos"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-aqua-400' : 'hover:text-aqua-300'}`} />
+            </button>
+          </div>
+        </div>
 
         {/* Prompt para Instalar PWA */}
         <InstallPwaPrompt />
@@ -359,18 +418,6 @@ export function App() {
         type={toast.type}
         onClose={() => setToast({ message: '', type: 'success' })}
       />
-
-      {/* Modal de Autenticación / Registro Flotante (Stitch Glass HUD) */}
-      {authModalOpen && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in">
-          <div className="relative w-full max-w-md">
-            <LoginView
-              onClose={() => setAuthModalOpen(false)}
-              onLoginSuccess={() => setAuthModalOpen(false)}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
