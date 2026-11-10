@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import Navbar from './components/layout/Navbar';
 import Header from './components/Header';
 import MapView from './components/MapView';
 import ReportModal from './components/ReportModal';
@@ -264,8 +265,8 @@ export function App() {
         <div className="absolute bottom-[-10rem] left-1/3 h-[38rem] w-[38rem] rounded-full bg-aqua-500/20 blur-[140px]" />
       </div>
 
-      {/* 1. Barra de Navegación Superior Glassmorphic */}
-      <Header
+      {/* 1. Barra de Navegación Superior Flotante Glassmorphic (Stitch Style) */}
+      <Navbar
         activeView={reportsModalOpen ? 'reportes' : calendarOpen ? 'calendario' : activeView}
         onSelectSenda={() => {
           setActiveView('senda');
@@ -286,6 +287,7 @@ export function App() {
           setReportModalOpen(true);
         }}
         reportsCount={reports.length}
+        poisCount={pois.length || 18}
       />
 
       {/* 2. Cuerpo Principal (Mapa de la Senda + Widgets flotantes) */}
